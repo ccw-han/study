@@ -1,0 +1,47 @@
+1基本注解
+1@Table 注解包含一个schema和一个catelog 属性，使用@UniqueConstraints 可以定义表的唯一约束。
+ 
+@Table(name="tbl_sky",
+  uniqueConstraints = {@UniqueConstraint(columnNames={"month", "day"})}
+)
+ 
+上述代码在  "month" 和 "day" 两个 field 上加上 unique constrainst.
+ 
+2@Version 注解用于支持乐观锁版本控制。
+ 
+@Entity
+public class Flight implements Serializable {
+   ...
+   @Version
+   @Column(name="OPTLOCK")
+   public Integer getVersion() { ... }
+}
+3实体Bean中所有非static 非 transient 属性都可以被持久化，除非用@Transient注解。
+ 
+默认情况下，所有属性都用 @Basic 注解。
+4
+@Temporal(TemporalType.TIME)
+java.util.Date getDepartureTime() { ... } // persistent property
+
+@TemporalType.(DATE,TIME,TIMESTAMP) 分别Map java.sql.(Date, Time, Timestamp).
+5
+@Lob 注解属性将被持久化为 Blog 或 Clob 类型。具体的java.sql.Clob, Character[], char[] 和 java.lang.String 将被持久化为 Clob 类型. java.sql.Blob, Byte[], byte[] 和 serializable type 将被持久化为 Blob 类型。
+ 
+@Lob
+public String getFullText() {
+   return fullText;  // clob type
+
+6@Column(
+   name="columnName"; (1) 列名
+   boolean unique() default false; (2)    是否在该列上设置唯一约束
+   boolean nullable() default true; (3)   列可空？
+   boolean insertable() default true; (4) 该列是否作为生成 insert语句的一个列
+   boolean updatable() default true; (5)  该列是否作为生成 update语句的一个列
+   String columnDefinition() default ""; (6)  默认值
+   String table() default ""; (7)             定义对应的表（deault 是主表）
+   int length() default 255; (8)              列长度
+   int precision() default 0; // decimal precision (9)  decimal精度
+   int scale() default 0; // decimal scale        (10)  decimal长度
+@Column(updatable = false, name = "flight_name", nullable = false, length=50)
+   public String getName() { ... }
+7
