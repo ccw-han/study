@@ -1,0 +1,40 @@
+Spring MVC 中获取session的几种方法
+         Spring MVC 中使用session是一种常见的操作，但是大家上网搜索一下可以看到获取session的方式方法五花八门，最近，自己终结了一下，将获取session的方法记录下来，以便大家共同学习进步。
+
+第一种：将HttpSession作为Spring MVC 的方法参数传入，直接获取。
+
+         直接在Spring MVC 的方法中将参数传入：
+
+public void getSessionAction(HttpSession session){
+}
+       这种方法我再网上搜索时发现很多人并不推荐使用，但是在简单的测试中发现，还是可以使用的，不推荐的具体原因很多文章中并没有说明。
+
+第二种：将HttpServletRequest作为Spring MVC 的方法参数，间接获取
+
+      先是获取到request，然后通过request间接的获取到session，代码如下：
+
+public void getSessionAction(HttpServletRequest request){
+  HttpSession session = request.getSession();
+}
+    这种方法时比较常见的一种，但是有些人会觉得这种比较麻烦，因为每次使用session都需要传入一个参数（你到底是有多懒），于是就有了第三种方法
+
+第三种：通过@Autowired HttpServletRequest request 获取
+
+       这种方式类似于我们注入service类的时候是一样的，第一眼看到这种方式的时候我是拒绝的，因为我们都知道，servlet是默认采用单例多线程的方式处理多用户请求的，如果直接把它写成一个全局的变量，会不会是不安全的？不过这里·基于spring注解的，所以基本上可以确保线程的安全性。但是说实在，我还是不放心，于是上网查了一些资料，最后看了看spring这部分的源码（我会在另一片文章中详细和大家讨论的），最后发现这样做是完全可行的。
+
+第四种：使用RequestContextHolder类获取request，间接获取到session
+
+      通过使用RequestContextHolder这个类我们可以在不传入HttpServletRequest,直接获取到本次请求中的request。一般使用中我们会对它进行封装，做成一个工具方法进行使用：
+
+((ServletRequestAttributes)RequestContextHolder.getRequestAttributes()).getRequest();
+    注意进行强转成为ServletRequestAttributes，具体原因可以在源码中找到（有点废话了），大致的原理就是，RequestContextHolder类中有两个ThreadLocal保存当前线程下的request，每次我们调用getRequestAttributes()的时候就会获取到当前的request，调用springmvc方法的时候没有传入request，那么这个request是在哪里获取到的呢？看源码可以知道，是在一个processRequest(HttpServletRequest request, HttpServletResponse response)这个方法里面，每次挑用doget（），dopost（）的时候都会条用这个方法，将我们的request，response传进去。
+
+第五种： 使用@SessionAttributes
+
+    确切来说这种方式并不是直接获取到session，但是我们可以通过这种方式将我们想要值放入到session中去。
+
+ 
+
+其实总结是一个好习惯，在总结获取session的方法过程中，看到了去多相关的博文，学习了一些意想不到的东西，所以想要拿出来，大家一起讨论，如果还有需要补充的或者是错误之处，烦请指教。
+
+ 

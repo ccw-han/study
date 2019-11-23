@@ -1,0 +1,55 @@
+<page-home>
+  <ion-content class="check-form-font-size" width="100%">
+    <h3>
+      <font face="Microsoft YaHei">check-item-example</font>
+    </h3>
+    <div class="alert alert-warning alert-block">
+      <ion-grid>
+        <ion-row>
+          <ion-col col-12>
+            1.check-item-number 数值输入项<br>
+            2.check-item-text 需要判定的文本输入项<br>
+            3.check-item-btn 按钮输入项
+            4.check-item-slider 补水线输入项
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </div>
+
+    <div class="form">
+      <div>
+        <check-item-btn [readonly]="confirmPerson != null" [checkProject]="'数值检查项1'" [benchmark]="benchmark2" [modelData]="data" [(ngModel)]="data.checkValue1" [resultFieldName]="'checkResult1'"
+          (check)="onCheck($event)" (audit)="onAudit($event)"></check-item-btn>
+      </div>
+      <div>
+        <check-item-number [readonly]="confirmPerson != null" [checkProject]="'按钮检查项2'" [benchmark]="benchmark1" [dependOnFieldName]="'checkResult1'" [modelData]="data" [(ngModel)]="data.checkValue2" [resultFieldName]="'checkResult2'"
+          (check)="onCheck($event)" (audit)="onAudit($event)"></check-item-number>
+      </div>
+      <div>
+        <check-item-text [readonly]="confirmPerson != null" [checkProject]="'文本检查项3'" [benchmark]="benchmark3" [dependOnFieldName]="'checkResult2'" [modelData]="data" [(ngModel)]="data.checkValue3" [resultFieldName]="'checkResult3'"
+          (check)="onCheck($event)" (audit)="onAudit($event)"></check-item-text>
+      </div>
+      <div>
+        <check-item-slider [readonly]="confirmPerson != null" [checkProject]="'加油、补水线'" [minValue]="10" [maxValue]="80" [modelData]="data" [(ngModel)]="data.checkValue4" [resultFieldName]="'checkResult4'"
+          (check)="onCheck($event)" (audit)="onAudit($event)" [dependOnFieldName]="'checkResult3'"></check-item-slider>
+      </div>
+      <div>
+        <check-item-btn [readonly]="confirmPerson != null" [checkProject]="'数值检查项4'" [benchmark]="benchmark2" [dependOnFieldName]="'checkResult3'" [modelData]="data" [(ngModel)]="data.checkValue5" [resultFieldName]="'checkResult5'"
+          (check)="onCheck($event)" (audit)="onAudit($event)"></check-item-btn>
+      </div>
+      <div>
+        <check-item-text [readonly]="confirmPerson != null" [checkProject]="'无基准值判断'" [modelData]="data" [(ngModel)]="data.checkValue5" [resultFieldName]="'checkResult5'"></check-item-text>
+      </div>
+      <div>
+        <user-confirm-input [title]="'承认人验证'" [(ngModel)]="confirmPerson"></user-confirm-input>
+      </div>
+      <div>
+        <button type="button" class="btn btn-primary" (click)="printData()">打印</button>
+      </div>
+      <div>
+        <check-item-select-text [readonly]="confirmPerson != null" [checkProject]="'无基准值判断'" [modelData]="data" [dependOnFieldName]="'checkResult2'" [(ngModel)]="data.checkValue5" [resultFieldName]="'checkResult5'"></check-item-select-text>
+      </div>
+    </div>
+
+  </ion-content>
+</page-home>

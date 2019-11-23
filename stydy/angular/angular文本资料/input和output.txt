@@ -1,0 +1,53 @@
+Output相当于指令的方法绑定，子作用域触发事件执行响应函数，而响应函数
+方法体则位于父作用域中，相当于将事件“输出到”父作用域中，在父作用域中
+处理。
+//app.component.html
+<app-child [values]="data" (childEvent) = "getChildEvent($event)">
+</app-child>
+//app.component.ts
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  data = [1,2,3];
+  getChildEvent(index){
+    console.log(index);
+    this.data.splice(index,1);
+  }
+}
+以上是跟组件app-root的组件类及模板，可以我们把data输入到子组件
+app-child中，然后接收childEvent事件并对其进行响应。
+//app-child.component.html
+<p *ngFor="let item of values; let i = index" (click)="fireChildEvent(i)">
+  {{item}}
+</p>
+//app-child.component.ts
+@Component({
+  selector: 'app-child',
+  templateUrl: './child.component.html',
+  styleUrls: ['./child.component.css']
+})
+export class ChildComponent implements OnInit {
+  @Input() values;
+  @Output() childEvent = new EventEmitter<any>();
+  constructor() { }
+
+  ngOnInit() {
+
+  }
+  fireChildEvent(index){
+    this.childEvent.emit(index);
+  }
+}
+
+
+当点击每个元素的时候触发了click事件，执行fireChildEvent函数，
+该函数要将元素的index值“输出”到父组件中进行处理。
+
+Output一般都是一个EventEmitter的实例，使用实例的emit方法将参数emit
+到父组件中，触发父组件的childEvent事件。
+
+然后父组件监听到该事件的发生，执行对应的处理函数getChildEvent，
+删除传递的元素索引指向的数据，同时，视图更新。

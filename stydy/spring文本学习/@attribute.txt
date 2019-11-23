@@ -1,0 +1,130 @@
+@ModelAttribute注解的使用总结
+2018年07月14日 18:46:52 leo3070 阅读数：5612
+@ModelAttribute使用详解
+
+
+
+@ModelAttribute最主要的作用是将数据添加到模型对象中，用于视图页面展示时使用。
+
+@ModelAttribute等价于 model.addAttribute("attributeName", abc); 但是根据@ModelAttribute注释的位置不同，和其他注解组合使用，致使含义有所不同。具体区别如下：
+
+1.@ModelAttribute注释方法 
+　　例子（1），（2），（3）类似，被@ModelAttribute注释的方法会在此controller每个方法执行前被执行，因此对于一个controller映射多个URL的用法来说，要谨慎使用。
+(1）@ModelAttribute注释void返回值的方法 
+复制代码
+ 1 @Controller 
+ 2 public class HelloWorldController { 
+ 3     @ModelAttribute 
+ 4     public void populateModel(@RequestParam String abc, Model model) { 
+ 5          model.addAttribute("attributeName", abc); 
+ 6       } 
+ 7 
+ 8     @RequestMapping(value = "/helloWorld") 
+ 9     public String helloWorld() { 
+10        return "helloWorld"; 
+11         } 
+12  }
+复制代码
+　　这个例子，在获得请求/helloWorld 后，populateModel方法在helloWorld方法之前先被调用，它把请求参数（/helloWorld?abc=text）加入到一个名为attributeName的model属性中，在它执行后 helloWorld被调用，返回视图名helloWorld和model已由@ModelAttribute方法生产好了。
+
+（2）@ModelAttribute注释返回具体类的方法
+
+1 @ModelAttribute 
+2 public Account addAccount(@RequestParam String number) { 
+3     return accountManager.findAccount(number); 
+4 } 
+　　这种情况，model属性的名称没有指定，它由返回类型隐含表示，如这个方法返回Account类型，那么这个model属性的名称是account。
+　　这个例子中model属性名称有返回对象类型隐含表示，model属性对象就是方法的返回值。它无须要特定的参数。
+
+ 
+
+（3）@ModelAttribute(value="")注释返回具体类的方法
+
+复制代码
+ 1 @Controller 
+ 2 public class HelloWorldController { 
+ 3     @ModelAttribute("attributeName") 
+ 4     public String addAccount(@RequestParam String abc) { 
+ 5         return abc; 
+ 6       } 
+ 7 
+ 8     @RequestMapping(value = "/helloWorld") 
+ 9     public String helloWorld() { 
+10         return "helloWorld"; 
+11           } 
+12    }
+复制代码
+　　这个例子中使用@ModelAttribute注释的value属性，来指定model属性的名称。model属性对象就是方法的返回值。它无须要特定的参数。
+
+ 
+
+（4）@ModelAttribute和@RequestMapping同时注释一个方法
+
+复制代码
+1 @Controller 
+2 public class HelloWorldController { 
+3     @RequestMapping(value = "/helloWorld.do") 
+4     @ModelAttribute("attributeName") 
+5     public String helloWorld() { 
+6          return "hi"; 
+7       } 
+8   }
+复制代码
+　　这时这个方法的返回值并不是表示一个视图名称，而是model属性的值，视图名称由RequestToViewNameTranslator根据请求"/helloWorld.do"转换为逻辑视图helloWorld。
+Model属性名称有@ModelAttribute(value=””)指定，相当于在request中封装了key=attributeName，value=hi。
+
+
+2.@ModelAttribute注释一个方法的参数 
+（1）从model中获取
+
+复制代码
+ 1 @Controller 
+ 2 public class HelloWorldController { 
+ 3     @ModelAttribute("user") 
+ 4     public User addAccount() { 
+ 5         return new User("jz","123"); 
+ 6      } 
+ 7 
+ 8     @RequestMapping(value = "/helloWorld") 
+ 9     public String helloWorld(@ModelAttribute("user") User user) { 
+10            user.setUserName("jizhou"); 
+11            return "helloWorld"; 
+12         } 
+13   }
+复制代码
+　　在这个例子里，@ModelAttribute("user") User user注释方法参数，参数user的值来源于addAccount()方法中的model属性。
+　　此时如果方法体没有标注@SessionAttributes("user")，那么scope为request，如果标注了，那么scope为session
+
+（2）从Form表单或URL参数中获取（实际上，不做此注释也能拿到user对象）
+
+
+复制代码
+1 @Controller 
+2 public class HelloWorldController { 
+3     @RequestMapping(value = "/helloWorld") 
+4     public String helloWorld(@ModelAttribute User user) { 
+5         return "helloWorld"; 
+6      } 
+7 }
+复制代码
+它的作用是将该绑定的命令对象以“user”为名称添加到模型对象中供视图页面展示使用。我们此时可以在视图页面使用${user.username}来获取绑定的命令对象的属性。
+
+3.@ModelAttribute注释一个方法的返回值
+
+
+放在方法的返回值之前，添加方法返回值到模型对象中，用于视图页面展示时使用。
+
+复制代码
+1 @Controller 
+2 public class HelloWorldController { 
+
+3     @RequestMapping(value = "/helloWorld") 
+4     public @@ModelAttribute("user2") User helloWorld(@ModelAttribute User user) { 
+5         return new User(); 
+6      } 
+7 }
+复制代码
+　　大家可以看到返回值类型是对象类型，而且通过 @ModelAttribute("user2") 注解，此时会添加返回值到模型数据（ 名字为user2 ） 中供视图展示使用
+
+　　 @ModelAttribute  注解的返回值会覆盖 @RequestMapping  注解方法中的 @ModelAttribute  注解的同名命令对象
+

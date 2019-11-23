@@ -1,0 +1,67 @@
+mm-form-c7-00-226 {
+
+  .check-input {
+    border-bottom: 1px solid #2d98da !important;
+  }
+
+  .scanner-part {
+    min-width: 320px;
+  }
+
+  .scanner-part .check-input {
+    width: 30px !important;
+  }
+  
+  .row {
+    width: 96%;
+    margin: 0 2% !important;
+  }
+
+  h6 {
+    margin-left: 2% !important;
+    margin-top: 10px;
+  }
+
+  table {
+    width: 98% !important;
+    margin: 20px 1% !important;
+  }
+
+  table td {
+    vertical-align: middle !important;
+  }
+
+  .lot_compare .check-input {
+    width: 20px !important;
+  }
+
+  .form-control {
+    border: 1px solid #ccc;
+    // border-radius: 4px;
+  }
+  .check-item-container{
+    width: 210px;
+  }
+  check-item-text .check-item-container button {
+    position: absolute;
+    bottom: -40px;
+    right: -50px;
+    z-index: 9999;
+}
+  .ticketBox .form-control {
+    float: left;
+    width: 120px;
+  }
+  .ticketBox label {
+    float: left;
+    line-height: 36px;
+    margin: 0 20px;
+  }
+  .ticketBox .check-input {
+    height: 36px !important;
+  }
+
+  .image-container img{
+    height: 4rem;
+  }
+}

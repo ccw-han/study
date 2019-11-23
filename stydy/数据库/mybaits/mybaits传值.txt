@@ -1,0 +1,173 @@
+Mybatis传入参数类型为Map
+2018年03月21日 10:06:28 earthhour 阅读数：19652
+参考：
+
+https://www.cnblogs.com/seeusmile-cnblog/p/6221340.html
+
+https://www.cnblogs.com/huzi007/p/5969711.html
+
+方式一：
+
+mybatis更新sql语句：
+
+<update id="publishT00_notice" parameterType="Map">
+update test  
+set createdate = #{createdate},
+creator = #{creator}
+where id in 
+<foreach collection="ids" item="ids" separator="," open="(" close=")">
+#{ids}
+</foreach>
+</update>
+传入map参数类型：
+
+HashMap<String,Object> map = new HashMap<String, Object>();
+map.put("creator", "creator");
+map.put("createdate", "createdate");
+ 
+String[] ids = {"1","2"};
+map.put("ids", ids );
+方式二：
+
+第一步在你的mapper写上:
+
+ List<WeixinUserLocationList> findweixinUserLocations(@Param("params") Map<String, Object> map);
+注意就是注解@param 这个，是mybatis的
+
+然后在xml中这样写:
+
+<if test="params.accountId!=null">
+            and a.accountid=#{params.accountId}
+        </if>
+        <if test="params.nickname!=null and params.nickname !=''">
+            and a.nickname like '%${params.nickname}%'
+        </if>
+        <if test="params.beginDate!=null and params.beginDate!=''">
+            and date_format(a.createtime,'%Y-%m-%d')>=${params.beginDate}
+        </if>
+        <if test="params.endDate!=null and params.endDate!=''">
+        <![CDATA[    and date_format(a.createtime,'%Y-%m-%d')<=${params.endDate}  ]]>     
+        </if>
+${params.nickname}这种写法参数默认是传字符串，
+一、在MyBatis的select、insert、update、delete这些元素中都提到了parameterType这个属性。MyBatis现在可以使用的parameterType有基本数据类型和JAVA复杂数据类型
+
+基本数据类型：包含int,String,Date等。通过#{参数名}，只能传入一个参数；通过#{0}、#{1}……索引方式，可以传入多个参数；如果通过#{参数名}传多个值，又不想使用索引方式，可以使用@param()注解。
+复杂数据类型：包含JAVA实体类、Map。通过#{属性名}或#{map的KeyName}即可获取传入的值
+1、#{参数名}，传入一个参数
+
+DAO方法：
+
+public List<User> selectUserByOrgId(String orgId);
+ 
+
+Mapper.xml:
+
+<select id="selectUserByOrgId" parameterType="java.lang.String" resultType="user">
+    select * from user where org_id = #{orgId}
+</select>
+service：
+
+List<User> users = userDao.selectUserByOrgId("1");
+ 但是与if标签结合使用则要注意必须用map或者对象
+
+参照：http://www.cnblogs.com/keyi/p/8534905.html
+
+2、#{0}、#{1}……索引方式，传入多个参数
+
+DAO方法：
+
+public User selectUserByNameAndAge(String name,int age);
+Mapper.xml:
+
+<select id="selectUserByNameAndAge" resultType="user">
+    select * from user where name = #{0} and age = #{1}
+</select>
+service：
+
+User user = userDao.selectUserByNameAndAge("lucy",18);
+3、#{参数名}，传入多个参数，并且参数用@param注解
+
+DAO方法：
+
+public User selectUserByNameAndAge(@param("name")String name,@param("age")int age);
+ 
+
+Mapper.xml:
+
+<select id="selectUserByNameAndAge" resultType="user">
+    select * from user where name = #{name} and age = #{age}
+</select>
+service：
+
+User user = userDao.selectUserByNameAndAge("lucy",18);
+4、传入多个基本类型参数，参数用map封装，通过#{mapKey}取值
+
+DAO方法：
+
+public User selectUserByNameAndAge(Map map);
+Mapper.xml:
+
+<select id="selectUserByNameAndAge" parameterType="Map" resultType="user">
+    select * from user where name = #{name} and age = #{age}
+</select>
+service：
+
+Map<String,Object> map=new HasMap<String,Object>();  
+map.put("name","lucy");  
+map.put("age",18);  
+User user = userDao.selectUserByNameAndAge(map);
+5、使用map封装实体类,通过通过#{mapKey.attributeName}取值
+
+DAO方法：
+
+public User selectUserByNameAndAge(Map map);
+Mapper.xml:
+
+<select id="selectUserByNameAndAge" parameterType="Map" resultType="user">
+    select * from user where name = #{userParam.name} and age = #{userParam.age}
+</select>
+service：
+
+User userParam = new User("lucy",18);
+
+Map<String,Object> map=new HasMap<String,Object>();  
+map.put("user",userParam);  
+User user = userDao.selectUserByNameAndAge(map);
+6、直接传入实体参数，通过#{属性名}取值
+
+DAO方法：
+
+public User selectUserByNameAndAge(User userParam);
+Mapper.xml:
+
+<select id="selectUserByNameAndAge" parameterType="User" resultType="user">
+    select * from user where name = #{userParam.name} and age = #{userParam.age}
+</select>
+service：
+
+User userParam = new User("lucy",18);
+User user = userDao.selectUserByNameAndAge(userParam);
+二、#{}与${}的区别
+
+#{}拿到值之后，拼装sql，会自动对值添加单引号” 
+${}则把拿到的值直接拼装进sql，如果需要加单引号”，必须手动添加，一般用于动态传入表名或字段名使用，同时需要添加属性statementType=”STATEMENT”，使用非预编译模式。
+
+
+注：statementType：STATEMENT（非预编译），PREPARED（预编译）或CALLABLE中的任意一个，这就告诉 MyBatis 分别使用Statement，PreparedStatement或者CallableStatement。默认：PREPARED。 
+
+使用${}传参取值实例： 
+DAO方法：
+
+public List<User> selectUserByOrgId(String orgId);
+ 
+
+Mapper.xml:
+
+<select id="selectUserByOrgId" parameterType="java.lang.String" resultType="user" statementType="STATEMENT">
+    select * from user where org_id = ${orgId}
+</select>
+service：
+
+String orgId = "100";
+orgId = "'" + orgId + "'";
+List<User> users = userDao.selectUserByOrgId(orgId);

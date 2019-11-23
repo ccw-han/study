@@ -1,0 +1,28 @@
+ajax发布数据新写法
+$.ajax({
+                type: 'POST',
+                url: "${ctx}/to/ajax/list/toDetailjson",
+                data: {id:$("#id").val()},
+                success: function(data){
+                    $.each(data.data,function(i,item){
+                        toDetailData[item.code]=item;
+                    });
+                    initData();
+                    if($("#flag").val()=="show" || $("#status").val()!="to-status-001"){
+                        $(".table-btn").hide();
+                    }
+                    $.each(dataTable.rows().data(),function(i,item){
+                        var num1 = 0;
+                        num1 = item.code.substring(item.code.lastIndexOf("-")+1);
+                        num1 = parseInt(num1.replace(/\b(0+)/gi,""));
+                        if(num1>=num){
+                            num = num1;
+                        }
+                    });
+                },
+                dataType: "json"
+            });
+重新载入
+ function reloadDataTable() {
+                dataTable.ajax.reload();
+            };

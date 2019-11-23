@@ -1,0 +1,60 @@
+应用场景
+我们在开发的时候会遇到需要区分正式环境、测试环境、开发环境使用不同的参数，如数据库的用户名及密码等。这时可以用Spring 的PropertyPlaceholderConfigurer 来配置受环境影响的变量，这种使用多个配置文件的方式，但是我觉得这样不够灵活，所以就使用了maven的profiles 来实现，在打包的时候maven就会根据指定的配置参数写入文件。
+配置方式分为两种，一种是全局配置即在.m2/conf/setting.xml 里面配置实现全局，一种是在项目中的pom.xml配置，这里我没有用到全局方式，就不详细介绍，我们主要介绍项目中配置方式。
+实现
+1.pom.xml配置
+    <build>
+        <!-- 配置使用变量的配置文件-->
+        <filters>
+            <filter>src/main/resources/application.properties</filter>
+        </filters>
+        <resources>
+            <!--配置文件路径-->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+    <profiles>
+        <profile>
+            <id>local</id>
+            <properties>
+                <pom.env>dev</pom.env>
+                <pom.ver>1.2.4</pom.ver>
+            </properties>
+            <activation>
+                <!--默认生效的配置组-->
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <pom.env>dev</pom.env>
+                <pom.ver>1.3.3</pom.ver>
+            </properties>
+        </profile>
+        <profile>
+            <id>pro</id>
+            <properties>
+                <pom.env>pro</pom.env>
+                <pom.ver>1.3.5</pom.ver>
+            </properties>
+        </profile>
+    </profiles>
+
+2.application.properties配置
+env=${pom.env}
+ver=${pom.ver}
+
+3.执行
+执行的时候加上-P ${profile.id}，使用默认的可以不加，我用的IDE自带的工具选择生效参数组，在Profiles里面选择参数组
+
+mvn clean install -P local
+
+4.总结
+步骤如下：
+pom.xml中添加、参数
+EL表达式在配置文件中调用变量
+执行是-P 制定参数

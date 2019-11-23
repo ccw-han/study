@@ -1,0 +1,40 @@
+值改变时，一起改变
+$("#shipper").on("change",function(){
+                    $("#customerSelect").val($(this).val()).trigger("change");
+                });
+遍历
+$.each($("a[name='inputBar']"),function(i,obj){
+                    $(obj).parent().removeClass("active");
+                });
+				插件；
+				<ul class="nav nav-tabs">
+                                <li class="active">
+                                    <a href="javascript:;"  name="inputBar" a-tab="portlet_tab1"><span class="font-red">*</span> 必填项 </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:;" name="inputBar" a-tab="portlet_tab2" > 补充 </a>
+                                </li>
+                            </ul>
+							切换显示不显示
+							$("a[name='inputBar']").on("click",function(){
+                $.each($("a[name='inputBar']"),function(i,obj){
+                    $(obj).parent().removeClass("active");
+                });
+                var $this = $(this);
+                $this.parent().addClass("active");
+                //因为点击了要换地方，所以得隐藏
+                $.each($(".tab-pane"),function(i,obj){
+                    $(obj).removeClass("active");
+                });
+                //读取了属性值
+                var targetContent = $this.attr("a-tab");
+                //让那个值显示
+                $("#"+targetContent).addClass("active");
+            })
+
+        });
+		插件用法
+		<div style="float: right;">
+                                                        <a id="returnPrePage" href="javascript:;" class="btn btn-default"> 返回 </a>
+                                                        <button id="addProductBtn" type="button" class="btn btn-default">自定义产品</button></div>
+                                                    </div>

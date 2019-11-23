@@ -1,0 +1,1 @@
+=CONCATENATE("INSERT INTO row_meta_data VALUES('"&RC[-5]&"','"&RC[-4]&"','"&RC[-3]&"','"&RC[-2]&"','"&RC[-1]&"');")

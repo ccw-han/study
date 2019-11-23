@@ -1,0 +1,299 @@
+<page-home>
+  <ion-content class="check-form-font-size" width="100%">
+    <h3>
+      <font face="Microsoft YaHei">PRP使用对照表 -MC</font>
+    </h3>
+    <form-usage>
+      <ion-grid>
+        <ion-row>
+          <ion-col col-12 style="color:#1d89cf">*要点:照合确认时逐项及时记录，防止遗漏或记录错误;</ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-6>1.在所使用的PRP打“√”；</ion-col>
+          <ion-col col-6>2.在所使用的品种打“√”；</ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-6>3.产气药LOT/品种无变更时，HOPPER内无产气药残留/粉尘堆积确认打“-”；</ion-col>
+          <ion-col col-6>4.因MC产气药包装为8kg/铝箔袋,分装时需要两次三点照合确认；</ion-col>
+        </ion-row>
+      </ion-grid>
+    </form-usage>
+
+    <table class="table table-striped check-table-border" border="1">
+      <thead>
+        <tr>
+          <td colspan="11">MC 产气药PRP使用对照确认表--DSSC制</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>日期</td>
+          <td>
+            <input [disabled]="data.id" type="date" class="check-input" [(ngModel)]="data.checkDate">
+          </td>
+          <td colspan="8">
+            <button *ngIf="!data.id" type="button" class="btn btn-primary btn-sm" (click)="saveRecord()">确定</button>
+          </td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="data.id">
+        <tr>
+          <td>1</td>
+          <td colspan="2">产线</td>
+          <td colspan="2">
+            {{data.lineSn}}
+          </td>
+          <td colspan="2">班次</td>
+          <td colspan="4">
+            <select [disabled]="confirmPerson1 || confirmPerson" class="form-control" [(ngModel)]="data.shift"
+              (ngModelChange)="saveRecord()">
+              <option *ngFor="let opt of shiftCodes" value="{{opt.name}}">{{opt.name}}</option>
+            </select>
+            <select [disabled]="confirmPerson1 || confirmPerson" class="form-control"
+              [(ngModel)]="data.classInfo" (ngModelChange)="saveRecord()">
+              <option *ngFor="let opt of classCodes" value="{{opt.name}}">{{opt.name}}</option>
+            </select>
+          </td>
+        </tr>
+
+        <tr>
+          <td>2</td>
+          <td colspan="2">品种</td>
+          <td colspan="8">
+            <select [disabled]="confirmPerson1 || confirmPerson" class="form-control"
+              [(ngModel)]="data.varieties" (ngModelChange)="saveRecord()">
+              <option></option>
+              <option *ngFor="let item of codeList" value="{{item.name}}">{{item.name}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td rowspan="3">3</td>
+          <td colspan="2" rowspan="3">现品票</td>
+          <td colspan="8">
+            <div class="image-container" *ngIf="data.ticketPic">
+              <img [src]="data.ticketPic" (click)="viewImage()">
+            </div>
+            <button type="button" class="btn btn-primary" (click)="getPicture()"
+              *ngIf="!confirmPerson1 && !confirmPerson">
+              <i class="fa fa-plus" aria-hidden="true"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="8">
+            第<input type="text" [disabled]="confirmPerson1 || confirmPerson" class="check-input"
+              [(ngModel)]="data.ticketBox" (blur)="saveRecord()">箱
+          </td>
+        </tr>
+        <tr>
+          <td colspan="8" class="scanner-part">
+            <input [disabled]="confirmPerson1 || confirmPerson" [readonly]="true" type="text"
+              class="check-input" [(ngModel)]="data.ticket1">
+
+            <input [disabled]="confirmPerson1 || confirmPerson" [readonly]="true" type="text"
+              class="check-input" [(ngModel)]="data.ticket2">
+
+            <input [disabled]="confirmPerson1 || confirmPerson" [readonly]="true" type="text"
+              class="check-input" [(ngModel)]="data.ticket3">
+
+            <input [disabled]="confirmPerson1 || confirmPerson" [readonly]="true" type="text"
+              class="check-input" [(ngModel)]="data.ticket4">
+
+            <input [disabled]="confirmPerson1 || confirmPerson" [readonly]="true" type="text"
+              class="check-input" [(ngModel)]="data.ticket5">
+
+            <input [disabled]="confirmPerson1 || confirmPerson" [readonly]="true" type="text"
+              class="check-input" [(ngModel)]="data.ticket6">
+
+            <input [disabled]="confirmPerson1 || confirmPerson" [readonly]="true" type="text"
+              class="check-input" [(ngModel)]="data.ticket7">
+
+            <input [disabled]="confirmPerson1 || confirmPerson" [readonly]="true" type="text"
+              class="check-input" [(ngModel)]="data.ticket8">
+
+            <a *ngIf="!confirmPerson1 && !confirmPerson" style="color: blue;"
+              (click)="scanner('ticket')">[扫描]</a>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="1" rowspan="2">4</td>
+          <td colspan="2" rowspan="2">铝箔袋LOT确认</td>
+          <td colspan="4">
+            第一袋
+          </td>
+          <td colspan="4">
+            第二袋
+          </td>
+        </tr>
+        <tr>
+          <td colspan="4" class="scanner-part">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum1">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum2">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum3">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum4">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum5">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum6">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum7">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum8">
+
+            <a *ngIf="!confirmPerson1" style="color: blue;" (click)="scanner('aluminum')">[扫描]</a>
+          </td>
+          <td colspan="4" class="scanner-part">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminums1">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminums2">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminums3">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminums4">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminums5">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminums6">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminums7">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminums8">
+
+            <a *ngIf="!confirmPerson" style="color: blue;" (click)="scanner('aluminums')">[扫描]</a>
+          </td>
+        </tr>
+
+        <tr>
+          <td colspan="1">5</td>
+          <td colspan="2">塑料袋LOT确认（仅限于DSSC制）</td>
+          <td colspan="4" class="scanner-part">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic1">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic2">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic3">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic4">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic5">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic6">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic7">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic8">
+
+            <a *ngIf="!confirmPerson1" style="color: blue;" (click)="scanner('plastic')">[扫描]</a>
+          </td>
+          <td colspan="4" class="scanner-part">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastics1">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastics2">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastics3">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastics4">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastics5">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastics6">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastics7">
+
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastics8">
+
+            <a *ngIf="!confirmPerson" style="color: blue;" (click)="scanner('plastics')">[扫描]</a>
+          </td>
+        </tr>
+
+        <tr>
+          <td>6</td>
+          <td colspan="2">确认三点照合一致为OK</td>
+          <td colspan="4">
+            {{data.mcJudges1}}
+          </td>
+          <td colspan="4">
+            {{data.mcJudges2}}
+          </td>
+        </tr>
+
+        <tr>
+          <td>7</td>
+          <td colspan="2">产气药LOT/品种有无变更确认（有：√/无：×）</td>
+          <td colspan="4">
+            <check-item-btn [formCode]="tableName" [inputFieldName]="'data.medicineJudges1'"
+              [readonly]="confirmPerson1" [leftContent]="'√'" [rightContent]="'×'" [leftValue]="'OK'"
+              [rightValue]="'NG'" [modelData]="data" [(ngModel)]="data.medicineJudges1" (check)="saveRecord()"
+              (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+          <td colspan="4">
+            <check-item-btn [formCode]="tableName" [inputFieldName]="'data.medicineJudges2'"
+              [readonly]="confirmPerson" [leftContent]="'√'" [rightContent]="'×'" [leftValue]="'OK'"
+              [rightValue]="'NG'" [modelData]="data" [(ngModel)]="data.medicineJudges2" (check)="saveRecord()"
+              (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+        </tr>
+
+        <tr>
+          <td>8</td>
+          <td colspan="2">HOPPER内清扫确认及清扫后状态确认(清扫并确认清扫后Hopper内无产气药残留/粉尘堆积为OK)</td>
+          <td colspan="4">
+            <check-item-btn [formCode]="tableName" [inputFieldName]="'data.hopperJudges1'"
+              [readonly]="confirmPerson1" [modelData]="data" [(ngModel)]="data.hopperJudges1"
+              (check)="saveRecord()" (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+          <td colspan="4">
+            <check-item-btn [formCode]="tableName" [inputFieldName]="'data.hopperJudges2'"
+              [readonly]="confirmPerson" [modelData]="data" [(ngModel)]="data.hopperJudges2" (check)="saveRecord()"
+              (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+        </tr>
+
+        <tr>
+          <td>9</td>
+          <td colspan="2">湿度卡判定确认</td>
+          <td colspan="4">
+            <check-item-btn [formCode]="tableName" [inputFieldName]="'data.humidityJudges1'"
+              [readonly]="confirmPerson1" [modelData]="data" [(ngModel)]="data.humidityJudges1"
+              (check)="saveRecord()" (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+          <td colspan="4">
+            <check-item-btn [formCode]="tableName" [inputFieldName]="'data.humidityJudges2'"
+              [readonly]="confirmPerson" [modelData]="data" [(ngModel)]="data.humidityJudges2"
+              (check)="saveRecord()" (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+        </tr>
+
+        <tr>
+          <td>10</td>
+          <td colspan="2">确认者</td>
+          <td colspan="4">
+            <user-confirm-input
+              *ngIf="data.mcJudges1 && data.humidityJudges1 && data.medicineJudges1 && data.hopperJudges1"
+              [title]="'记录表确认'" [(ngModel)]="confirmPerson1" (userConfirmed)="userConfirmed('1')" [roleType]="'2'">
+            </user-confirm-input>
+          </td>
+          <td colspan="4">
+            <user-confirm-input *ngIf="data.mcJudges2 && data.humidityJudges2 && data.medicineJudges2 && data.hopperJudges2"
+              [title]="'记录表确认'" [(ngModel)]="confirmPerson" (userConfirmed)="userConfirmed('2')" [roleType]="'2'">
+            </user-confirm-input>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </ion-content>
+</page-home>

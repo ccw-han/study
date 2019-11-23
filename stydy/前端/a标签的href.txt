@@ -1,0 +1,45 @@
+点击事件：
+
+1. a href="JavaScript:js_method();"
+
+这是我们平台上常用的方法，但是这种方法在传递this等参数的时候很容易出问题，
+而且javascript:协议作为a的href属性的时候不仅会导致不必要的触发window.onbeforeunload事件，
+在IE里面更会使gif动画图片停止播放。W3C标准不推荐在href里面执行javascript语句
+
+
+2. a href="javascript:void(0);" onclick="js_method()"
+
+这种方法是很多网站最常用的方法，也是最周全的方法，
+onclick方法负责执行js函数，而void是一个操作符，void(0)返回undefined，地址不发生跳转。
+而且这种方法不会像第一种方法一样直接将js方法暴露在浏览器的状态栏。
+
+
+3.a href="javascript:;" onclick="js_method()"
+
+这种方法跟跟2种类似，区别只是执行了一条空的js代码。
+
+
+4.a href="#" onclick="js_method()"
+
+这种方法也是网上很常见的代码，#是标签内置的一个方法，代表top的作用。
+所以用这种方法点击后网页后返回到页面的最顶端。
+
+
+5.a href="#" onclick="js_method();return false;"
+
+这种方法点击执行了js函数后return false，页面不发生跳转，
+执行后还是在页面的当前位置。
+
+
+我看了下taobao的主页，他们采用的是第2种方法，而alibaba的主页是采用的第1种方法，
+和我们的区别是每个href里的javascript方法都用try、catch包围
+。
+
+综合上述，
+在a中调用js函数最适当的方法推荐使用：
+
+a href="javascript:void(0);" onclick="js_method()"
+
+a href="javascript:;" onclick="js_method()"
+
+a href="#" onclick="js_method();return false;"

@@ -1,0 +1,685 @@
+1安装与下载
+ww.mongodb.com/download-center#community
+创建数据目录
+x:/data/db 
+添加一个配置文件
+先安装服务然后连接服务
+连接MongoDB
+我们可以在命令窗口中运行 mongo.exe 命令即可连接上 MongoDB，执行如下命令：
+C:\mongodb\bin\mongo.exe 连接服务
+systemLog:
+    destination: file
+    path: c:\data\log\mongod.log
+storage:
+    dbPath: c:\data\db
+	C:\mongodb\bin\mongod.exe --config "E:\data\mongod.config" --install 安装服务
+	或者指定路径
+	C:\mongodb\bin\mongod --dbpath c:\data\db
+	net start MongoDB启动
+	net stop MongoDB关闭
+	查看服务是否运行：
+　　　　命令行输入： services.msc	
+mongo 进入数据库
+数据库连接
+使用用户名和密码连接登陆到指定数据库，格式如下：
+mongodb://admin:123456@localhost/test更多连接实例
+连接本地数据库服务器，端口是默认的。
+mongodb://localhost
+使用用户名fred，密码foobar登录localhost的admin数据库。
+mongodb://fred:foobar@localhost
+使用用户名fred，密码foobar登录localhost的baz数据库。
+mongodb://fred:foobar@localhost/baz
+连接 replica pair, 服务器1为example1.com服务器2为example2。
+mongodb://example1.com:27017,example2.com:27017
+连接 replica set 三台服务器 (端口 27017, 27018, 和27019):
+mongodb://localhost,localhost:27018,localhost:27019
+连接 replica set 三台服务器, 写入操作应用在主服务器 并且分布查询到从服务器。
+mongodb://host1,host2,host3/?slaveOk=true
+直接连接第一个服务器，无论是replica set一部分或者主服务器或者从服务器。
+mongodb://host1,host2,host3/?connect=direct;slaveOk=true
+当你的连接服务器有优先级，还需要列出所有服务器，你可以使用上述连接方式。
+安全模式连接到localhost:
+mongodb://localhost/?safe=true
+以安全模式连接到replica set，并且等待至少两个复制服务器成功写入，超时时间设置为2秒。
+mongodb://host1,host2,host3/?safe=true;w=2;wtimeoutMS=2000
+2数据库和集合创建
+use dbname 运行"use"命令，可以连接到一个指定的数据库。
+db 当前数据库
+show dbs 所有数据库
+db.dropDatabase() 删除了数据库
+删除集合
+集合删除语法格式如下：
+db.collection.drop()
+db.createCollection(name, options)
+下面是带有几个关键参数的 createCollection() 的用法：
+创建固定集合 mycol，整个集合空间大小 6142800 KB, 文档最大个数为 10000 个。
+> db.createCollection("mycol", { capped : true, autoIndexId : true, size : 
+   6142800, max : 10000 } )
+{ "ok" : 1 }
+>
+show collections 查看所有集合
+元数据
+dbname.system.*
+dbname.system.namespaces	列出所有名字空间。
+dbname.system.indexes	列出所有索引。
+dbname.system.profile	包含数据库概要(profile)信息。
+dbname.system.users	列出所有可访问数据库的用户。
+dbname.local.sources	包含复制对端（slave）的服务器信息和状态。
+可以使用变量或者方法
+> var mydate1 = new Date()     //格林尼治时间
+> mydate1
+ISODate("2018-03-04T14:58:51.233Z")
+> typeof mydate1
+object
+或者
+> Date()
+Sun Mar 04 2018 15:02:59 GMT+0000 (UTC)   
+2数据操作
+数据增
+实例
+以下文档可以存储在 MongoDB 的 runoob 数据库 的 col 集合中：
+>db.col.insert({title: 'MongoDB 教程', 
+    description: 'MongoDB 是一个 Nosql 数据库',
+    by: '菜鸟教程',
+    url: 'http://www.runoob.com',
+    tags: ['mongodb', 'database', 'NoSQL'],
+    likes: 100
+})
+我们也可以将数据定义为一个变量，如下所示：
+> document=({title: 'MongoDB 教程', 
+    description: 'MongoDB 是一个 Nosql 数据库',
+    by: '菜鸟教程',
+    url: 'http://www.runoob.com',
+    tags: ['mongodb', 'database', 'NoSQL'],
+    likes: 100
+});
+执行插入操作：
+> db.col.insert(document)
+WriteResult({ "nInserted" : 1 })
+> 
+
+更新文档
+db.collection.update(
+   <query>,
+   <update>,
+   {
+     upsert: <boolean>,
+     multi: <boolean>,
+     writeConcern: <document>
+   }
+)
+参数说明：
+query : update的查询条件，类似sql update查询内where后面的。
+update : update的对象和一些更新的操作符（如$,$inc...）等，也可以理解为sql update查询内set后面的
+upsert : 可选，这个参数的意思是，如果不存在update的记录，是否插入objNew,true为插入，默认是false，不插入。
+multi : 可选，mongodb 默认是false,只更新找到的第一条记录，如果这个参数为true,就把按条件查出来多条记录全部更新。
+writeConcern :可选，抛出异常的级别。
+>db.col.update({'title':'MongoDB 教程'},{$set:{'title':'MongoDB'}},{multi:true})
+删除文档
+db.collection.remove(
+   <query>,
+   <justOne>
+)
+query :（可选）删除的文档的条件。
+justOne : （可选）如果设为 true 或 1，则只删除一个文档，如果不设置该参数，或使用默认值 false，则删除所有匹配条件的文档。
+writeConcern :（可选）抛出异常的级别。
+查询文档
+db.collection.find(query, projection)
+projection 为 {key:1} 1显示 0不显示
+db.users.find({}, {‘name’ : 1, ‘skills’ : 1}); 
+补充说明： 第一个{} 放where条件 第二个{} 指定那些列显示和不显示 （0表示不显示 1表示显示)
+
+where条件：
+
+1.简单的等于: 
+select name, age, skills from users where name = ‘hurry’; 
+db.users.find({‘name’ : ‘hurry’},{‘name’ : 1, ‘age’ : 1, ‘skills’ : 1});
+
+2.使用and 
+select name, age, skills from users where name = ‘hurry’ and age = 18; 
+db.users.find({‘name’ : ‘hurry’, ‘age’ : 18},{‘name’ : 1, ‘age’ : 1, ‘skills’ : 1});
+
+3.使用or 
+select name, age, skills from users where name = ‘hurry’ or age = 18; 
+db.users.find({ ‘$or’ : [{‘name’ : ‘hurry’}, {‘age’ : 18}] },{‘name’ : 1, ‘age’ : 1, ‘skills’ : 1});
+
+4.<, <=, >, >= (lt,lt,lte, gt,gt,gte )  $ne ----------- not equal  !=
+select * from users where age >= 20 and age <= 30; 
+db.users.find({‘age’ : {‘gte′:20,′gte′:20,′lte’ : 30}});
+
+5.使用in, not in (in,in,nin) 
+select * from users where age in (10, 22, 26); 
+db.users.find({‘age’ : {‘$in’ : [10, 22, 26]}});
+
+6.匹配null 
+select * from users where age is null; 
+db.users.find({‘age’ : null);
+
+7.like (mongoDB 支持正则表达式) 
+select * from users where name like “%hurry%”; 
+db.users.find({name:/hurry/}); 
+select * from users where name like “hurry%”; 
+db.users.find({name:/^hurry/});
+
+8.使用distinct 
+select distinct (name) from users; 
+db.users.distinct(‘name’);
+
+9.使用count 
+select count(*) from users; 
+dunt();
+
+10.数组查询 （mongoDB自己特有的） 
+如果skills是 [‘java’,’python’] 
+db.users.find({‘skills’ : ‘java’}); 该语句可以匹配成功 
+alldb.users.find(‘skills′:‘$all′:[‘java′,′python′])skills中必须同时包含java和pythonalldb.users.find(‘skills′:‘$all′:[‘java′,′python′])skills中必须同时包含java和pythonsize 
+db.users.find({‘skills’ : {‘size' : 2}}) 遗憾的是size' : 2}}) 遗憾的是size不能与lt等组合使用lt等组合使用slice 
+db.users.find({‘skills’ : {‘$slice : [1,1]}}) 
+
+MongoDB 操作符 - $type 实例
+如果想获取 "col" 集合中 title 为 String 的数据，你可以使用以下命令：
+db.col.find({"title" : {$type : 2}})
+或
+db.col.find({"title" : {$type : 'string'}})
+
+语法
+limit()方法基本语法如下所示：
+>db.COLLECTION_NAME.find().limit(NUMBER)
+>db.COLLECTION_NAME.find().limit(NUMBER).skip(NUMBER)
+MongoDB sort() 方法
+在 MongoDB 中使用 sort() 方法对数据进行排序，sort() 方法可以通过参数指定排序的字段，并使用 1 和 -1 来指定排序的方式，其中 1 为升序排列，而 -1 是用于降序排列。
+语法
+sort()方法基本语法如下所示：
+>db.COLLECTION_NAME.find().sort({KEY:1})
+createIndex() 方法
+MongoDB使用 createIndex() 方法来创建索引。
+注意在 3.0.0 版本前创建索引方法为 db.collection.ensureIndex()，之后的版本使用了 db.collection.createIndex() 方法，ensureIndex() 还能用，但只是 createIndex() 的别名。
+语法
+createIndex()方法基本语法格式如下所示：
+>db.collection.createIndex(keys, options)
+语法中 Key 值为你要创建的索引字段，1 为指定按升序创建索引，如果你想按降序来创建索引指定为 -1 即可。
+实例
+>db.col.createIndex({"title":1})
+>
+createIndex() 方法中你也可以设置使用多个字段创建索引（关系型数据库中称作复合索引）。
+>db.col.createIndex({"title":1,"description":-1})
+>
+1、查看集合索引
+db.col.getIndexes()
+2、查看集合索引大小
+db.col.totalIndexSize()
+3、删除集合所有索引
+db.col.dropIndexes()
+4、删除集合指定索引
+db.col.dropIndex("索引名称")
+利用 TTL 集合对存储的数据进行失效时间设置：经过指定的时间段后或在指定的时间点过期，MongoDB 独立线程去清除数据。类似于设置定时自动删除任务，可以清除历史记录或日志等前提条件，设置 Index 的关键字段为日期类型 new Date()。
+例如数据记录中 createDate 为日期类型时：
+ 设置时间180秒后自动清除。
+ 设置在创建记录后，180 秒左右删除。
+db.col.createIndex({"createDate": 1},{expireAfterSeconds: 180})
+由记录中设定日期点清除。
+设置 A 记录在 2019 年 1 月 22 日晚上 11 点左右删除，A 记录中需添加 "ClearUpDate": new Date('Jan 22, 2019 23:00:00')，且 Index中expireAfterSeconds 设值为 0。
+db.col.createIndex({"ClearUpDate": 1},{expireAfterSeconds: 0})
+其他注意事项:
+ 索引关键字段必须是 Date 类型。
+ 非立即执行：扫描 Document 过期数据并删除是独立线程执行，默认 60s 扫描一次，删除也不一定是立即删除成功。
+ 单字段索引，混合索引不支持。
+ 
+ 聚合操作
+  db.mycol.aggregate([{$group : {_id : "$by_user", num_tutorial : {$sum : 1}}}])
+  
+表达式	描述	实例
+$sum	计算总和。	db.mycol.aggregate([{$group : {_id : "$by_user", num_tutorial : {$sum : "$likes"}}}])
+$avg	计算平均值	db.mycol.aggregate([{$group : {_id : "$by_user", num_tutorial : {$avg : "$likes"}}}])
+$min	获取集合中所有文档对应值得最小值。	db.mycol.aggregate([{$group : {_id : "$by_user", num_tutorial : {$min : "$likes"}}}])
+$max	获取集合中所有文档对应值得最大值。	db.mycol.aggregate([{$group : {_id : "$by_user", num_tutorial : {$max : "$likes"}}}])
+$push	在结果文档中插入值到一个数组中。	db.mycol.aggregate([{$group : {_id : "$by_user", url : {$push: "$url"}}}])
+分组后，因为条数少了，那么可以把数据都放一个数组里展示
+$addToSet	在结果文档中插入值到一个数组中，但不创建副本。	db.mycol.aggregate([{$group : {_id : "$by_user", url : {$addToSet : "$url"}}}])
+$first	根据资源文档的排序获取第一个文档数据。	db.col.aggregate([{$group : {_id : "$by_user", first_url : {$first : "$url"}}}])
+$last	根据资源文档的排序获取最后一个文档数据	db.col.aggregate([{$group : {_id : "$by_user", last_url : {$last : "$url"}}}])
+操作符，就是方法，放进数组
+操作符其实可以转化为push() 
+$ne数组不存在，就插进去
+$push
+
+作用：像已有的数组末尾加入一个元素，要是元素不存在，就会创建一个新的元素。 
+spring mongodb中的使用：
+$addtoset
+
+作用：往数组里面加入数据，如果数组里已经存在，则不会加入（避免重复） 
+$pull
+
+删除数组元素，将所有匹配的元素删除。 
+$pop
+
+删除数组元素，只能从头部或尾部删除一个元素 
+{"$pop":{"name":1 }} 1末尾，-1头部
+ 管道的概念
+管道在Unix和Linux中一般用于将当前命令的输出结果作为下一个命令的参数。
+MongoDB的聚合管道将MongoDB文档在一个管道处理完毕后将结果传递给下一个管道处理。管道操作是可以重复的。
+表达式：处理输入文档并输出。表达式是无状态的，只能用于计算当前聚合管道的文档，不能处理其它的文档。
+这里我们介绍一下聚合框架中常用的几个操作：
+$project：修改输入文档的结构。可以用来重命名、增加或删除域，也可以用于创建计算结果以及嵌套文档。
+$match：用于过滤数据，只输出符合条件的文档。$match使用MongoDB的标准查询操作。
+$limit：用来限制MongoDB聚合管道返回的文档数。
+$skip：在聚合管道中跳过指定数量的文档，并返回余下的文档。
+$unwind：将文档中的某一个数组类型字段拆分成多条，每条包含数组中的一个值。
+$group：将集合中的文档分组，可用于统计结果。
+$sort：将输入文档排序后输出。
+$geoNear：输出接近某一地理位置的有序文档。
+一、sql执行顺序 
+(1)from 
+(3) join 
+(2) on 
+(4) where 
+(5)group by(开始使用select中的别名，后面的语句中都可以使用)
+(6) avg,sum.... 
+(7)having 
+(8) select 
+(9) distinct 
+(10) order by 
+2.$match实例
+db.articles.aggregate( [
+                        { $match : { score : { $gt : 70, $lte : 90 } } },
+                        { $group: { _id: null, count: { $sum: 1 } } }
+                       ] );
+					   
+					   
+4副本
+MongoDB 复制（副本集）
+MongoDB复制是将数据同步在多个服务器的过程。
+复制提供了数据的冗余备份，并在多个服务器上存储数据副本，提高了数据的可用性， 并可以保证数据的安全性。
+复制还允许您从硬件故障和服务中断中恢复数据。
+MongoDB副本集设置
+在本教程中我们使用同一个MongoDB来做MongoDB主从的实验， 操作步骤如下：
+1、关闭正在运行的MongoDB服务器。
+现在我们通过指定 --replSet 选项来启动mongoDB。--replSet 基本语法格式如下：
+mongod --port "PORT" --dbpath "YOUR_DB_DATA_PATH" --replSet "REPLICA_SET_INSTANCE_NAME"
+实例
+mongod --port 27017 --dbpath "D:\set up\mongodb\data" --replSet rs0
+以上实例会启动一个名为rs0的MongoDB实例，其端口号为27017。
+启动后打开命令提示框并连接上mongoDB服务。
+在Mongo客户端使用命令rs.initiate()来启动一个新的副本集。
+我们可以使用rs.conf()来查看副本集的配置
+查看副本集状态使用 rs.status() 命令
+实例
+假设你已经启动了一个名为mongod1.net，端口号为27017的Mongo服务。 在客户端命令窗口使用rs.add() 命令将其添加到副本集中，命令如下所示：
+>rs.add("mongod1.net:27017")
+>
+只启动一个服务。
+https://www.cnblogs.com/waterlufei/p/8135795.html 副本集配置
+本机模拟，先关闭服务，三个文件夹都有配置文件，以auth方式启动服务器2的mongodb，然后
+#初始化，哪个服务器先初始化就是主服务器 
+rs.initiate()
+use admin
+db.auth("admin","password");查看副本集节点状态
+rs.status()
+添加副本集
+rs.add('192.168.108.145:27017') 
+rs.add('192.168.108.145:27018')
+删除从服务器
+rs.remove('192.168.108.145:27017')
+rs.remove('192.168.108.145:27018')
+然后进入从服务器，查看备份数据
+rs.slaveOk()
+后面再进行查找操作实验的效果是当从的mongodb挂了的时候是卜影响项目的运行的，当主的mongodb挂了的时候，会自动在两个从的mongodb上面推选出一个主的mongodb，，这里mongodb必须是基数个，不然不能推选出主的mongodb，其实配置起来不难，spring boot中配置mongodb把主从IP全都加进去就行了host="IP1,IP2,IP3:
+
+5MongoDB 分片
+分片
+在Mongodb里面存在另一种集群，就是分片技术,可以满足MongoDB数据量大量增长的需求。
+当MongoDB存储海量的数据时，一台机器可能不足以存储数据，也可能不足以提供可接受的读写吞吐量。这时，我们就可以通过在多台机器上分割数据，使得数据库系统能存储和处理更多的数据。
+多个副本集 组成分片集群，一台机器存不了那么多。用多台机器存储
+配置路由器，入口处，然后询问config 服务器，具体去不同的分片服务器查询。其中都有主从配置
+6MongoDB 备份(mongodump)与恢复(mongorestore)
+MongoDB数据备份
+在Mongodb中我们使用mongodump命令来备份MongoDB数据。该命令可以导出所有数据到指定目录中。
+mongodump命令可以通过参数指定导出的数据量级转存的服务器。
+语法
+mongodump命令脚本语法如下：
+>mongodump -h dbhost -d dbname -o dbdirectory
+-h：
+MongDB所在服务器地址，例如：127.0.0.1，当然也可以指定端口号：127.0.0.1:27017
+-d：
+需要备份的数据库实例，例如：test
+-o：
+备份的数据存放位置，例如：c:\data\dump，当然该目录需要提前建立，在备份完成后，系统自动在dump目录下建立一个test目录，这个目录里面存放该数据库实例的备份数据。
+实例
+在本地使用 27017 启动你的mongod服务。打开命令提示符窗口，进入MongoDB安装目录的bin目录输入命令mongodump:
+>mongodump
+mongodump 命令可选参数列表如下所示：
+语法	描述	实例
+mongodump --host HOST_NAME --port PORT_NUMBER	该命令将备份所有MongoDB数据	mongodump --host runoob.com --port 27017
+mongodump --dbpath DB_PATH --out BACKUP_DIRECTORY		mongodump --dbpath /data/db/ --out /data/backup/
+mongodump --collection COLLECTION --db DB_NAME	该命令将备份指定数据库的集合。	mongodump --collection mycol --db test
+MongoDB数据恢复
+mongodb使用 mongorestore 命令来恢复备份的数据。
+语法
+mongorestore命令脚本语法如下：
+>mongorestore -h <hostname><:port> -d dbname <path>
+--host <:port>, -h <:port>：
+MongoDB所在服务器地址，默认为： localhost:27017
+--db , -d ：
+需要恢复的数据库实例，例如：test，当然这个名称也可以和备份时候的不一样，比如test2
+--drop：
+恢复的时候，先删除当前数据，然后恢复备份的数据。就是说，恢复后，备份后添加修改的数据都会被删除，慎用哦！
+<path>：
+mongorestore 最后的一个参数，设置备份数据所在位置，例如：c:\data\dump\test。
+你不能同时指定 <path> 和 --dir 选项，--dir也可以设置备份目录。
+--dir：
+指定备份的目录
+你不能同时指定 <path> 和 --dir 选项。
+接下来我们执行以下命令:
+>mongorestore
+7关联关系
+嵌入式关系
+使用嵌入式方法，我们可以把用户地址嵌入到用户的文档中：
+{
+   "_id":ObjectId("52ffc33cd85242f436000001"),
+   "contact": "987654321",
+   "dob": "01-01-1991",
+   "name": "Tom Benzamin",
+   "address": [
+      {
+         "building": "22 A, Indiana Apt",
+         "pincode": 123456,
+         "city": "Los Angeles",
+         "state": "California"
+      },
+      {
+         "building": "170 A, Acropolis Apt",
+         "pincode": 456789,
+         "city": "Chicago",
+         "state": "Illinois"
+      }]
+} 
+以上数据保存在单一的文档中，可以比较容易的获取和维护数据。 你可以这样查询用户的地址：
+>db.users.findOne({"name":"Tom Benzamin"},{"address":1})
+引用式关系
+引用式关系是设计数据库时经常用到的方法，这种方法把用户数据文档和用户地址数据文档分开，通过引用文档的 id 字段来建立关系。
+{
+   "_id":ObjectId("52ffc33cd85242f436000001"),
+   "contact": "987654321",
+   "dob": "01-01-1991",
+   "name": "Tom Benzamin",
+   "address_ids": [
+      ObjectId("52ffc4a5d85242602e000000"),
+      ObjectId("52ffc4a5d85242602e000001")
+   ]
+}
+8MongoDB 数据库引用
+考虑这样的一个场景，我们在不同的集合中 (address_home, address_office, address_mailing, 等)存储不同的地址（住址，办公室地址，邮件地址等）。
+这样，我们在调用不同地址时，也需要指定集合，一个文档从多个集合引用文档，我们应该使用 DBRefs。
+以下实例中用户数据文档使用了 DBRef, 字段 address：
+{
+   "_id":ObjectId("53402597d852426020000002"),
+   "address": {
+   "$ref": "address_home",
+   "$id": ObjectId("534009e4d852427820000002"),
+   "$db": "runoob"},
+   "contact": "987654321",
+   "dob": "01-01-1991",
+   "name": "Tom Benzamin"
+}
+address DBRef 字段指定了引用的地址文档是在 runoob 数据库下的 address_home 集合，id 为 534009e4d852427820000002。
+以下代码中，我们通过指定 $ref 参数（address_home 集合）来查找集合中指定id的用户地址信息：
+>var user = db.users.findOne({"name":"Tom Benzamin"})
+>var dbRef = user.address
+>db[dbRef.$ref].findOne({"_id":(dbRef.$id)})
+{
+　　"_id":22,
+　　"author":"refactor22",
+　　"text":"...DBRef likes url",
+　　"references":
+　　[
+　　　　{"$ref":"users","$id":"refactor"},
+　　　　{"$ref":"notes","$id":2}
+　　]
+}
+)
+var note=db.notes.findOne({"_id":22});
+note.references.forEach(
+　　function(ref){
+　　　　printjson(db[ref.$ref].findOne({"_id":ref.$id}));
+　　});
+
+9MongoDB 覆盖索引查询
+官方的MongoDB的文档中说明，覆盖查询是以下的查询：
+所有的查询字段是索引的一部分
+所有的查询返回字段在同一个索引中
+由于所有出现在查询中的字段是索引的一部分， MongoDB 无需在整个数据文档中检索匹配查询条件和返回使用相同索引的查询结果。
+因为索引存在于RAM中，从索引中获取数据比通过扫描文档读取数据要快得多。
+10MongoDB 查询分析
+使用 explain()
+explain 操作提供了查询信息，使用索引及查询统计等。有利于我们对索引的优化。
+接下来我们在 users 集合中创建 gender 和 user_name 的索引：
+>db.users.ensureIndex({gender:1,user_name:1})
+现在在查询语句中使用 explain ：
+>db.users.find({gender:"M"},{user_name:1,_id:0}).explain()
+以上的 explain() 查询返回如下结果：
+{
+   "cursor" : "BtreeCursor gender_1_user_name_1",
+   "isMultiKey" : false,
+   "n" : 1,
+   "nscannedObjects" : 0,
+   "nscanned" : 1,
+   "nscannedObjectsAllPlans" : 0,
+   "nscannedAllPlans" : 1,
+   "scanAndOrder" : false,
+   "indexOnly" : true,
+   "nYields" : 0,
+   "nChunkSkips" : 0,
+   "millis" : 0,
+   "indexBounds" : {
+      "gender" : [
+         [
+            "M",
+            "M"
+         ]
+      ],
+      "user_name" : [
+         [
+            {
+               "$minElement" : 1
+            },
+            {
+               "$maxElement" : 1
+            }
+         ]
+      ]
+   }
+}
+现在，我们看看这个结果集的字段：
+indexOnly: 字段为 true ，表示我们使用了索引。
+cursor：因为这个查询使用了索引，MongoDB 中索引存储在B树结构中，所以这是也使用了 BtreeCursor 类型的游标。如果没有使用索引，游标的类型是 BasicCursor。这个键还会给出你所使用的索引的名称，你通过这个名称可以查看当前数据库下的system.indexes集合（系统自动创建，由于存储索引信息，这个稍微会提到）来得到索引的详细信息。
+n：当前查询返回的文档数量。
+nscanned/nscannedObjects：表明当前这次查询一共扫描了集合中多少个文档，我们的目的是，让这个数值和返回文档的数量越接近越好。
+millis：当前查询所需时间，毫秒数。
+indexBounds：当前查询具体使用的索引。
+11MongoDB 原子操作
+mongodb不支持事务，所以，在你的项目中应用时，要注意这点。无论什么设计，都不要要求mongodb保证数据的完整性。
+但是mongodb提供了许多原子操作，比如文档的保存，修改，删除等，都是原子操作。
+所谓原子操作就是要么这个文档保存到Mongodb，要么没有保存到Mongodb，不会出现查询到的文档没有保存完整的情况。
+原子操作常用命令
+$set
+用来指定一个键并更新键值，若键不存在并创建。
+{ $set : { field : value } }
+$unset
+用来删除一个键。
+{ $unset : { field : 1} }
+$inc
+$inc可以对文档的某个值为数字型（只能为满足要求的数字）的键进行增减的操作。
+{ $inc : { field : value } }
+$push
+用法：
+{ $push : { field : value } }
+把value追加到field里面去，field一定要是数组类型才行，如果field不存在，会新增一个数组类型加进去。
+$pushAll
+同$push,只是一次可以追加多个值到一个数组字段内。
+{ $pushAll : { field : value_array } }
+$pull
+从数组field内删除一个等于value值。
+{ $pull : { field : _value } }
+$addToSet
+增加一个值到数组内，而且只有当这个值不在数组内才增加。
+$pop
+删除数组的第一个或最后一个元素
+{ $pop : { field : 1 } }
+$rename
+修改字段名称
+{ $rename : { old_field_name : new_field_name } }
+$bit
+位操作，integer类型
+{$bit : { field : {and : 5}}}
+12子文档索引
+索引子文档字段
+假设我们需要通过city、state、pincode字段来检索文档，由于这些字段是子文档的字段，所以我们需要对子文档建立索引。
+为子文档的三个字段创建索引，命令如下：
+>db.users.ensureIndex({"address.city":1,"address.state":1,"address.pincode":1})
+一旦创建索引，我们可以使用子文档的字段来检索数据：
+>db.users.find({"address.city":"Los Angeles"})   
+查询表达不一定遵循指定的索引的顺序，mongodb 会自动优化。所以上面创建的索引将支持以下查询：
+>db.users.find({"address.state":"California","address.city":"Los Angeles"}) 
+同样支持以下查询：
+>db.users.find({"address.city":"Los Angeles","address.state":"California","address.pincode":"123"})
+13索引限制
+最大范围
+集合中索引不能超过64个
+索引名的长度不能超过128个字符
+一个复合索引最多可以有31个字段
+13objectID
+>new ObjectId().str
+ObjectId("5349b4ddd2781d08c09890f4").getTimestamp()
+13
+MongoDB Map Reduce
+Map-Reduce是一种计算模型，简单的说就是将大批量的工作（数据）分解（MAP）执行，然后再将结果合并成最终结果（REDUCE）。
+MongoDB提供的Map-Reduce非常灵活，对于大规模数据分析也相当实用。
+db.collection.mapReduce(
+   function() {emit(key,value);},  //map 函数
+   function(key,values) {return reduceFunction},   //reduce 函数
+   {
+      out: collection,
+      query: document,
+      sort: document,
+      limit: number
+   }
+)
+以key的值分组，value也是key的值 比如 emit（id,name）以id的值分组，name的值作为集合给这个分组的值，然后给reduce处理这个值得集合
+返回。find()查到结果
+以上 mapReduce 输出结果为：
+{
+        "result" : "post_total",
+        "timeMillis" : 23,
+        "counts" : {
+                "input" : 5,
+                "emit" : 5,
+                "reduce" : 1,
+                "output" : 2
+        },
+        "ok" : 1
+}
+结果表明，共有 5 个符合查询条件（status:"active"）的文档， 在map函数中生成了 5 个键值对文档，最后使用reduce函数将相同的键值分为 2 组。
+具体参数说明：
+result：储存结果的collection的名字,这是个临时集合，MapReduce的连接关闭后自动就被删除了。
+timeMillis：执行花费的时间，毫秒为单位
+input：满足条件被发送到map函数的文档个数
+emit：在map函数中emit被调用的次数，也就是所有集合中的数据总量
+ouput：结果集合中的文档个数（count对调试非常有帮助）
+ok：是否成功，成功为1
+err：如果失败，这里可以有失败原因，不过从经验上来看，原因比较模糊，作用不大
+使用 find 操作符来查看 mapReduce 的查询结果：
+14全文检索
+>db.adminCommand({setParameter:true,textSearchEnabled:true})
+或者使用命令：
+mongod --setParameter textSearchEnabled=true
+创建全文索引
+考虑以下 posts 集合的文档数据，包含了文章内容（post_text）及标签(tags)：
+{
+   "post_text": "enjoy the mongodb articles on Runoob",
+   "tags": [
+      "mongodb",
+      "runoob"
+   ]
+}
+我们可以对 post_text 字段建立全文索引，这样我们可以搜索文章内的内容：
+>db.posts.ensureIndex({post_text:"text"})
+使用全文索引
+现在我们已经对 post_text 建立了全文索引，我们可以搜索文章中的关键词 runoob：
+>db.posts.find({$text:{$search:"runoob"}})
+以下命令返回了如下包含 runoob 关键词的文档数据：
+{ 
+   "_id" : ObjectId("53493d14d852429c10000002"), 
+   "post_text" : "enjoy the mongodb articles on Runoob", 
+   "tags" : [ "mongodb", "runoob" ]
+}
+如果你使用的是旧版本的 MongoDB，你可以使用以下命令：
+>db.posts.runCommand("text",{search:"runoob"})
+使用全文索引可以提高搜索效率。
+删除全文索引
+删除已存在的全文索引，可以使用 find 命令查找索引名：
+>db.posts.getIndexes()
+通过以上命令获取索引名，本例的索引名为post_text_text，执行以下命令来删除索引：
+>db.posts.dropIndex("post_text_text")
+正则
+使用正则表达式
+以下命令使用正则表达式查找包含 runoob 字符串的文章：
+>db.posts.find({post_text:{$regex:"runoob"}})
+>db.posts.find({post_text:{$regex:"runoob",$options:"$i"}}) 不区分大小写的正则表达式
+们还可以在数组字段中使用正则表达式来查找内容。 这在标签的实现上非常有用，如果你需要查找包含以 run 开头的标签数据(ru 或 run 或 runoob)， 你可以使用以下代码：
+>db.posts.find({tags:{$regex:"run"}})
+$regex操作符的使用
+$regex操作符中的option选项可以改变正则匹配的默认行为，它包括i, m, x以及S四个选项，其含义如下
+i 忽略大小写，{<field>{$regex/pattern/i}}，设置i选项后，模式中的字母会进行大小写不敏感匹配。
+m 多行匹配模式，{<field>{$regex/pattern/,$options:'m'}，m选项会更改^和$元字符的默认行为，分别使用与行的开头和结尾匹配，而不是与输入字符串的开头和结尾匹配。
+x 忽略非转义的空白字符，{<field>:{$regex:/pattern/,$options:'m'}，设置x选项后，正则表达式中的非转义的空白字符将被忽略，同时井号(#)被解释为注释的开头注，只能显式位于option选项中。
+s 单行匹配模式{<field>:{$regex:/pattern/,$options:'s'}，设置s选项后，会改变模式中的点号(.)元字符的默认行为，它会匹配所有字符，包括换行符(\n)，只能显式位于option选项中。
+使用$regex操作符时，需要注意下面几个问题:
+i，m，x，s可以组合使用，例如:{name:{$regex:/j*k/,$options:"si"}}
+在设置索弓}的字段上进行正则匹配可以提高查询速度，而且当正则表达式使用的是前缀表达式时，查询速度会进一步提高，例如:{name:{$regex: /^joe/}
+15大文件存储
+GridFS 添加文件
+现在我们使用 GridFS 的 put 命令来存储 mp3 文件。 调用 MongoDB 安装目录下bin的 mongofiles.exe工具。
+打开命令提示符，进入到MongoDB的安装目录的bin目录中，找到mongofiles.exe，并输入下面的代码：
+>mongofiles.exe -d gridfs put song.mp3
+GridFS 是存储文件的数据名称。如果不存在该数据库，MongoDB会自动创建。Song.mp3 是音频文件名。
+使用以下命令来查看数据库中文件的文档：
+>db.fs.files.find()
+以上命令执行后返回以下文档数据：
+{
+   _id: ObjectId('534a811bf8b4aa4d33fdf94d'), 
+   filename: "song.mp3", 
+   chunkSize: 261120, 
+   uploadDate: new Date(1397391643474), md5: "e4f53379c909f7bed2e9d631e15c1c41",
+   length: 10401959 
+}
+我们可以看到 fs.chunks 集合中所有的区块，以下我们得到了文件的 _id 值，我们可以根据这个 _id 获取区块(chunk)的数据：
+>db.fs.chunks.find({files_id:ObjectId('534a811bf8b4aa4d33fdf94d')})
+16自增长 js函数创建 Javascript 函数
+现在，我们创建函数 getNextSequenceValue 来作为序列名的输入， 指定的序列会自动增长 1 并返回最新序列值。在本文的实例中序列名为 productid 。
+>function getNextSequenceValue(sequenceName){
+   var sequenceDocument = db.counters.findAndModify(
+      {
+         query:{_id: sequenceName },
+         update: {$inc:{sequence_value:1}},
+         "new":true
+      });
+   return sequenceDocument.sequence_value;
+}
+使用 Javascript 函数
+接下来我们将使用 getNextSequenceValue 函数创建一个新的文档， 并设置文档 _id 自动为返回的序列值：
+>db.products.insert({
+   "_id":getNextSequenceValue("productid"),
+   "product_name":"Apple iPhone",
+   "category":"mobiles"})
+
+>db.products.insert({
+   "_id":getNextSequenceValue("productid"),
+   "product_name":"Samsung S3",
+   "category":"mobiles"})
+就如你所看到的，我们使用 getNextSequenceValue 函数来设置 _id 字段。
+为了验证函数是否有效，我们可以使用以下命令读取文档：
+>db.products.find()
+以上命令将返回以下结果，我们发现 _id 字段是自增长的：
+{ "_id" : 1, "product_name" : "Apple iPhone", "category" : "mobiles"}
+
+{ "_id" : 2, "product_name" : "Samsung S3", "category" : "mobiles" }

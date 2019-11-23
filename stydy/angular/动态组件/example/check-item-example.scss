@@ -1,0 +1,62 @@
+check-item-example {
+
+  .form > div{
+    width: 100px;
+    padding: 5px;
+  }
+
+    .plus {
+        font-size: 7rem;
+        text-align: center;
+        height: 120px;
+        top:50%;left:50%;
+    }
+    .ionDateTime {
+        font-size: 15px;
+        border: 1px solid #ccc;
+        width: 100%;
+        height: 10px;
+        padding: 6px 12px;
+      }
+
+      button {
+        border: 1px solid #ccc;
+        text-align: center;
+      }
+
+      .input-text {
+        height: 37.5px;
+        width: 100%;
+        font-size: 15px;
+        color: #555;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+      }
+
+      .item-block {
+        margin: 0;
+        padding: 0;
+        text-align: initial;
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        overflow: hidden;
+        -webkit-box-align: center;
+        -webkit-align-items: center;
+        -ms-flex-align: center;
+        align-items: center;
+        -webkit-box-pack: justify;
+        -webkit-justify-content: space-between;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        width: 100%;
+        min-height: 2.4rem;
+        border: 0;
+        font-weight: normal;
+        line-height: normal;
+        text-decoration: none;
+        color: inherit;
+      }
+}

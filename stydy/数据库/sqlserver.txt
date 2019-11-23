@@ -1,0 +1,67 @@
+SELECT
+	s.workDate workDate,
+	s.line line,
+	s.shift shift,
+	SUM (
+		CASE
+		WHEN ISNUMERIC(REPLACE(s.feff, '%', '')) = 1
+		AND CAST (
+			REPLACE(s.feff, '%', '') AS DECIMAL (8, 1)
+		) <= 20 THEN
+			s.fqty
+		ELSE
+			0
+		END
+	) storageLowEff,
+	SUM (
+		CASE
+		WHEN s.feff = '©�絵' THEN
+			s.fqty
+		ELSE
+			0
+		END
+	) storageLeakage
+FROM
+	(
+		SELECT
+			sf.Fline line,
+			sf.Feff feff,
+			sf.Fqty fqty,
+			CASE
+		WHEN LEFT (
+			CONVERT (VARCHAR(100), sf.Fdate, 108),
+			5
+		) >= '00:00'
+		AND LEFT (
+			CONVERT (VARCHAR(100), sf.Fdate, 108),
+			5
+		) <= '08:30' THEN
+			CONVERT (
+				VARCHAR (100),
+				(sf.Fdate - 1),
+				23
+			)
+		ELSE
+			CONVERT (VARCHAR(100), sf.Fdate, 23)
+		END workDate,
+		CASE
+	WHEN LEFT (
+		CONVERT (VARCHAR(100), sf.Fdate, 108),
+		5
+	) >= '08:30'
+	AND LEFT (
+		CONVERT (VARCHAR(100), sf.Fdate, 108),
+		5
+	) <= '22:30' THEN
+		'D'
+	ELSE
+		'N'
+	END shift
+	FROM
+		v_InStockQueryOptimization sf
+	
+	) s
+GROUP BY
+	s.workDate,
+	s.line,
+	s.shift

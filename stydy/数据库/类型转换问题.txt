@@ -1,0 +1,3 @@
+表为dateTime类型
+model 用java.util.Date接
+在resultMap中用jdbcType="TimeStamp"

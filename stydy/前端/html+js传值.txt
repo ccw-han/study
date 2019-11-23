@@ -1,0 +1,57 @@
+总结
+对于不同的解决方法，都有优缺点
+
+1、url携带参数
+
+优点：取值方便，可以跨域，利于页面分享，没有环境限制。
+
+缺点：url携带参数值的长度有限制。
+var searchURL = window.location.search;
+searchURL = searchURL.substring(1, searchURL.length);//？之后的全部数据
+var targetPageId = searchURL.split("&")[0].split("=")[1];
+
+ 
+
+2、cookie方式
+
+优点：可以在同源内的的任意网页中访问，存储数据的周期可以自由设置。
+
+缺点：有长度限制。
+
+3、设置窗口之间的父子关联关系
+
+优点：取值方便.只要window.opener指向父窗口,就可以访问所有对象.不仅可以访问值,还可以访问父窗口的方法.值长度无限制。
+缺点:两窗口要存在着关系.就是利用window.open打开的窗口。不能跨域。
+
+4、h5技术，window.localStorage存储数据
+
+优点：储存空间大，有5M存储空间。
+
+缺点：不是所有浏览器都支持。
+
+个人倾向第一种方式，主要是自己做的网页可以分享，在任何的地方都可以打开，其他的方式都有环境的要求。如果是做大型项目，架构是实现客户端与服务端的分离，建议还是引入客户端框架，框架实现了路由、参数的传递、以及安全问题，可以大大的提高开发效率。
+
+转自：http://blog.csdn.net/csdn_ds/article/details/78393564
+
+ps：几种方法我主要尝试了3种，第一种我没有深入学习过，cookie对我来说简单易懂，localstorage有兼容问题不敢深入，所以最后选了cookie。
+
+2、通过cookie，传递
+cookie能够存储少量数据到客户端的磁盘中，特定的网页之间是可以共享cookie中的数据。
+
+a.html
+
+<script type="text/javascript" src="./js/jquery.min.js"></script> 
+<script type="text/javascript" src="./js/jquery.cookie.js"></script> 
+<script> 
+　　$.cookie("a","12"); 
+</script>
+
+b.html
+
+ 
+<script type="text/javascript" src="./js/jquery.min.js"></script> 
+<script type="text/javascript" src="./js/jquery.cookie.js"></script> 
+<script> 
+　　var param = $.cookie("a"); 
+　　console.log(param); 
+</script>

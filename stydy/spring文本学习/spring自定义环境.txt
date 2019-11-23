@@ -1,0 +1,838 @@
+Spring3自定义环境配置 <beans profile="">
+Spring 3.1的功能，以后就不用为了区分Test, Dev, Production环境，搞几个只有细微区别的application.xml, application-test.xml及引用它们的web.xml了。
+
+首先，将applicationContext.xml中的namespace从3.0升级到3.1.xsd， 然后就可以在文件末尾加入不同环境的定义，比如不同的dataSource
+
+Xml代码 
+<beans profile="test">
+<jdbc:embedded-database id="dataSource">
+<jdbc:script location="classpath:com/bank/config/sql/schema.sql"/>
+</jdbc:embedded-database>
+</beans>
+ 
+<beans profile="production">
+<jee:jndi-lookup id="dataSource" jndi-name="java:comp/env/jdbc/datasource"/>
+</beans>
+2.在web.xml里，你需要定义使用的profile，最聪明的做法是定义成context-param，注意这里定义的是default值，在非生产环境，可以用系统变量"spring.profiles.active"进行覆盖。
+
+
+Xml代码 
+<context-param>
+<param-name>spring.profiles.default</param-name>
+<param-value>production</param-value>
+</context-param>
+ 如果需要在eclipse设置development环境，在
+
+Run As --》Run Configurations... --》Environment 设置变量：
+spring.profiles.active = development
+
+3.在其他地方进行覆盖
+
+3.1 在development和functional test启动Jetty前设置系统变量
+
+Java代码 
+System.setProperty("spring.profiles.active", "development");
+server.start()
+ 
+3.2 在用到ApplicationContext的单元测试用例中，用 @ActiveProfiles定义
+
+Java代码 
+@ContextConfiguration(locations = { "/applicationContext.xml" })
+@ActiveProfiles("test")
+public class AccountDaoTest extends SpringTxTestCase {
+}
+演示了production,development，test,functional三个环境， 
+大家可以根据实际情况组合自己的环境管理。
+另外可以与Spring的properties文件加载时可顺位覆盖的特性(放一些不在版本管理中的xx.local.properties文件)，
+更好的支持本地开发环境。
+
+pom.xml中加
+<profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <package.environment>dev</package.environment>
+                <spring.profile.active>development</spring.profile.active>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-web-resource</artifactId>
+                    <version>${modular-web-resource.version}</version>
+                    <type>war</type>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-theme-flatfull</artifactId>
+                    <version>${modular-theme-flatfull.version}</version>
+                    <type>war</type>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-theme-flatfull</artifactId>
+                    <version>${modular-theme-flatfull.version}</version>
+                    <type>jar</type>
+                    <classifier>classes</classifier>
+                </dependency>
+                <!--集成插件-->
+                <!--<dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-workeffort</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>-->
+            </dependencies>
+            <build>
+                <filters>
+                    <filter>
+                        src/main/resources/dev/app.properties
+                    </filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                        <includes>
+                            <include>**/*.*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>dev/*.*</exclude>
+                            <exclude>daily/*.*</exclude>
+                            <exclude>prod/*.*</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/webapp/WEB-INF</directory>
+                        <filtering>true</filtering>
+                        <includes>
+                            <include>log4j.properties</include>
+                            <include>log4jdbc.properties</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources/${package.environment}</directory>
+                        <filtering>false</filtering>
+                        <includes>
+                            <include>*.properties</include>
+                            <include>*.ini</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/java</directory>
+                        <includes>
+                            <include>**/*.properties</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <targetPath>db/web-overlay</targetPath>
+                        <directory>src/main/deploy/db</directory>
+                        <includes>
+                            <include>**/*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/update*.*</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <testResources>
+                    <testResource>
+                        <directory>${project.basedir}/src/test/resources</directory>
+                        <excludes>
+                            <exclude>**/*.xml</exclude>
+                            <exclude>**/*.properties</exclude>
+                        </excludes>
+                    </testResource>
+                </testResources>
+                <plugins>
+                    <!-- 开发模式 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.6</version>
+                        <configuration>
+                            <warName>${project.artifactId}</warName>
+                            <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
+                            <!--<packagingExcludes>WEB-INF/lib/*.jar,WEB-INF/classes/**</packagingExcludes>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib/</classpathPrefix>
+                                </manifest>
+                            </archive>
+                            <attachClasses>true</attachClasses>-->
+                            <useCache>true</useCache>
+                            <overlays>
+                                <!--第一个优先级最高，生成最终war包时会覆盖后面的overlay内容:注意，jetty-maven-plugin执行时按dependency引入顺序来决定-->
+                                <overlay>
+                                    <groupId>com.rextec</groupId>
+                                    <artifactId>modular-theme-flatfull</artifactId>
+                                    <excludes>
+                                        <exclude>WEB-INF/web.xml</exclude>
+                                    </excludes>
+                                </overlay>
+                            </overlays>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>prepare-war</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exploded</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <package.environment>prod</package.environment>
+                <spring.profile.active>production</spring.profile.active>
+            </properties>
+            <build>
+                <filters>
+                    <filter>
+                        src/main/resources/prod/app.properties
+                    </filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                        <includes>
+                            <include>**/*.*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>dev/*.*</exclude>
+                            <exclude>daily/*.*</exclude>
+                            <exclude>prod/*.*</exclude>
+                            <exclude>ehcache/*.*</exclude>
+                            <exclude>mapping/**/*.*</exclude>
+                            <exclude>META-INF/persistence.xml</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>false</filtering>
+                        <includes>
+                            <include>mapping/**/*.*</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources/prod</directory>
+                        <includes>
+                            <include>app.properties</include>
+                            <include>app.ini</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/java</directory>
+                        <includes>
+                            <include>**/*.properties</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <targetPath>db/web-overlay</targetPath>
+                        <directory>src/main/deploy/db</directory>
+                        <includes>
+                            <include>**/*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/update*.*</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <plugins>
+                    <!-- 发布模式 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.6</version>
+                        <configuration>
+                            <packagingExcludes>WEB-INF/lib/*.jar,WEB-INF/classes/**</packagingExcludes>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib/</classpathPrefix>
+                                </manifest>
+                            </archive>
+                            <warName>${project.artifactId}</warName>
+                            <attachClasses>true</attachClasses>
+                            <useCache>true</useCache>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>prepare-war</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exploded</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>daily</id>
+            <properties>
+                <package.environment>daily</package.environment>
+                <spring.profile.active>development</spring.profile.active>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-web-resource</artifactId>
+                    <version>${modular-web-resource.version}</version>
+                    <type>war</type>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-theme-flatfull</artifactId>
+                    <version>${modular-theme-flatfull.version}</version>
+                    <type>war</type>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-theme-flatfull</artifactId>
+                    <version>${modular-theme-flatfull.version}</version>
+                    <type>jar</type>
+                    <classifier>classes</classifier>
+                </dependency>
+                <!--集成插件-->
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-workeffort</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-attend</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-course</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-exam</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-oa</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-perf</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-rank</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-sample</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <filters>
+                    <filter>
+                        src/main/resources/daily/app.properties
+                    </filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                        <includes>
+                            <include>**/*.*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>dev/*.*</exclude>
+                            <exclude>daily/*.*</exclude>
+                            <exclude>prod/*.*</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/webapp/WEB-INF</directory>
+                        <filtering>true</filtering>
+                        <includes>
+                            <include>log4j.properties</include>
+                            <include>log4jdbc.properties</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources/${package.environment}</directory>
+                        <filtering>false</filtering>
+                        <includes>
+                            <include>*.properties</include>
+                            <include>*.ini</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/java</directory>
+                        <includes>
+                            <include>**/*.properties</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <targetPath>db/web-overlay</targetPath>
+                        <directory>src/main/deploy/db</directory>
+                        <includes>
+                            <include>**/*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/update*.*</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <testResources>
+                    <testResource>
+                        <directory>${project.basedir}/src/test/resources</directory>
+                        <excludes>
+                            <exclude>**/*.xml</exclude>
+                            <exclude>**/*.properties</exclude>
+                        </excludes>
+                    </testResource>
+                </testResources>
+                <plugins>
+                    <!-- 开发模式 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.6</version>
+                        <configuration>
+                            <warName>${project.artifactId}</warName>
+                            <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
+                            <!--<packagingExcludes>WEB-INF/lib/*.jar,WEB-INF/classes/**</packagingExcludes>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib/</classpathPrefix>
+                                </manifest>
+                            </archive>
+                            <attachClasses>true</attachClasses>-->
+                            <useCache>true</useCache>
+                            <overlays>
+                                <!--第一个优先级最高，生成最终war包时会覆盖后面的overlay内容:注意，jetty-maven-plugin执行时按dependency引入顺序来决定-->
+                                <overlay>
+                                    <groupId>com.rextec</groupId>
+                                    <artifactId>modular-theme-flatfull</artifactId>
+                                    <excludes>
+                                        <exclude>WEB-INF/web.xml</exclude>
+                                    </excludes>
+                                </overlay>
+                            </overlays>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>prepare-war</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exploded</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>wms</id>
+            <properties>
+                <package.environment>wms</package.environment>
+                <spring.profile.active>development</spring.profile.active>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-web-resource</artifactId>
+                    <version>${modular-web-resource.version}</version>
+                    <type>war</type>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-theme-flatfull</artifactId>
+                    <version>${modular-theme-flatfull.version}</version>
+                    <type>war</type>
+                </dependency>
+                <dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-theme-flatfull</artifactId>
+                    <version>${modular-theme-flatfull.version}</version>
+                    <type>jar</type>
+                    <classifier>classes</classifier>
+                </dependency>
+                <!--集成插件-->
+                <!--<dependency>
+                    <groupId>com.rextec</groupId>
+                    <artifactId>modular-wms</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                </dependency>-->
+            </dependencies>
+            <build>
+                <filters>
+                    <filter>
+                        src/main/resources/${package.environment}/app.properties
+                    </filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                        <includes>
+                            <include>**/*.*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>dev/*.*</exclude>
+                            <exclude>daily/*.*</exclude>
+                            <exclude>prod/*.*</exclude>
+                            <exclude>wms/*.*</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/webapp/WEB-INF</directory>
+                        <filtering>true</filtering>
+                        <includes>
+                            <include>log4j.properties</include>
+                            <include>log4jdbc.properties</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources/${package.environment}</directory>
+                        <filtering>false</filtering>
+                        <includes>
+                            <include>*.properties</include>
+                            <include>*.ini</include>
+                        </includes>
+                    </resource>
+                    <resource>
+                        <directory>src/main/java</directory>
+                        <includes>
+                            <include>**/*.properties</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </resource>
+                    <resource>
+                        <targetPath>db/web-overlay</targetPath>
+                        <directory>src/main/deploy/db</directory>
+                        <includes>
+                            <include>**/*</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/update*.*</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <testResources>
+                    <testResource>
+                        <directory>${project.basedir}/src/test/resources</directory>
+                        <excludes>
+                            <exclude>**/*.xml</exclude>
+                            <exclude>**/*.properties</exclude>
+                        </excludes>
+                    </testResource>
+                </testResources>
+                <plugins>
+                    <!-- 开发模式 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <version>2.6</version>
+                        <configuration>
+                            <warName>${project.artifactId}</warName>
+                            <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
+                            <!--<packagingExcludes>WEB-INF/lib/*.jar,WEB-INF/classes/**</packagingExcludes>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>lib/</classpathPrefix>
+                                </manifest>
+                            </archive>
+                            <attachClasses>true</attachClasses>-->
+                            <useCache>true</useCache>
+                            <overlays>
+                                <!--第一个优先级最高，生成最终war包时会覆盖后面的overlay内容:注意，jetty-maven-plugin执行时按dependency引入顺序来决定-->
+                                <overlay>
+                                    <groupId>com.rextec</groupId>
+                                    <artifactId>modular-theme-flatfull</artifactId>
+                                    <excludes>
+                                        <exclude>WEB-INF/web.xml</exclude>
+                                    </excludes>
+                                </overlay>
+                            </overlays>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>prepare-war</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>exploded</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>mysql</id>
+            <dependencies>
+                <dependency>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>postgresql</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.postgresql</groupId>
+                    <artifactId>postgresql</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>sqlserver</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.microsoft.sqlserver</groupId>
+                    <artifactId>mssql-jdbc</artifactId>
+                    <version>6.1.0.jre8</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- 初始化数据库 -->
+        <profile>
+            <id>init-db</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.dbunit</groupId>
+                    <artifactId>dbunit</artifactId>
+                    <version>2.4.8</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>poi</artifactId>
+                    <version>3.2-FINAL</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <configuration>
+                            <target>
+
+                                <!-- mysql -->
+                                <property name="dbunit.datatype" value="org.dbunit.ext.mysql.MySqlDataTypeFactory" />
+
+                                <!-- oracle
+                                <property name="dbunit.datatype" value="org.dbunit.ext.oracle.Oracle10DataTypeFactory" /> -->
+
+                                <!-- mssql
+                              <property name="dbunit.datatype" value="org.dbunit.ext.mssql.MsSqlDataTypeFactory" /> -->
+
+                                <property file="src/main/resources/${package.environment}/jdbc.properties" />
+                                <sql driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}"
+                                     onerror="continue" encoding="${project.build.sourceEncoding}">
+                                    <classpath refid="maven.test.classpath" />
+                                    <transaction src="src/main/deploy/db/init-data-${jdbc.type}.sql"/>
+                                </sql>
+
+                                <taskdef name="dbunit" classname="org.dbunit.ant.DbUnitTask" classpathref="maven.test.classpath" />
+
+                                <!-- mysql、mssql -->
+                                <dbunit driver="${jdbc.driver}" url="${jdbc.url}&amp;sessionVariables=FOREIGN_KEY_CHECKS=0" userid="${jdbc.username}" password="${jdbc.password}">
+
+                                    <!-- oracle
+                                    <dbunit driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}"
+                                        schema="${jdbc.username}" > -->
+
+                                    <dbconfig>
+                                        <property name="datatypeFactory" value="${dbunit.datatype}" />
+                                    </dbconfig>
+                                    <classpath refid="maven.test.classpath" />
+                                    <operation type="REFRESH" src="src/main/deploy/db/sys_office.xml" transaction="true"/>
+                                    <operation type="REFRESH" src="src/main/deploy/db/sys_menu.xml" transaction="true"/>
+                                    <operation type="REFRESH" src="src/main/deploy/db/sys_role.xml" transaction="true"/>
+                                    <operation type="REFRESH" src="src/main/deploy/db/sys_code.xml" transaction="true"/>
+
+                                </dbunit>
+
+                                <sql driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}"
+                                     onerror="continue" encoding="${project.build.sourceEncoding}">
+                                    <classpath refid="maven.test.classpath" />
+                                    <transaction src="src/main/deploy/db/sys_role_menu.sql"/>
+                                    <transaction src="src/main/deploy/db/sys_user_role.sql"/>
+                                </sql>
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>update-db</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.dbunit</groupId>
+                    <artifactId>dbunit</artifactId>
+                    <version>2.4.8</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>poi</artifactId>
+                    <version>3.2-FINAL</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <configuration>
+                            <target>
+
+                                <!-- mysql -->
+                                <property name="dbunit.datatype" value="org.dbunit.ext.mysql.MySqlDataTypeFactory" />
+
+                                <!-- oracle
+                                <property name="dbunit.datatype" value="org.dbunit.ext.oracle.Oracle10DataTypeFactory" /> -->
+
+                                <!-- mssql
+                              <property name="dbunit.datatype" value="org.dbunit.ext.mssql.MsSqlDataTypeFactory" /> -->
+
+                                <property file="src/main/resources/${package.environment}/jdbc.properties" />
+                                <sql driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}"
+                                     onerror="continue" encoding="${project.build.sourceEncoding}">
+                                    <classpath refid="maven.test.classpath" />
+                                    <transaction src="src/main/deploy/db/update-data-${jdbc.type}.sql"/>
+                                </sql>
+
+                                <taskdef name="dbunit" classname="org.dbunit.ant.DbUnitTask" classpathref="maven.test.classpath" />
+
+                                <!-- mysql、mssql -->
+                                <dbunit driver="${jdbc.driver}" url="${jdbc.url}&amp;sessionVariables=FOREIGN_KEY_CHECKS=0" userid="${jdbc.username}" password="${jdbc.password}">
+
+                                    <!-- oracle
+                                    <dbunit driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}"
+                                        schema="${jdbc.username}" > -->
+
+                                    <dbconfig>
+                                        <property name="datatypeFactory" value="${dbunit.datatype}" />
+                                    </dbconfig>
+                                    <classpath refid="maven.test.classpath" />
+                                    <operation type="REFRESH" src="src/main/deploy/db/update-data.xml" transaction="true"/>
+                                    <!--<operation type="INSERT" src="db/cms/jeesite_data.xls" format="xls" transaction="true"/>
+                                    <operation type="INSERT" src="db/oa/jeesite_data.xls" format="xls" transaction="true"/>-->
+
+                                </dbunit>
+
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>export-db</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.dbunit</groupId>
+                    <artifactId>dbunit</artifactId>
+                    <version>2.4.8</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.poi</groupId>
+                    <artifactId>poi</artifactId>
+                    <version>3.2-FINAL</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <configuration>
+                            <target>
+
+                                <!-- mysql -->
+                                <property name="dbunit.datatype" value="org.dbunit.ext.mysql.MySqlDataTypeFactory" />
+
+                                <!-- oracle
+                                <property name="dbunit.datatype" value="org.dbunit.ext.oracle.Oracle10DataTypeFactory" /> -->
+
+                                <!-- mssql
+                            <property name="dbunit.datatype" value="org.dbunit.ext.mssql.MsSqlDataTypeFactory" /> -->
+
+                                <property file="src/main/resources/${package.environment}/jdbc.properties" />
+                                <taskdef name="dbunit" classname="org.dbunit.ant.DbUnitTask" classpathref="maven.test.classpath" />
+                                <!-- mysql、mssql -->
+                                <dbunit driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}">
+
+                                    <!-- oracle
+                                    <dbunit driver="${jdbc.driver}" url="${jdbc.url}" userid="${jdbc.username}" password="${jdbc.password}"
+                                        schema="${jdbc.username}" > -->
+
+                                    <dbconfig>
+                                        <property name="datatypeFactory" value="${dbunit.datatype}" />
+                                    </dbconfig>
+                                    <classpath refid="maven.test.classpath" />
+                                    <export dest="src/main/deploy/db/${project.artifactId}.xml">
+                                        <table name="sys_area"/>
+                                        <table name="sys_office"/>
+                                        <table name="sys_menu"/>
+                                        <table name="sys_role"/>
+                                        <table name="sys_role_menu"/>
+                                        <table name="sys_role_office"/>
+                                        <table name="sys_user"/>
+                                        <table name="sys_user_role"/>
+                                        <table name="sys_code"/>
+                                    </export>
+                                    <!--<operation type="INSERT" src="db/cms/jeesite_data.xls" format="xls" transaction="true"/>
+                                    <operation type="INSERT" src="db/oa/jeesite_data.xls" format="xls" transaction="true"/>-->
+
+                                </dbunit>
+
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>

@@ -1,0 +1,358 @@
+1什么是require.js?
+
+RequireJS是一个非常小巧的JavaScript模块载入框架，是AMD规范最好的实现者之一。
+它还同时可以和其他的框架协同工作，使用RequireJS必将使您的前端代码质量得以提升。
+2使用require.js带来的好处
+
+1、防止JavaScript加载阻塞页面渲染（因为它遵循AMD【异步模块加载机制】规范）；
+
+2、使用程序调用的方式加载js，防止出现如下丑陋的场景：
+3开始使用require.js
+
+复制代码
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title></title>
+    </head>
+    <body>
+        <p>AMD test</p>
+        <script type="text/javascript" src="js/require.js" data-main = "./main.config.js"></script>
+    </body>
+</html>
+config文件会马上	属性 data-main 是告诉requirejs：你下载完以后，马上去载入真正的入口文件。
+它一般用来对requirejs进行配置，并且载入真正的程序模块。
+在config.js中配置requirejs
+config.js 中通常用来做两件事：
+
+配置requirejs 比如项目中用到哪些模块，文件路径是什么
+载入程序主模块
+//main.js(和html同个文件夹)
+require(['./js/a.js'],function(a){
+    var date = new Date();
+    a.printDate(date);
+})
+无主的模块
+如果我们不指明模块名，就像这样：
+
+define([...], function() {
+  ...
+});
+
+//a.js
+define(['./a-util.js'],function(aUtil){
+    var a = {
+        printDate:function(date){
+            console.log(aUtil.aGetFormatDate(date));
+        }
+    }
+    return a;
+})
+
+//a-util.js
+define(['./util.js'],function(util){
+    var aUtil = {
+        aGetFormatDate:function(date){
+            return util.getFormatDate(date,2);
+        }
+    }
+    return aUtil;
+})
+
+//util.js
+define(function(){
+    var util = {
+        getFormatDate:function(date,type){
+            if(type === 1){
+                return "2017-11-09";
+            }else{
+                return "2017年11月9日";
+            }
+        }
+    }
+    return util;
+})
+require.config({
+    paths : {
+        "jquery" : ["http://libs.baidu.com/jquery/2.0.3/jquery"]   
+    }
+})
+require(["jquery","js/a"],function($){
+    $(function(){
+        alert("load finished");  
+    })
+})
+require.config是用来配置模块加载位置，
+简单点说就是给模块起一个更短更好记的名字，比如将百度的jquery库地址标记为jquery，这样在require时只需要写["jquery"]就可以加载该js，本地的js我们也可以这样配置：
+require.config({
+    paths : {
+        "jquery" : ["http://libs.baidu.com/jquery/2.0.3/jquery"],
+        "a" : "js/a"   
+    }
+})
+使用require.js注意事项
+
+1、在使用requirejs时，加载模块时不用写.js后缀的，当然也是不能写后缀；
+
+2、上面例子中的callback函数中发现有$参数，这个就是依赖的jquery模块的输出变量，如果你依赖多个模块，可以依次写入多个参数来使用：
+
+require(["jquery","underscore"],function($, _){
+    $(function(){
+        _.each([1,2,3],alert);
+    })
+})
+3、如果某个模块不输出变量值，则没有，所以尽量将输出的模块写在前面，防止位置错乱引发误解。
+require.js全局配置
+
+上面的例子中重复出现了require.config配置，如果每个页面中都加入配置，必然显得十分不雅，requirejs提供了一种叫"主数据"的功能，我们首先创建一个main.js：
+
+复制代码
+require.config({
+    paths : {
+        "jquery" : ["http://libs.baidu.com/jquery/2.0.3/jquery", "js/jquery"],
+        "a" : "js/a"   
+    }
+})
+复制代码
+然后在页面中使用下面的方式来使用requirejs：
+
+<script data-main="js/main" src="js/require.js"></script>
+加载requirejs脚本的script标签加入了data-main属性，这个属性指定的js将在加载完reuqire.js后处理，
+我们把require.config的配置加入到data-main后，就可以使每一个页面都使用这个配置，
+然后页面中就可以直接使用require来加载所有的模块名。
+
+data-main还有一个重要的功能，当script标签指定data-main属性时，
+require会默认的将data-main指定的js为根路径，是什么意思呢？如上面的data-main="js/main"设定后，
+我们在使用require(['jquery'])后(不配置jquery的paths)，require会自动加载js/jquery.js这个文件，
+而不是jquery.js，相当于默认配置了。
+require.js第三方模块
+
+通过require加载的模块一般都需要符合AMD规范即使用define来申明模块，
+但是部分时候需要加载非AMD规范的js，这时候就需要用到另一个功能：shim，
+shim解释起来也比较难理解，shim直接翻译为"垫"，其实也是有这层意思的，目前主要用在以下两个地方。
+
+1. 非AMD模块输出，将非标准的AMD模块"垫"成可用的模块，
+例如：在老版本的jquery中，是没有继承AMD规范的，
+所以不能直接require["jquery"],这时候就需要shim，
+比如我要是用underscore类库，但是他并没有实现AMD规范，那我们可以这样配置：
+require.config({
+    shim: {
+        "underscore" : {
+            exports : "_";
+        }
+    }
+})
+这样配置后，我们就可以在其他模块中引用underscore模块：
+
+require(["underscore"], function(_){
+    _.each([1,2,3], alert);
+})
+2.插件形式的非AMD模块，我们经常会用到jquery插件，而且这些插件基本都不符合AMD规范，比如jquery.form插件，这时候就需要将form插件"垫"到jquery中：
+
+复制代码
+require.config({
+    shim: {
+        "underscore" : {
+            exports : "_";
+        },
+        "jquery.form" : {
+            deps : ["jquery"]
+        }
+    }
+})
+这样配置之后我们就可以使用加载插件后的jquery了
+
+require.config(["jquery", "jquery.form"], function($){
+    $(function(){
+        $("#form").ajaxSubmit({...});
+    })
+})
+require()函数接受两个参数。第一个参数是一个数组，表示所依赖的模块，
+上例就是['moduleA', 'moduleB', 'moduleC']，即主模块依赖这三个模块；第二个参数是一个回调函数，
+当前面指定的模块都加载成功后，它将被调用。加载的模块会以参数形式传入该函数，从而在回调函数内部就可以使用这些模块。
+假定主模块依赖jquery、underscore和backbone这三个模块，main.js就可以这样写：
+
+　　require(['jquery', 'underscore', 'backbone'], function ($, _, Backbone){
+
+　　　　// some code here
+
+　　});
+
+　require.config({
+
+　　　　paths: {
+
+　　　　　　"jquery": "jquery.min",
+　　　　　　"underscore": "underscore.min",
+　　　　　　"backbone": "backbone.min"
+
+　　　　}
+
+　　});
+require.config({
+
+　　　　paths: {
+
+　　　　　　"jquery": "lib/jquery.min",
+　　　　　　"underscore": "lib/underscore.min",
+　　　　　　"backbone": "lib/backbone.min"
+
+　　　　}
+
+　　});
+require.config({
+
+　　　　baseUrl: "js/lib",
+
+　　　　paths: {
+
+　　　　　　"jquery": "jquery.min",
+　　　　　　"underscore": "underscore.min",
+　　　　　　"backbone": "backbone.min"
+
+　　　　}
+
+　　});
+// math.js
+
+　　define(function (){
+
+　　　　var add = function (x,y){
+
+　　　　　　return x+y;
+
+　　　　};
+
+　　　　return {
+
+　　　　　　add: add
+　　　　};
+
+　　});
+
+加载方法如下：
+
+　　// main.js
+
+　　require(['math'], function (math){
+
+　　　　alert(math.add(1,1));
+
+　　});
+define(['myLib'], function(myLib){
+
+　　　　function foo(){
+
+　　　　　　myLib.doSomething();
+
+　　　　}
+
+　　　　return {
+
+　　　　　　foo : foo
+
+　　　　};
+
+　　});
+六、加载非规范的模块（shim的使用方式）
+
+     
+
+     //  app.js
+
+     function sayHello(name){
+
+ 　　 alert('Hi '+name);
+　　}
+     //  main.js
+
+　　require.config({
+
+　　　　shim: {
+
+　　　　　　'app': { //这个键名为要载入的目标文件的文件名，不能随便命名。
+　　　　　　　　exports: 'sayHello' //exports的值为my.js提供的 对外接口的名称
+　　　　　　}
+
+　　　　}
+
+　　});
+
+
+　　require(['app'], function(sayHello) {
+　　　　alert(sayHello())  
+　　})
+
+      导出一个函数,意味着我们得到了一个javaScript类
+
+      但是如果在my.js中写了很多function，整合成一个function有点麻烦，想直接导出？
+
+      方法如下
+
+　   //　app.js
+
+　　function sayHi(name){
+
+  　　alert('Hi '+name);
+　　}
+　　function sayHello(name){
+  　　alert('Hiello  '+name);
+　　}
+ 
+
+    // main.js  
+
+　　require.config({
+　　　　shim: {
+　　　　　　app: {
+　　　　　　　　init: function() { //这里使用init将2个接口返回
+　　　　　　　　　　return {
+　　　　　　　　　　　　sayHi: sayHi,
+　　　　　　　　　　　　sayHello: sayHello
+　　　　　　　　　　}
+　　　　　　　　}
+　　　　　　}
+　　　　}
+　　});	
+ shim: {
+         'jquery.bootstrapTable':  ['jquery'] //依赖jquery
+         /* 或者
+         'jquery.bootstrapTable': {
+            deps: ['jquery'],
+            exports: 'jQuery.fn.bootstrapTable'
+         }
+         */
+    }
+});
+Map参数： Map参数是用来解决同一个模块不同版本的问题，比如在项目开发中，开发初期使用了jquery1.7版本，但是由于业务的需求需要引入jquery1.9以上的版本时候，但是又担心有些是依赖于jquery1.7的代码升级到1.9以上的时候会有问题，因此可以让一部分代码还是依赖于jquery1.7,薪增的代码依赖于jquery1.9.
+
+现在我在入口文件app.js添加如下代码：
+
+requirejs.config({
+
+map: {
+
+'app/a': {
+
+'jquery': 'js/lib/jquery1.7.js'
+
+},
+
+'app/b': {
+
+'jquery': 'js/lib/jquery1.9.1.js'
+
+}
+
+}
+
+});
+
+require(['app/a'],function(jq){   
+
+});
+
+require(['app/b'],function(jq){  
+
+});

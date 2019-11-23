@@ -1,0 +1,1203 @@
+maven构建项目
+1、访问http://start.spring.io/
+
+2、选择构建工具Maven Project、Spring Boot版本1.3.6以及一些工程基本信息，点击“Switch to the full version.”java版本选择1.7，可参考下图所示：
+
+3、点击Generate Project下载项目压缩包
+
+4、解压后，使用eclipse，Import -> Existing Maven Projects -> Next ->选择解压后的文件夹-> Finsh，OK done!
+
+另外，spingboot建议的目录结果如下：
+
+root package结构：com.example.myproject
+com
+
+  +- example
+
+    +- myproject
+
+      +- Application.java
+
+      |
+
+      +- domain
+
+      |  +- Customer.java
+
+      |  +- CustomerRepository.java
+
+      |
+
+      +- service
+
+      |  +- CustomerService.java
+
+      |
+
+      +- controller
+
+      |  +- CustomerController.java
+
+      |
+
+
+
+Application.java 建议放到根目录下面,主要用于做一些框架配置
+
+domain目录主要用于实体（Entity）与数据访问层（Repository）
+
+service 层主要是业务类代码
+
+controller 负责页面访问控制
+
+
+
+采用默认配置可以省去很多配置，当然也可以根据自己的喜欢来进行更改
+
+最后，启动Application main方法，至此一个java项目搭建好了！
+引入web模块
+
+
+
+1、pom.xml中添加支持web的模块：
+
+
+
+<dependency>
+
+        <groupId>org.springframework.boot</groupId>
+
+        <artifactId>spring-boot-starter-web</artifactId>
+
+ </dependency>
+
+
+
+pom.xml文件中默认有两个模块：
+
+
+
+spring-boot-starter ：核心模块，包括自动配置支持、日志和YAML；
+
+
+
+spring-boot-starter-test ：测试模块，包括JUnit、Hamcrest、Mockito。
+
+<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		
+    <maven-jar-plugin.version>2.6</maven-jar-plugin.version> //报错加这个
+	</properties>
+2、编写controller内容：
+
+
+
+@RestController
+
+public class HelloWorldController {
+
+    @RequestMapping("/hello")
+
+    public String index() {
+
+        return "Hello World";
+
+    }
+
+}
+
+
+
+@RestController 的意思就是controller里面的方法都以json格式输出，不用再写什么jackjson配置的了！
+
+
+
+3、启动主程序，打开浏览器访问http://localhost:8080/hello，就可以看到效果了，有木有很简单！
+如何做单元测试
+
+
+
+打开的src/test/下的测试入口，编写简单的http请求来测试；使用mockmvc进行，利用MockMvcResultHandlers.print()打印出执行结果。
+
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+
+@SpringApplicationConfiguration(classes = MockServletContext.class)
+
+@WebAppConfiguration
+
+public class HelloWorldControlerTests {
+
+    private MockMvc mvc;
+
+    @Before
+
+    public void setUp() throws Exception {
+
+        mvc = MockMvcBuilders.standaloneSetup(new HelloWorldController()).build();
+
+    }
+
+    @Test
+
+    public void getHello() throws Exception {
+
+    mvc.perform(MockMvcRequestBuilders.get("/hello").accept(MediaType.APPLICATION_JSON))
+
+                .andExpect(MockMvcResultMatchers.status().isOk())
+
+                .andDo(MockMvcResultHandlers.print())
+
+                .andReturn();
+
+    }
+
+}
+单元测试打包测试
+package com.alibaba; 
+import org.junit.runner.RunWith;import org.junit.runners.Suite; 
+/** * Created by lightClouds917 * Date 2018/2/2 * Description:打包测试 *///
+@Ignore("not ready yet")@RunWith(Suite.class)
+@Suite.SuiteClasses({EntFileTest.class,EntFileTest2.class})
+public class TestSuits {     
+//不用写代码，只需要注解即可
+}
+7.忽略方法
+
+当我一个测试类写了10个测试方法时，其中有1个我暂时不想测，想跳过，但是其他9个我想一次运行，
+怎么办？这里有一个忽略注解，写在方法上，可以忽略这个测试方法，写在类上，可以忽略这个类。
+@Ignore("not ready yet")
+
+课程2
+
+json 接口开发
+
+
+
+在以前的spring 开发的时候需要我们提供json接口的时候需要做那些配置呢？
+
+
+
+添加 jackjson 等相关jar包
+
+配置spring controller扫描
+
+对接的方法添加@ResponseBody
+
+
+
+就这样我们会经常由于配置错误，导致406错误等等，spring boot如何做呢，只需要类添加 @RestController 即可，默认类中的方法都会以json的格式返回。
+如果我们需要使用页面开发只要使用 @Controller ，下面会结合模板来说明。
+
+自定义Filter
+
+
+
+我们常常在项目中会使用filters用于录调用日志、排除有XSS威胁的字符、执行权限验证等等。Spring Boot自动添加了OrderedCharacterEncodingFilter和HiddenHttpMethodFilter，并且我们可以自定义Filter。
+
+两个步骤：
+
+实现Filter接口，实现Filter方法
+
+添加@Configurationz 注解，将自定义Filter加入过滤链
+解决办法@SpringBootApplictaion（scanBasePackages="com.example"）
+
+thymeleaf模板
+
+Gradle 构建工具
+spring 项目建议使用Gradle进行构建项目，相比maven来讲 Gradle更简洁，而且gradle更时候大型复杂项目的构建。gradle吸收了maven和ant的特点而来，不过目前maven仍然是Java界的主流，大家可以先了解了解。
+
+一个使用gradle配置的项目
+
+WebJars
+WebJars是一个很神奇的东西，可以让大家以jar包的形式来使用前端的各种框架、组件。
+
+什么是WebJars
+什么是WebJars？WebJars是将客户端（浏览器）资源（JavaScript，Css等）打成jar包文件，以对资源进行统一依赖管理。WebJars的jar包部署在Maven中央仓库上。
+
+为什么使用
+我们在开发Java web项目的时候会使用像Maven，Gradle等构建工具以实现对jar包版本依赖管理，以及项目的自动化管理，但是对于JavaScript，Css等前端资源包，我们只能采用拷贝到webapp下的方式，这样做就无法对这些资源进行依赖管理。那么WebJars就提供给我们这些前端资源的jar包形势，我们就可以进行依赖管理。
+如何使用
+1、 WebJars主官网 查找对于的组件，比如Vuejs
+
+<dependency>
+    <groupId>org.webjars.bower</groupId>
+    <artifactId>vue</artifactId>
+    <version>1.0.21</version>
+</dependency>
+2、页面引入
+
+<link th:href="@{/webjars/bootstrap/3.3.6/dist/css/bootstrap.css}" rel="stylesheet"></link>
+
+1、 awesome-spring-boot
+首先给大家介绍的就是Spring Boot 中文索引，这是一个专门收集 Spring Boot 相关资料的开源项目，也有对应的导航页面。
+
+产品主页
+
+http://springboot.fun
+
+项目主页
+
+https://github.com/ityouknow/awesome-spring-boot
+
+多数据源整合方案
+配置文件
+pom包就不贴了比较简单该依赖的就依赖，主要是数据库这边的配置：
+
+mybatis.config-locations=classpath:mybatis/mybatis-config.xml
+
+spring.datasource.test1.driverClassName = com.mysql.jdbc.Driver
+spring.datasource.test1.url = jdbc:mysql://localhost:3306/test1?useUnicode=true&characterEncoding=utf-8
+spring.datasource.test1.username = root
+spring.datasource.test1.password = root
+
+spring.datasource.test2.driverClassName = com.mysql.jdbc.Driver
+spring.datasource.test2.url = jdbc:mysql://localhost:3306/test2?useUnicode=true&characterEncoding=utf-8
+spring.datasource.test2.username = root
+spring.datasource.test2.password = root
+一个test1库和一个test2库，其中test1位主库，在使用的过程中必须指定主库，不然会报错。
+
+数据源配置
+@Configuration
+@MapperScan(basePackages = "com.neo.mapper.test1", sqlSessionTemplateRef  = "test1SqlSessionTemplate")
+public class DataSource1Config {
+
+    @Bean(name = "test1DataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.test1")
+    @Primary
+    public DataSource testDataSource() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "test1SqlSessionFactory")
+    @Primary
+    public SqlSessionFactory testSqlSessionFactory(@Qualifier("test1DataSource") DataSource dataSource) throws Exception {
+        SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+        bean.setDataSource(dataSource);
+        bean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mybatis/mapper/test1/*.xml"));
+        return bean.getObject();
+    }
+
+    @Bean(name = "test1TransactionManager")
+    @Primary
+    public DataSourceTransactionManager testTransactionManager(@Qualifier("test1DataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean(name = "test1SqlSessionTemplate")
+    @Primary
+    public SqlSessionTemplate testSqlSessionTemplate(@Qualifier("test1SqlSessionFactory") SqlSessionFactory sqlSessionFactory) throws Exception {
+        return new SqlSessionTemplate(sqlSessionFactory);
+    }
+
+}
+
+最关键的地方就是这块了，一层一层注入,首先创建DataSource，然后创建SqlSessionFactory再创建事务，最后包装到SqlSessionTemplate中。其中需要指定分库的mapper文件地址，以及分库dao层代码
+
+dao层和xml层
+dao层和xml需要按照库来分在不同的目录，比如：test1库dao层在com.neo.mapper.test1包下，test2库在com.neo.mapper.test1
+
+public interface User1Mapper {
+	
+	List<UserEntity> getAll();
+	
+	UserEntity getOne(Long id);
+
+	void insert(UserEntity user);
+
+	void update(UserEntity user);
+
+	void delete(Long id);
+
+}
+xml层
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.neo.mapper.test1.User1Mapper" >
+    <resultMap id="BaseResultMap" type="com.neo.entity.UserEntity" >
+        <id column="id" property="id" jdbcType="BIGINT" />
+        <result column="userName" property="userName" jdbcType="VARCHAR" />
+        <result column="passWord" property="passWord" jdbcType="VARCHAR" />
+        <result column="user_sex" property="userSex" javaType="com.neo.enums.UserSexEnum"/>
+        <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <sql id="Base_Column_List" >
+        id, userName, passWord, user_sex, nick_name
+    </sql>
+
+    <select id="getAll" resultMap="BaseResultMap"  >
+       SELECT 
+       <include refid="Base_Column_List" />
+	   FROM users
+    </select>
+
+    <select id="getOne" parameterType="java.lang.Long" resultMap="BaseResultMap" >
+        SELECT 
+       <include refid="Base_Column_List" />
+	   FROM users
+	   WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.neo.entity.UserEntity" >
+       INSERT INTO 
+       		users
+       		(userName,passWord,user_sex) 
+       	VALUES
+       		(#{userName}, #{passWord}, #{userSex})
+    </insert>
+    
+    <update id="update" parameterType="com.neo.entity.UserEntity" >
+       UPDATE 
+       		users 
+       SET 
+       	<if test="userName != null">userName = #{userName},</if>
+       	<if test="passWord != null">passWord = #{passWord},</if>
+       	nick_name = #{nickName}
+       WHERE 
+       		id = #{id}
+    </update>
+    
+    <delete id="delete" parameterType="java.lang.Long" >
+       DELETE FROM
+       		 users 
+       WHERE 
+       		 id =#{id}
+    </delete>
+
+</mapper>
+测试
+测试可以使用SpringBootTest,也可以放到Controller中，这里只贴Controller层的使用
+
+@RestController
+public class UserController {
+
+    @Autowired
+    private User1Mapper user1Mapper;
+
+	@Autowired
+	private User2Mapper user2Mapper;
+	
+	@RequestMapping("/getUsers")
+	public List<UserEntity> getUsers() {
+		List<UserEntity> users=user1Mapper.getAll();
+		return users;
+	}
+	
+    @RequestMapping("/getUser")
+    public UserEntity getUser(Long id) {
+    	UserEntity user=user2Mapper.getOne(id);
+        return user;
+    }
+    
+    @RequestMapping("/add")
+    public void save(UserEntity user) {
+        user2Mapper.insert(user);
+    }
+    
+    @RequestMapping(value="update")
+    public void update(UserEntity user) {
+        user2Mapper.update(user);
+    }
+    
+    @RequestMapping(value="/delete/{id}")
+    public void delete(@PathVariable("id") Long id) {
+        user1Mapper.delete(id);
+    }
+    
+}
+
+springboot(九)：定时任务
+
+在我们的项目开发过程中，经常需要定时任务来帮助我们来做一些内容，springboot默认已经帮我们实行了，只需要添加相应的注解就可以实现
+1、pom包配置
+pom包里面只需要引入springboot starter包即可
+
+2、启动类启用定时
+在启动类上面加上@EnableScheduling即可开启定时
+
+@SpringBootApplication
+@EnableScheduling
+public class Application {
+
+	public static void main(String[] args) {
+		SpringApplication.run(Application.class, args);
+	}
+}
+3、创建定时任务实现类
+定时任务1：
+
+@Component
+public class SchedulerTask {
+
+    private int count=0;
+
+    @Scheduled(cron="*/6 * * * * ?")
+    private void process(){
+        System.out.println("this is scheduler task runing  "+(count++));
+    }
+
+}
+定时任务2：
+
+@Component
+public class Scheduler2Task {
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    @Scheduled(fixedRate = 6000)
+    public void reportCurrentTime() {
+        System.out.println("现在时间：" + dateFormat.format(new Date()));
+    }
+
+}
+参数说明
+@Scheduled 参数可以接受两种定时的设置，一种是我们常用的cron="*/6 * * * * ?",一种是 fixedRate = 6000，两种都表示每隔六秒打印一下内容。
+
+fixedRate 说明
+
+@Scheduled(fixedRate = 6000) ：上一次开始执行时间点之后6秒再执行
+@Scheduled(fixedDelay = 6000) ：上一次执行完毕时间点之后6秒再执行
+@Scheduled(initialDelay=1000, fixedRate=6000) ：第一次延迟1秒后执行，之后按fixedRate的规则每6秒执行一次
+
+
+springboot(十)：邮件服务
+1、pom包配置
+pom包里面添加spring-boot-starter-mail包引用
+
+<dependencies>
+	<dependency> 
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-mail</artifactId>
+	</dependency> 
+</dependencies>
+
+2、在application.properties中添加邮箱配置
+spring.mail.host=smtp.qiye.163.com //邮箱服务器地址
+spring.mail.username=xxx@oo.com //用户名
+spring.mail.password=xxyyooo    //密码
+spring.mail.default-encoding=UTF-8
+
+mail.fromMail.addr=xxx@oo.com  //以谁来发送邮件
+3、编写mailService,这里只提出实现类。
+@Component
+public class MailServiceImpl implements MailService{
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Value("${mail.fromMail.addr}")
+    private String from;
+
+    @Override
+    public void sendSimpleMail(String to, String subject, String content) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(content);
+
+        try {
+            mailSender.send(message);
+            logger.info("简单邮件已经发送。");
+        } catch (Exception e) {
+            logger.error("发送简单邮件时发生异常！", e);
+        }
+
+    }
+}
+4、编写test类进行测试
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class MailServiceTest {
+
+    @Autowired
+    private MailService MailService;
+
+    @Test
+    public void testSimpleMail() throws Exception {
+        MailService.sendSimpleMail("ityouknow@126.com","test simple mail"," hello this is simple mail");
+    }
+}
+至此一个简单的文本发送就完成了。
+
+加点料
+但是在正常使用的过程中，我们通常在邮件中加入图片或者附件来丰富邮件的内容，下面讲介绍如何使用springboot来发送丰富的邮件。
+
+发送html格式邮件
+其它都不变在MailService添加sendHtmlMail方法.
+
+public void sendHtmlMail(String to, String subject, String content) {
+    MimeMessage message = mailSender.createMimeMessage();
+
+    try {
+        //true表示需要创建一个multipart message
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setFrom(from);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+
+        mailSender.send(message);
+        logger.info("html邮件发送成功");
+    } catch (MessagingException e) {
+        logger.error("发送html邮件时发生异常！", e);
+    }
+}
+在测试类中构建html内容，测试发送
+
+@Test
+public void testHtmlMail() throws Exception {
+    String content="<html>\n" +
+            "<body>\n" +
+            "    <h3>hello world ! 这是一封Html邮件!</h3>\n" +
+            "</body>\n" +
+            "</html>";
+    MailService.sendHtmlMail("ityouknow@126.com","test simple mail",content);
+}
+发送带附件的邮件
+在MailService添加sendAttachmentsMail方法.
+
+public void sendAttachmentsMail(String to, String subject, String content, String filePath){
+    MimeMessage message = mailSender.createMimeMessage();
+
+    try {
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setFrom(from);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+
+        FileSystemResource file = new FileSystemResource(new File(filePath));
+        String fileName = filePath.substring(filePath.lastIndexOf(File.separator));
+        helper.addAttachment(fileName, file);
+
+        mailSender.send(message);
+        logger.info("带附件的邮件已经发送。");
+    } catch (MessagingException e) {
+        logger.error("发送带附件的邮件时发生异常！", e);
+    }
+}
+添加多个附件可以使用多条 helper.addAttachment(fileName, file)
+
+在测试类中添加测试方法
+
+@Test
+public void sendAttachmentsMail() {
+    String filePath="e:\\tmp\\application.log";
+    mailService.sendAttachmentsMail("ityouknow@126.com", "主题：带附件的邮件", "有附件，请查收！", filePath);
+}
+发送带静态资源的邮件
+邮件中的静态资源一般就是指图片，在MailService添加sendAttachmentsMail方法.
+
+public void sendInlineResourceMail(String to, String subject, String content, String rscPath, String rscId){
+    MimeMessage message = mailSender.createMimeMessage();
+
+    try {
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setFrom(from);
+        helper.setTo(to);
+        helper.setSubject(subject);
+        helper.setText(content, true);
+
+        FileSystemResource res = new FileSystemResource(new File(rscPath));
+        helper.addInline(rscId, res);
+
+        mailSender.send(message);
+        logger.info("嵌入静态资源的邮件已经发送。");
+    } catch (MessagingException e) {
+        logger.error("发送嵌入静态资源的邮件时发生异常！", e);
+    }
+}
+在测试类中添加测试方法
+
+@Test
+public void sendInlineResourceMail() {
+    String rscId = "neo006";
+    String content="<html><body>这是有图片的邮件：<img src=\'cid:" + rscId + "\' ></body></html>";
+    String imgPath = "C:\\Users\\summer\\Pictures\\favicon.png";
+
+    mailService.sendInlineResourceMail("ityouknow@126.com", "主题：这是有图片的邮件", content, imgPath, rscId);
+}
+添加多个图片可以使用多条 <img src='cid:" + rscId + "' > 和 helper.addInline(rscId, res) 来实现
+
+到此所有的邮件发送服务已经完成了。
+
+邮件系统
+上面发送邮件的基础服务就这些了，但是如果我们要做成一个邮件系统的话还需要考虑以下几个问题：
+
+邮件模板
+我们会经常收到这样的邮件：
+
+尊敬的neo用户：
+                  
+              恭喜您注册成为xxx网的用户,，同时感谢您对xxx的关注与支持并欢迎您使用xx的产品与服务。
+              ...
+
+其中只有neo这个用户名在变化，其它邮件内容均不变，如果每次发送邮件都需要手动拼接的话会不够优雅，并且每次模板的修改都需要改动代码的话也很不方便，因此对于这类邮件需求，都建议做成邮件模板来处理。模板的本质很简单，就是在模板中替换变化的参数，转换为html字符串即可，这里以thymeleaf为例来演示。
+
+1、pom中导入thymeleaf的包
+
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+2、在resorces/templates下创建emailTemplate.html
+
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Title</title>
+    </head>
+    <body>
+        您好,这是验证邮件,请点击下面的链接完成验证,<br/>
+        <a href="#" th:href="@{ http://www.ityouknow.com/neo/{id}(id=${id}) }">激活账号</a>
+    </body>
+</html>
+3、解析模板并发送
+
+@Test
+public void sendTemplateMail() {
+    //创建邮件正文
+    Context context = new Context();
+    context.setVariable("id", "006");
+    String emailContent = templateEngine.process("emailTemplate", context);
+
+    mailService.sendHtmlMail("ityouknow@126.com","主题：这是模板邮件",emailContent);
+}
+发送失败
+因为各种原因，总会有邮件发送失败的情况，比如：邮件发送过于频繁、网络异常等。在出现这种情况的时候，我们一般会考虑重新重试发送邮件，会分为以下几个步骤来实现：
+
+1、接收到发送邮件请求，首先记录请求并且入库。
+2、调用邮件发送接口发送邮件，并且将发送结果记录入库。
+3、启动定时系统扫描时间段内，未发送成功并且重试次数小于3次的邮件，进行再次发送
+异步发送
+很多时候邮件发送并不是我们主业务必须关注的结果，比如通知类、提醒类的业务可以允许延时或者失败。这个时候可以采用异步的方式来发送邮件，加快主交易执行速度，在实际项目中可以采用MQ发送邮件相关参数，监听到消息队列之后启动发送邮件。
+
+打成jar包
+如果你使用的是maven来管理项目，执行以下命令既可以
+
+cd 项目跟目录（和pom.xml同级）
+mvn clean package
+## 或者执行下面的命令
+## 排除测试代码后进行打包
+mvn clean package  -Dmaven.test.skip=true
+打包完成后jar包会生成到target目录下，命名一般是 项目名+版本号.jar
+
+启动jar包命令
+
+java -jar  target/spring-boot-scheduler-1.0.0.jar
+这种方式，只要控制台关闭，服务就不能访问了。下面我们使用在后台运行的方式来启动:
+
+nohup java -jar target/spring-boot-scheduler-1.0.0.jar &
+也可以在启动的时候选择读取不同的配置文件
+
+java -jar app.jar --spring.profiles.active=dev
+也可以在启动的时候设置jvm参数
+
+java -Xms10m -Xmx80m -jar app.jar &
+gradle
+如果使用的是gradle,使用下面命令打包
+
+gradle build
+java -jar build/libs/mymodule-0.0.1-SNAPSHOT.jar
+
+打成war包
+打成war包一般可以分两种方式来实现，第一种可以通过eclipse这种开发工具来导出war包，另外一种是使用命令来完成，这里主要介绍后一种
+
+1、maven项目，修改pom包
+
+将
+
+<packaging>jar</packaging>  
+改为
+
+<packaging>war</packaging>
+2、打包时排除tomcat.
+
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-tomcat</artifactId>
+	<scope>provided</scope>
+</dependency>
+在这里将scope属性设置为provided，这样在最终形成的WAR中不会包含这个JAR包，因为Tomcat或Jetty等服务器在运行时将会提供相关的API类。
+
+3、注册启动类
+
+创建ServletInitializer.java，继承SpringBootServletInitializer ，覆盖configure()，把启动类Application注册进去。外部web应用服务器构建Web Application Context的时候，会把启动类添加进去。
+
+public class ServletInitializer extends SpringBootServletInitializer {
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(Application.class);
+    }
+}
+最后执行
+
+mvn clean package  -Dmaven.test.skip=true
+会在target目录下生成：项目名+版本号.war文件，拷贝到tomcat服务器中启动即可。
+
+gradle
+
+如果使用的是gradle,基本步奏一样，build.gradle中添加war的支持，排除spring-boot-starter-tomcat：
+
+...
+
+apply plugin: 'war'
+
+...
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web:1.4.2.RELEASE"){
+    	exclude mymodule:"spring-boot-starter-tomcat"
+    }
+}
+...
+再使用构建命令
+
+gradle build
+war会生成在build\libs 目录下。
+生产运维
+查看JVM参数的值
+可以根据java自带的jinfo命令：
+
+jinfo -flags pid
+来查看jar 启动后使用的是什么gc、新生代、老年代分批的内存都是多少，示例如下：
+
+-XX:CICompilerCount=3 -XX:InitialHeapSize=234881024 -XX:MaxHeapSize=3743416320 -XX:MaxNewSize=1247805440 -XX:MinHeapDeltaBytes=524288 -XX:NewSize=78118912 -XX:OldSize=156762112 -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseFastUnorderedTimeStamps -XX:+UseParallelGC
+-XX:CICompilerCount ：最大的并行编译数
+-XX:InitialHeapSize 和 -XX:MaxHeapSize ：指定JVM的初始和最大堆内存大小
+-XX:MaxNewSize ： JVM堆区域新生代内存的最大可分配大小
+…
+-XX:+UseParallelGC ：垃圾回收使用Parallel收集器
+如何重启
+简单粗暴
+
+直接kill掉进程再次启动jar包
+
+ps -ef|grep java 
+##拿到对于Java程序的pid
+kill -9 pid
+## 再次重启
+Java -jar  xxxx.jar
+当然这种方式比较传统和暴力，所以建议大家使用下面的方式来管理
+
+脚本执行
+
+如果使用的是maven,需要包含以下的配置
+
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <configuration>
+        <executable>true</executable>
+    </configuration>
+</plugin>
+如果使用是gradle，需要包含下面配置
+
+springBoot {
+    executable = true
+}
+启动方式：
+
+1、 可以直接./yourapp.jar 来启动
+
+2、注册为服务
+
+也可以做一个软链接指向你的jar包并加入到init.d中，然后用命令来启动。
+
+init.d 例子:
+
+ln -s /var/yourapp/yourapp.jar /etc/init.d/yourapp
+chmod +x /etc/init.d/yourapp
+这样就可以使用stop或者是restart命令去管理你的应用。
+
+/etc/init.d/yourapp start|stop|restart
+或者
+
+service yourapp start|stop|restart
+到此 springboot项目如何测试、联调和打包投产均已经介绍完，以后可以找时间研究一下springboot的自动化运维，以及spring boot 和docker相结合的使用。
+
+初始化数据
+我们在做测试的时候经常需要初始化导入一些数据，如何来处理呢？会有两种选择，一种是使用Jpa，另外一种是Spring JDBC。两种方式各有区别下面来详细介绍。
+
+使用Jpa
+
+在使用spring boot jpa的情况下设置spring.jpa.hibernate.ddl-auto的属性设置为 create or create-drop的时候，spring boot 启动时默认会扫描classpath下面（项目中一般是resources目录）是否有import.sql，如果有机会执行import.sql脚本。
+
+使用Spring JDBC
+
+使用Spring JDBC 需要在配置文件中添加以下配置
+
+spring:
+    datasource:
+      schema: database/data.sql
+      sql-script-encoding: utf-8
+    jpa:
+      hibernate:
+        ddl-auto: none
+schema ：设置脚本的路径
+sql-script-encoding：设置脚本的编码
+spring boot项目启动的时候会自动执行脚本。
+
+ddl-auto 四个值的解释
+
+create： 每次加载hibernate时都会删除上一次的生成的表，然后根据你的model类再重新来生成新表，哪怕两次没有任何改变也要这样执行，这就是导致数据库表数据丢失的一个重要原因。
+create-drop ：每次加载hibernate时根据model类生成表，但是sessionFactory一关闭,表就自动删除。
+update：最常用的属性，第一次加载hibernate时根据model类会自动建立起表的结构（前提是先建立好数据库），以后加载hibernate时根据 model类自动更新表结构，即使表结构改变了但表中的行仍然存在不会删除以前的行。要注意的是当部署到服务器后，表结构是不会被马上建立起来的，是要等 应用第一次运行起来后才会。
+validate ：每次加载hibernate时，验证创建数据库表结构，只会和数据库中的表进行比较，不会创建新表，但是会插入新值。 5、 none : 什么都不做。
+不同点
+
+第一种方式启动的时候Jpa会自动创建表，import.sql只负责创建表单后的初始化数据。第二种方式启动的时候不会创建表，需要在初始化脚本中判断表是否存在，再初始化脚本的步骤。
+
+随机端口
+为Spring Cloud的应用实用随机端口非常简单，主要有两种方法：
+
+设置server.port=0，当应用启动的时候会自动的分配一个随机端口，但是该方式在注册到Eureka的时候会一个问题：所有实例都使用了同样的实例名（如：Lenovo-test:hello-service:0），这导致只出现了一个实例。所以，我们还需要修改实例ID的定义，让每个实例的ID不同，比如使用随机数来配置实例ID：
+
+server.port=0
+eureka.instance.instance-id=${spring.application.name}:${random.int}
+除了上面的方法，实际上我们还可以直接使用random函数来配置server.port。这样就可以指定端口的取值范围，比如：
+
+server.port=${random.int[10000,19999]}
+由于默认的实例ID会由server.port拼接，而此时server.port设置的随机值会重新取一次随机数，所以使用这种方法的时候不需要重新定义实例ID的规则就能产生不同的实例ID了。
+
+springboot(十七)：使用Spring Boot上传文件
+
+
+1、pom包配置
+我们使用Spring Boot最新版本1.5.9、jdk使用1.8、tomcat8.0。
+
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>1.5.9.RELEASE</version>
+</parent>
+
+<properties>
+    <java.version>1.8</java.version>
+</properties>
+
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-devtools</artifactId>
+        <optional>true</optional>
+    </dependency>
+</dependencies>
+2、启动类设置
+@SpringBootApplication
+public class FileUploadWebApplication {
+
+    public static void main(String[] args) throws Exception {
+        SpringApplication.run(FileUploadWebApplication.class, args);
+    }
+
+    //Tomcat large file upload connection reset
+    @Bean
+    public TomcatEmbeddedServletContainerFactory tomcatEmbedded() {
+        TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+        tomcat.addConnectorCustomizers((TomcatConnectorCustomizer) connector -> {
+            if ((connector.getProtocolHandler() instanceof AbstractHttp11Protocol<?>)) {
+                //-1 means unlimited
+                ((AbstractHttp11Protocol<?>) connector.getProtocolHandler()).setMaxSwallowSize(-1);
+            }
+        });
+        return tomcat;
+    }
+
+}
+
+
+spring boot实战(第七篇)内嵌容器tomcat配置
+
+
+
+默认容器
+
+spring boot默认web程序启用tomcat内嵌容器tomcat，监听8080端口,servletPath默认为 / 通过需要用到的就是端口、上下文路径的修改，在spring boot中其修改方法及其简单；
+
+在资源文件中配置：   
+server.port=9090 
+server.contextPath=/lkl
+123
+
+启动spring boot 
+
+
+
+2015-10-04 00:06:55.768  INFO 609 --- [           main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2015-10-04 00:06:55.844  INFO 609 --- [           main] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2015-10-04 00:06:55.928  INFO 609 --- [           main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 9090 (http)
+2015-10-04 00:06:55.930  INFO 609 --- [           main] com.lkl.springboot.Application       : Started Application in 3.906 seconds (JVM running for 4.184)1234
+
+可以看出其监听端口9090，执行 
+http://localhost:9090/lkl/springboot/liaokailin 成功访问
+
+
+
+自定义tomcat
+
+在实际的项目中简单的配置tomcat端口肯定无法满足大家的需求，因此需要自定义tomcat配置信息来灵活的控制tomcat。
+
+
+
+以定义默认编码为例
+
+
+
+package com.lkl.springboot.container.tomcat;
+
+import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * tomcat 配置
+ * @author liaokailin
+ * @version $Id: TomcatConfig.java, v 0.1 2015年10月4日 上午12:11:47 liaokailin Exp $
+ */
+@Configuration
+public class TomcatConfig {
+
+    @Bean
+    public EmbeddedServletContainerFactory servletContainer() {
+        TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+        tomcat.setUriEncoding("UTF-8");
+        return tomcat;
+    }
+
+}
+123456789101112131415161718192021222324
+
+构建EmbeddedServletContainerFactory的bean，获取到TomcatEmbeddedServletContainerFactory实例以后可以对tomcat进行设置，例如这里设置编码为UTF-8
+
+
+
+SSL配置
+
+
+
+生成证书
+
+keytool -genkey -alias springboot -keyalg RSA -keystore /Users/liaokailin/software/ca1/keystore
+设置密码123456
+12
+
+
+
+
+
+tomcat中验证证书是否正确
+
+修改tomcat/conf/server.xml文件
+
+
+
+<Connector
+              protocol="org.apache.coyote.http11.Http11NioProtocol"
+              port="8443" maxThreads="200"
+              scheme="https" secure="true" SSLEnabled="true"
+              keystoreFile="/Users/liaokailin/software/ca1/keystore" keystorePass="123456"
+              clientAuth="false" sslProtocol="TLS"/>
+1234567
+
+启动tomcat ，访问  http://localhost:8443
+
+
+
+
+
+spring boot 内嵌tomcat ssl
+
+配置资源文件
+
+
+
+server.port=8443
+server.ssl.enabled=true
+server.ssl.keyAlias=springboot
+server.ssl.keyPassword=123456
+server.ssl.keyStore=/Users/liaokailin/software/ca1/keystore12345
+
+
+server.ssl.enabled 启动tomcat ssl配置
+server.ssl.keyAlias 别名
+server.ssl.keyPassword 密码
+server.ssl.keyStore 位置
+
+
+启动 spring boot
+
+
+
+访问https://localhost:8443/springboot/helloworld
+
+
+
+
+
+多端口监听配置
+
+前面启动ssl后只能走https,不能通过http进行访问，如果要监听多端口，可采用编码形式实现。
+
+1.注销前面ssl配置，设置配置 server.port=9090
+
+2.修改TomcatConfig.java
+
+
+
+
+package com.lkl.springboot.container.tomcat;
+
+import java.io.File;
+
+import org.apache.catalina.connector.Connector;
+import org.apache.coyote.http11.Http11NioProtocol;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * tomcat 配置
+ * @author liaokailin
+ * @version $Id: TomcatConfig.java, v 0.1 2015年10月4日 上午12:11:47 liaokailin Exp $
+ */
+@Configuration
+public class TomcatConfig {
+
+    @Bean
+    public EmbeddedServletContainerFactory servletContainer() {
+        TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+        tomcat.setUriEncoding("UTF-8");
+        tomcat.addAdditionalTomcatConnectors(createSslConnector());
+        return tomcat;
+    }
+
+    private Connector createSslConnector() {
+        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();
+        try {
+            File truststore = new File("/Users/liaokailin/software/ca1/keystore");
+            connector.setScheme("https");
+            protocol.setSSLEnabled(true);
+            connector.setSecure(true);
+            connector.setPort(8443);
+            protocol.setKeystoreFile(truststore.getAbsolutePath());
+            protocol.setKeystorePass("123456");
+            protocol.setKeyAlias("springboot");
+            return connector;
+        } catch (Exception ex) {
+            throw new IllegalStateException("cant access keystore: [" + "keystore" + "]  ", ex);
+        }
+    }
+}
+上面代码的意思就是，通过MultipartFile读取文件信息，如果文件为空跳转到结果页并给出提示；如果不为空读取文件流并写入到指定目录，最后将结果展示到页面。
+
+MultipartFile是Spring上传文件的封装类，包含了文件的二进制流和文件属性等信息，在配置文件中也可对相关属性进行配置，基本的配置信息如下：
+
+spring.http.multipart.enabled=true #默认支持文件上传.
+spring.http.multipart.file-size-threshold=0 #支持文件写入磁盘.
+spring.http.multipart.location= # 上传文件的临时目录
+spring.http.multipart.max-file-size=1Mb # 最大支持文件大小
+spring.http.multipart.max-request-size=10Mb # 最大支持请求大小
+最常用的是最后两个配置内容，限制文件上传大小，上传时超过大小会抛出异常：
+但是大于1MB的文件上传时会提示出错的，所以要进行设置。添加一个配置文件就可以了。
+@Configurationpublic class FileUploadConfig {     @Bean    public MultipartConfigElement multipartConfigElement() {        MultipartConfigFactory factory = new MultipartConfigFactory();        factory.setMaxFileSize("100MB");         factory.setMaxRequestSize("100MB");        return factory.createMultipartConfig();    }}也可以在application.properties中加入这两句：
+spring.http.multipart.maxFileSize=100Mbspring.http.multipart.maxRequestSize=100Mb
+
+---------------------
+
+本文来自 宝哥的歌 的CSDN 博客 ，全文地址请点击：https://blog.csdn.net/xxkalychen/article/details/77842638?utm_source=copy 
+
+接口：
+public interface TestService {     //文件上传    @Multipart    @POST("upload")    Call<NetResult<Object>> upload(@Part MultipartBody.Part part); }
+API部分：
+public class TestApi extends NetApi {    private static String BASE_URL = "http://192.168.1.101:8080/springbootdemo/file/";    private static TestService service = NetClient.getRetrofit(BASE_URL).create(TestService.class);        //文件上传    public static void upload(File file, NetCallback<Object> callback) {        RequestBody body = RequestBody.create(MediaType.parse("multipart/form-data"), file);        MultipartBody.Part part = MultipartBody.Part.createFormData("file", file.getName(), body);        Call call = service.upload(part);        call.enqueue(callback);        NetManager.addRequest(call);    } }
+测试调用：
+public class Test {    public static void main(String[] args) {        String filePath = "E://被遗忘的时光.ape";        File file = new File(filePath);        NetCallback<Object> callback = new NetCallback<Object>() {            @Override            protected void onComplete(NetResponse<Object> netResponse) {            }        };        TestApi.upload(file, callback);    }}
+
+---------------------
+
+本文来自 宝哥的歌 的CSDN 博客 ，全文地址请点击：https://blog.csdn.net/xxkalychen/article/details/77842638?utm_source=copy 
+Actuator监控
+Actuator监控只需要添加以下依赖就可以完成
+
+<dependencies>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-web</artifactId>
+	</dependency>
+	<dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+	<dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-security</artifactId>
+	</dependency>
+</dependencies>
+
+Actuator 提供了 13 个接口，具体如下表所示。
+
+HTTP 方法	路径	描述
+GET	/autoconfig	提供了一份自动配置报告，记录哪些自动配置条件通过了，哪些没通过
+GET	/configprops	描述配置属性(包含默认值)如何注入Bean
+GET	/beans	描述应用程序上下文里全部的Bean，以及它们的关系
+GET	/dump	获取线程活动的快照
+GET	/env	获取全部环境属性
+GET	/env/{name}	根据名称获取特定的环境属性值
+GET	/health	报告应用程序的健康指标，这些值由HealthIndicator的实现类提供
+GET	/info	获取应用程序的定制信息，这些信息由info打头的属性提供
+GET	/mappings	描述全部的URI路径，以及它们和控制器(包含Actuator端点)的映射关系
+GET	/metrics	报告各种应用程序度量信息，比如内存用量和HTTP请求计数
+GET	/metrics/{name}	报告指定名称的应用程序度量值
+POST	/shutdown	关闭应用程序，要求endpoints.shutdown.enabled设置为true
+GET	/trace	提供基本的HTTP请求跟踪信息(时间戳、HTTP头等)
+
+配置文件
+
+server:
+  port: 8080
+management:
+  security:
+    enabled: false #关掉安全认证
+  port: 8088 #管理端口调整成8088
+  context-path: /monitor #actuator的访问路径
+endpoints:
+  shutdown:
+    enabled: true
+
+info:
+   app:
+      name: spring-boot-actuator
+      version: 1.0.0
+
+management.security.enabled=false默认有一部分信息需要安全验证之后才可以查看，如果去掉这些安全认证，直接设置management.security.enabled=false
+management.context-path=/monitor 代表启用单独的url地址来监控Spring Boot应用，为了安全一般都启用独立的端口来访问后端的监控信息
+endpoints.shutdown.enabled=true 启用接口关闭Spring Boot
+配置完成之后，启动项目就可以继续验证各个监控功能了。
+
+
+

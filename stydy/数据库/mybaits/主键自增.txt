@@ -1,0 +1,77 @@
+在mysql中
+create table Student(
+ Student_ID  int(6) NOT NULL PRIMARY KEY AUTO_INCREMENT,
+ Student_Name varchar(10) NOT NULL,
+ Student_Age int(2) NOT NULL
+);
+ 
+insert into student(student_name,student_age) values('zhangsan',20);
+　　
+
+在sql server中
+create table Student(
+ Student_ID  int primary key identity(1,1),
+ Student_Name varchar2(10) NOT NULL,
+ Student_Age number(2) NOT NULL
+);
+insert into student(student_name,student_age) values('zhangsan',20);
+　　
+
+在oracle中
+create table Student(
+ Student_ID  number(6) NOT NULL PRIMARY KEY,
+ Student_Name varchar2(10) NOT NULL,
+ Student_Age number(2) NOT NULL
+);
+而oracle如果想设置主键自增长，则需要创建序列
+CREATE SEQUENCE student_sequence
+INCREMENT BY 1
+NOMAXVALUE
+NOCYCLE
+CACHE 10;
+ 
+insert into Student values(student_sequence.nextval,'aa',20);
+　　如果使用了触发器的话，就更简单了
+create or replace trigger student_trigger
+  before insert on student 
+  for each row
+begin
+  select student_sequence.nextval into :new.student_id from dual;
+end student_trigger;
+/
+此时插入的时候触发器会帮你插入id
+
+1
+insert into student(student_name,student_age) values('wangwu',20);
+　　至此，mysql，sql server，oracle中怎样创建表中的自增长主键都已完成。
+　　看一看出oracle的主键自增较mysql和sql sever要复杂些，mysql，sqlserver配置好主键之后，插入时，字段和值一一对应即可，数据库就会完成你想做的，但是在oracle由于多了序列的概念，如果不使用触发器，oracle怎样实现主键自增呢？
+<insert id="add" parameterType="Student">
+　　<selectKey keyProperty="student_id" resultType="int" order="BEFORE">
+      select student_sequence.nextval from dual
+    </selectKey>
+     insert into student(student_id,student_name,student_age) values(#{student_id},#{student_name},#{student_age})
+</insert>
+　　或者 
+<insert id="save" parameterType="com.threeti.to.ZoneTO" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+      SELECT SEQ_ZONE.CURRVAL AS id from dual
+    </selectKey>
+    insert into TBL_ZONE (ID, NAME ) values (SEQ_ZONE.NEXTVAL, #{name,jdbcType=VARCHAR})
+</insert>
+MyBatis 插入时候获取自增主键方法有二
+
+　　以MySQL5.5为例：
+
+　　方法1：
+<insert id="insert" parameterType="Person" useGeneratedKeys="true" keyProperty="id">
+        insert into person(name,pswd) values(#{name},#{pswd})
+</insert>　
+　　方法2：
+<insert id="insert" parameterType="Person">
+        <selectKey keyProperty="id" resultType="long">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into person(name,pswd) values(#{name},#{pswd})
+</insert>
+手动
+map.put("id",UUID.randomUUID().toString().replace("-",""));

@@ -1,0 +1,153 @@
+src/app/app-routing.module.ts (v1)
+
+import { NgModule }             from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+
+@NgModule({
+  exports: [ RouterModule ]//私有的，给别人用
+  imports: [ RouterModule.forRoot(routes) ],
+})
+export class AppRoutingModule {}
+const routes: Routes = [
+  { path: 'heroes', component: HeroesComponent }
+];
+每个模块都有一个路由模块，用于本模块的路由。在本模块的组件中添加<router-outlet></router-outlet>
+<router-outlet> 会告诉路由器要在哪里显示路由到的视图。
+模型树。用树状结构进行解析路由配置
+自己理解的模块。
+每个模块和其他模块都是独立的，有自己的服务和组件。之间不共享。但是每个模块路由是可以懒加载其他
+模块的，如果用到其他模块。那么得导入，如果用到其他模块中的组件，不想重复导入，那么在其他
+模块导出组件，想重复，直接导入组件即可。文件夹相当于包啦。人为定义的组件一层层根据业务往里面套
+，模块不一定在根模块中全导入，看情况用，需要用到即导入。
+每个模块有自己的路由模块，自己配置路由模块。然后在app路由模块，配置懒加载。loadchildren，最后在
+app根模块中初始化app路由模块。只要路由和组件就够了呀。
+实验证明，
+1appcomponent要想使用其他模块的组件，必须在其他模块导出那个组件
+也可以直接在app模块中导入其他子模块的组件，而不用导入那个子模块
+同时导入就不行。这就证明了一个组件不一定只在一个模块中声明
+2在a组件中有一个b子组件，只需要在ccm模块中导入b组件，并只导出a组件，也能都显示，证明
+不一定所有组件在根组件中声明。只需导出一个组件，根模块导入这个模块即可
+3在根模块不导入模块，b组件在a中有，那么结果只导入a是不行的，必须都导入。
+4ccm子模块ccm1可以在根模块中使用，同上
+5ccm1导出b组件给ccm导入，并ccm导出a和b组件，根模块只导入ccm，也可以用到b
+总结一下，实现延时加载子模块，主要是要注意下面几点：
+
+子模块的路由用RouterModule.forChild(TodoRoutes)方式定义。
+主模块不要引入子模块，也不要引入子模块的任何组件或服务，否则子模块就会被打包进主模块里。
+只有子模块才会用到的Service在子模块的providers里面定义，如果是主模块和子模块都会用到的Service就用公用模块的方式定义。要注意这个Service的实例只能有一个。
+实验证明，可行，不用导入任何东西，路劲为a/b俩个。延迟加载。
+路由中的children只要上级给个路由出口。并配置children路由参数，在模块中导入这些组件，然后
+就能使用啦。
+{
+    path: ':folder',
+    children: [
+      {
+        path: '',
+        component: ConversationsCmp
+      },
+      {
+        path: ':id',
+        component: ConversationCmp,
+        children: [
+          { path: 'messages', component: MessagesCmp },
+          { path: 'messages/:id', component: MessageCmp }
+        ]
+      }
+    ]
+  }
+  { path: ‘’, pathMatch: ‘full’, redirectTo: ‘/inbox’ }
+  　/inbox/33/message/44首先匹配:folder，对应组件为ConversationCmp，而后进入子配置,'message/:id'，MessageCmp组件被激活。
+  @Component({
+  template: `
+    ...
+    <router-outlet></router-outlet>
+    ...
+    <router-outlet name="popup"></router-outlet>
+  `
+})
+现在路由器对URL的解析过程完毕。但是如果用户想从MessageCmp中跳转到别的路由状态该如何做呢？Angular2提供了两种方式。
+
+　　一种是通过router.navigate方法来导航：
+class MailAppCmp {
+}
+@Component({...})
+class MessageCmp {
+  private id: string;
+  constructor(private route: ActivatedRoute, private router: Router) {
+    route.params.subscribe(_ => this.id = _.id);
+  }
+
+  openPopup(e) {
+    this.router.navigate([{outlets: {popup: ['message', this.id]}}]).then(_ => {
+      // navigation is done
+    });
+  }
+}
+@Component({
+  template: `
+    <a [routerLink]="[ up: ['message', this.id]}}]">Edit</a>
+  `
+})
+navigate是Router类的一个方法，主要用来跳转路由。 
+
+函数定义：
+navigate(commands: any[], extras?: NavigationExtras) : Promise`<boolean>`1
+interface NavigationExtras {
+  relativeTo : ActivatedRoute
+  queryParams : Params
+  fragment : string
+  preserveQueryParams : boolean
+  preserveFragment : boolean
+  skipLocationChange : boolean
+  replaceUrl : boolean
+}123456789
+
+1.this.router.navigate(['user', 1]); 
+ 以根路由为起点跳转
+
+2.this.router.navigate(['user', 1],{relativeTo: route});  
+默认值为根路由，设置后相对当前路由跳转，route是ActivatedRoute的实例，
+使用需要导入ActivatedRoute
+
+3.this.router.navigate(['user', 1],{ queryParams: { id: 1 } }); 
+路由中传参数 /user/1?id=1
+
+4.this.router.navigate(['view', 1], { preserveQueryParams: true }); 
+默认值为false，设为true，保留之前路由中的查询参数/user?id=1 to /view?id=1
+
+5.this.router.navigate(['user', 1],{ fragment: 'top' }); 
+路由中锚点跳转 /user/1#top 
+
+6.this.router.navigate(['/view'], { preserveFragment: true }); 
+默认值为false，设为true，保留之前路由中的锚点/user/1#top to /view#top
+
+7.this.router.navigate(['/user',1], { skipLocationChange: true }); 
+默认值为false，设为true路由跳转时浏览器中的url会保持不变，但是传入的参数依然有效
+
+8.this.router.navigate(['/user',1], { replaceUrl: true }); 
+未设置时默认为true，设置为false路由不会进行跳转
+interface NgModule {
+     // providers: 这个选项是一个数组,需要我们列出我们这个模块的一些需要共用的服务
+     //            然后我们就可以在这个模块的各个组件中通过依赖注入使用了.
+    providers : Provider[]
+     // declarations: 数组类型的选项, 用来声明属于这个模块的指令,管道等等.
+     //               然后我们就可以在这个模块中使用它们了.
+    declarations : Array<Type<any>|any[]>
+     // imports: 数组类型的选项,我们的模块需要依赖的一些其他的模块,这样做的目的使我们这个模块
+     //          可以直接使用别的模块提供的一些指令,组件等等.
+    imports : Array<Type<any>|ModuleWithProviders|any[]>
+     // exports: 数组类型的选项,我们这个模块需要导出的一些组件,指令,模块等;
+     //          如果别的模块导入了我们这个模块,
+     //          那么别的模块就可以直接使用我们在这里导出的组件,指令模块等.
+    exports : Array<Type<any>|any[]>
+    // entryComponents: 数组类型的选项,指定一系列的组件,这些组件将会在这个模块定义的时候进行编译
+    //                  Angular会为每一个组件创建一个ComponentFactory然后把它存储在ComponentFactoryResolver
+    entryComponents : Array<Type<any>|any[]>
+    // bootstrap: 数组类型选项, 指定了这个模块启动的时候应该启动的组件.当然这些组件会被自动的加入到entryComponents中去
+    bootstrap : Array<Type<any>|any[]>
+    // schemas: 不属于Angular的组件或者指令的元素或者属性都需要在这里进行声明.
+    schemas : Array<SchemaMetadata|any[]>
+    // id: 字符串类型的选项,模块的隐藏ID,它可以是一个名字或者一个路径;用来在getModuleFactory区别模块,如果这个属性是undefined
+    //     那么这个模块将不会被注册.
+    id : string
+ }

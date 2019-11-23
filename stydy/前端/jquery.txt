@@ -1,0 +1,210 @@
+jquery绑定事件新写法
+$("#searchBtn").on("click", reloadDataTable);
+为jQuery类添加类方法，可以理解为添加静态方法。
+.this和event.target都是dom对象
+$(e.target).is(":checked")
+如果要使用jquey中的方法可以将他们转换为jquery对象。
+比如this和$(this)的使用、event.target和$(event.target)的使用；
+1.1 添加一个新的全局函数
+jQuery.foo = function() {   
+alert("This is a test.");  };
+1.2 增加多个全局函数
+1 jQuery.foo = function(){
+2   alert("This is a test.");  
+3 };
+4 jQuery.bar = function(param){
+5     alert("This is another test.");
+6 }
+调用时和一个函数的一样的:jQuery.foo(); jQuery.bar(); 简写形式为：.foo();.bar(“bar”);
+1.3 使用jQuery.extend(object)添加全局函数
+1 jQuery.extend({
+2     foo:function(){
+3         alert("This is a test.");    
+4     },
+5     bar:function(){
+6        alert("This is another test");
+7     }
+8 });
+1.4 使用命名空间
+
+虽然在jQuery命名空间中，我们禁止使用javascript函数名和变量名。但仍然不可避免某些函数名或变量名将与其他jQuery插件冲突，因此我们习惯将一些方法封装到另一个自定义的命名空间。
+
+1 jQuery.myPlugin = {
+2     foo:function(){
+3        alert("This is a test.");
+4     }  ,
+5    bar:function("bar"){
+6       alert("This is another test.");
+7    }  
+8 }
+简写形式为：
+
+$.myPlugin.foo();
+
+$.myPlugin.bar(“bar”);
+2.对象级别的插件开发
+
+对象级别的插件开发需如下两种形式：
+
+形式1：
+
+1 (function($){
+2     $.fn.pluginName = function(){
+3          // 插件代码写在这里 
+4      }
+5 })(jQuery);
+$.fn.hilight = function(){
+
+2 // 我们的插件写在这里
+
+3 };
+
+我们的插件通过这样被调用：
+
+1 $(“myDiv”).hilight();
+开发插件的方法
+jQuery.extend({
+    min: function(a, b) {
+        return a < b ? a : b;
+    },
+    max: function(a, b) {
+        return a > b ? a : b;
+    }
+});
+jQuery.min(2, 3); //  2 
+jQuery.max(4, 5); //  5
+jQuery.fn.extend(object);
+  就是为jQuery类添加“成员函数”。jQuery类的实例才可以调用这个“成员函数”。
+  比如我们要开发一个插件，做一个特殊的编辑框，当它被点击时，便alert 当前编辑框里的内容。可以这么做：
+
+复制代码
+$.fn.extend({
+    alertWhileClick: function() {
+        $(this).click(function() {
+            alert($(this).val());
+        });
+    }
+});
+//$("#input1")是jQuery的实例，调用这个扩展方法
+$("#input1").alertWhileClick();
+JQuery的extend扩展方法：
+
+      Jquery的扩展方法extend是我们在写插件的过程中常用的方法，该方法有一些重载原型，在此，我们一起去了解了解。
+
+ 一、Jquery的扩展方法原型是:　
+
+
+extend(dest,src1,src2,src3...);
+      它的含义是将src1,src2,src3...合并到dest中，返回值为合并后的dest,由此可以看出该方法合并后，是修改了dest的结构的。如果想要得到合并的结果却又不想修改dest的结构，可以如下使用：
+
+var newSrc = $.extend({},src1,src2,src3...)//也就是将"{}"作为dest参数。
+      这样就可以将src1,src2,src3...进行合并，然后将合并结果返回给newSrc了。如下例：
+
+var result = $.extend({},{name:"Tom",age:21},{name:"Jerry",sex:"Boy"})
+      那么合并后的结果：
+
+result={name:"Jerry",age:21,sex:"Boy"}
+     也就是说后面的参数和前面的参数存在相同的名称，那么后面的会覆盖前面的参数值。
+	 
+二、省略dest参数
+
+上述的extend方法原型中的dest参数是可以省略的，如果省略了，则该方法就只能有一个src参数，而且是将该src合并到调用extend方法的对象中去，如：
+ 　　1、$.extend(src)
+ 　　该方法就是将src合并到jquery的全局对象中去，如：
+
+
+$.extend(hello:function(){alert('hello');})
+      就是将hello方法合并到jquery的全局对象中。
+      下面例举几个常用的扩展实例：
+$.extend({net:{}})
+      这是在jquery全局对象中扩展一个net命名空间。
+
+$.extend($.net,{
+hello:function(){alert('hello');}
+})
+      这是将hello方法扩展到之前扩展的Jquery的net命名空间中去。
+三、Jquery的extend方法还有一个重载原型：
+
+
+extend(boolean,dest,src1,src2,src3...)
+      第一个参数boolean代表是否进行深度拷贝，其余参数和前面介绍的一致，什么叫深层拷贝，我们看一个例子：
+
+var result=$.extend( true, {}, 
+{ name: "John", location: {city: "Boston",county:"USA"} }, 
+{ last: "Resig", location: {state: "MA",county:"China"} } );
+      我们可以看出src1中嵌套子对象location:{city:"Boston"},src2中也嵌套子对象location:{state:"MA"},第一个深度拷贝参数为true，那么合并后的结果就是
+
+
+result={name:"John",last:"Resig",
+location:{city:"Boston",state:"MA",county:"China"}}
+ 也就是说它会将src中的嵌套子对象也进行合并，而如果第一个参数boolean为false，我们看看合并的结果是什么，如下：
+
+var result=$.extend( false, {}, 
+{ name: "John", location:{city: "Boston",county:"USA"} }, 
+{ last: "Resig", location: {state: "MA",county:"China"} } 
+);
+       那么合并后的结果就是:
+
+result={name:"John",last:"Resig",location:{state:"MA",county:"China"}}
+
+1.表单提交
+submit() 方法触发 submit 事件，或规定当发生 submit 事件时运行的函数。
+$(selector).submit(function)
+使用 preventDefault() 函数来阻止对表单的提交。
+ajaxSubmit()提交表单,使用第三方插件jquery.form实现；
+通常情况下，我们直接通过form提交的话， 提交后当前页面跳转到form的action所指向的页面。
+然而，很多时候我们比不希望提交表单后页面跳转，
+那么，我们就可以使用ajaxSubmit(obj)来提交数据。
+
+$('button').on('click', function() {
+    $('form').on('submit', function() {
+        var title = $('inpur[name=title]').val(),
+            content = $('textarea').val();
+        $(this).ajaxSubmit({
+            type: 'post', // 提交方式 get/post
+            url: 'your url', // 需要提交的 url
+            data: {
+                'title': title,
+                'content': content
+            },
+            success: function(data) { // data 保存提交后返回的数据，一般为 json 数据
+                // 此处可对 data 作相关处理
+                alert('提交成功！');
+            }
+            $(this).resetForm(); // 提交后重置表单
+        });
+        return false; // 阻止表单自动提交事件，必须返回false，否则表单会自己再做一次提交操作，并且页面跳转
+
+    });
+});
+如果要提交之后返回数据再触发ajax异步交互（实际就是一个按钮触发两个事件，后一个事件要等前一个事件完成的情况才触发）
+
+$("#uploadImage").on("submit",function () { //触发form表单提交，url写在form标签
+    $("#uploadImage").ajaxSubmit(options); // form表单提交后触发
+    return false; // 必须返回false，否则表单会自己再做一次提交操作，并且页面跳转
+});
+var options = {
+    //target: '#picSrc',          //把服务器返回的内容放入id为picSrc的元素中
+    //beforeSubmit: function({
+                }),  //提交前的回调函数
+    success:function (backData) { //提交后的回调函数
+
+        var sendData={
+            "srcImageFile":backData.serviceIcon,
+            "result":backData.serviceIcon,
+
+        };
+        $.ajax({
+            url:"/Wisdom/smartCampus/service/cutPicture",//交互地址
+            type:"post",//方法
+            //dataType:"json",
+            contentType:"application/json",//头部
+            data:JSON.stringify(sendData),//数据
+            success:function (backData) {
+                $("#uploadImage").resetForm();//重置表单
+
+            }
+        })
+    },
+    timeout: 3000               //限制请求的时间，当请求大于3秒后，跳出请求
+};

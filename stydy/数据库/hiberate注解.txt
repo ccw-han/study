@@ -1,0 +1,375 @@
+﻿@JoinColumn(referencedColumnName = "code", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @org.hibernate.annotations.ForeignKey(name = "none")
+    public Product getProduct() {
+        return product;
+    }
+	加入的列，关联列名为code。
+	然而字段名还是属性名。除非重构
+单向多对一配置
+emp{
+ @ManyToOne()
+29     @JoinColumn(name = "DEPTNO")
+30     /*@Basic(fetch=FetchType.LAZY)*/
+31     private Dept dept;
+}
+dept不干
+双向多对一配置
+emp{
+emp{
+ @ManyToOne()
+29     @JoinColumn(name = "DEPTNO")
+30     /*@Basic(fetch=FetchType.LAZY)*/
+31     private Dept dept;
+}
+}
+dept中有emps集合
+dept{
+ @OneToMany(mappedBy="dept",cascade={CascadeType.ALL})
+ private Set<Emp> emps=new HashSet<Emp>();
+ 
+}
+单向一对多配置
+dept{
+@OneToMany(cascade={CascadeType.ALL})
+31     @JoinColumn(name="deptno")
+32     private Set<Emp> emps=new HashSet<Emp>();
+}
+双向一对多配置
+dept{
+ @OneToMany(mappedBy="dept",cascade={CascadeType.ALL})
+31    
+32     private Set<Emp> emps=new HashSet<Emp>();
+}
+emp{
+@ManyToOne
+36     @JoinColumn(name="deptno")
+37     @Basic(fetch=FetchType.LAZY)
+38     private Dept dept;
+}
+单向多对多配置
+Role{
+@ManyToMany(targetEntity = Right.class, fetch = FetchType.LAZY)    
+    @JoinTable(name = "ROLE_RIGHT", joinColumns = @JoinColumn(name = "ROLE_ID"), inverseJoinColumns = @JoinColumn(name = "RIGHT_ID"))    
+    public List<Right> getRights() {  
+        return rights;  
+    }  
+}
+双向多对多
+Role{
+@ManyToMany(targetEntity = Right.class, fetch = FetchType.LAZY)    
+    @JoinTable(name = "ROLE_RIGHT", joinColumns = @JoinColumn(name = "ROLE_ID"), inverseJoinColumns = @JoinColumn(name = "RIGHT_ID"))    
+    public List<Right> getRights() {  
+        return rights;  
+    }  
+}
+Right{
+@ManyToMany(mappedBy="rights")  
+    public List<Role> getRoles() {  
+        return roles;  
+    }  
+}
+最后，在hibernate-cfg.xml文件中配置对应的Role和Right实体即可。
+
+ 
+
+Hibernate.cfg.xml代码  收藏代码
+<mapping class="com.entor.hibernate.manytomany.Role"/>  
+<mapping class="com.entor.hibernate.manytomany.Right"/>  
+到这里一个多对多配置就完成了。
+二、第二种情况，就是在中间实体中配置两个多对一关系，以学生Student-成绩Score-课程Course为例。
+
+Student {
+//学生端一对多，学生的成绩列表，也可以选择不配置  
+@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "student")  
+    public List<Score> getScoreList() {  
+        return scoreList;  
+    }  
+}
+Score{
+@ManyToOne(fetch = FetchType.LAZY)  
+    @JoinColumn(name = "student")  
+    public Student getStudent() {  
+        return student;  
+    }  
+	@ManyToOne(fetch = FetchType.LAZY)  
+    @JoinColumn(name = "course")  
+    public Course getCourse() {  
+        return course;  
+    }  
+
+}
+Course{
+<span style="line-height: 1.5;">//课程端一对多，课程的成绩列表，也可以选择不配置</span>  
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "course")  
+    public List<Score> getScoreList() {  
+        return scoreList;  
+    }  
+}
+//有时候虽然是多对多，但是我可以强行的认为他就是多对一关系。俩边都是manytoone，这样就不用中间表了
+父亲中的关系映射
+{set name="children" lazy="true" inverse="true"}
+      {key column="parent_id"/}
+      {one-to-many class="test.Child"/}
+{/set}
+ 
+儿子中关系映射
+{many-to-one name="parent" column="parent_id" not-null="true"/}
+       set中inverse="true"，说明父子关系只在多的一端(Child)维护。所以只会发出2个insert语句。
+	   Inverse：负责控制关系，默认为false，也就是关系的两端都能控制，但这样会造成一些问题，更新的时候会因为两端都控制关系，于是重复更新。一般来说有一端要设为true。
+	   2.inverse
+	   
+inverse属性用于指示本方是否参与维护关系，设为true时不维护，设为false时维护。此处的关系是指关联两张表的
+//少发出update语句
+
+
+外键或者关系表字段。本属性一般设置于一对多关系中的一端，并且设置为false，因为若由一端负责维护，每次更新完一端数据，都会去寻找于一端有关系的多段表中的行，并更新其外键字段。而由多端维护时，由于一端对象是多端对象的属性字段，
+所以，每次更新多端后提交数据，都会自动更新该字段（若有更新时），这样比较方便。
+cascade描述的是对象与对象之间的关系
+inverse描述的是对象与外键之间的关系
+当给classes设置inverse=”true”时，则表示classes不维护和student的外键关系。此时当删除一个classes时,由于classes不维护与student的关系，顾不会发出update语句所以会报错。而如果classes没有设置inverse=”true”，即inverse=”false”,则说明classes维护关系。故当删除classes时会发出update student的语句，故可以删除成功.
+5.正确的设置inverse
+我们说inverse设立不当会导致性能低下，其实是说inverse设立不当，会产生多余重复的SQL语句甚至致使JDBC exception的throw。这是我们在建立实体类关系时必须需要关注的地方。一般来说，inverse=true是推荐使用，双向关联中双方都设置 inverse=false的话，必会导致双方都重复更新同一个关系。但是如果双方都设立inverse=true的话，双方都不维护关系的更新，这也是不行的，好在一对多中的多端:one-to-many默认是inverse=false，避免了这种错误的产生。但是多对多就没有这个默认设置了，所以很多人经常在多对多的两端都使用inverse=true，结果导致连接表的数据根本没有记录，就是因为他们双方都没有责任维护关系。所以说，双向关联中最好的设置是一端为inverse=true，一端为inverse=false。一般inverse=false会放在多的一端，那么有人提问了， many－to－many两边都是多的，inverse到底放在哪儿？其实hibernate建立多对多关系也是将他们分离成两个一对多关系，中间连接一个连接表。所以通用存在一对多的关系
+，也可以这样说：一对多是多对多的基本组成部分。
+为何使用级联操作，为了方便，本来是在双向一对多关系中是一个一个保存的。现在知道在多方设置cascade值只需要save（staff）不用保存dept了。但是dept得有值
+也可以在dept中添加级联，那么只要保存dept
+all-delete-orphan: 当一个节点在对象图中成为孤儿节点时，删除该节点
+
+　　　　　　我们使用得是save-update，也就是说如果相关联的对象在表中没有记录，则会一起save，如果有，看是否发生改变，会进行updat　　　　
+
+　　　　　　其他应该度知道，说一下这个all-delete-orphan：什么是孤儿节点，举个例子，班级和学生，一张classes表，一张student表，student表中有5个学生的数据，其5个学生都属于这个班级，也就是这5个学生中的外键字段都指向那个班级，现在删除其中一个学生(remove)，进行的数据操作仅仅是将student表中的该学生的外键字段置为null，也就是说，则个学生是没有班级的，所以称该学生为孤儿节点，我们本应该要将他完全删除的，但是结果并不如我们所想的那样，所以设置这个级联属性，就是为了删除这个孤儿节点。也就是解决这类情况。
+
+ 
+
+　　　　　　cascade关系比较简单，就是这么几种，不难理解。关键的地方是理解对关联对象进行相应的操作，这个关联对象指的是谁，知道了这个，就知道了为什么在映射文件中那个位置设置级联属性了。
+此时此classes包含的所以的student都一并删除了。注意在如果不设置级联删除则无法删除被外键引用的对象。
+//inverse="true"，让对方维护关系，此时这里的cascade设置没什么用，因为自身不维护关系，它也就失效了。
+        <set name="staffSet" inverse="true" cascade="save-update">
+            <key column="deptId"></key>
+            <one-to-many class="oneToMany.Staff"/>
+        </set>    
+    </class>    
+	//这个级联就有用，因为是让自己这方维护关系
+        <many-to-one name="dept" column="deptId" class="oneToMany.Dept" cascade="save-update"></many-to-one>
+到这里，inverse和cascade这两个的作用就已经讲解完了
+
+　　　　　　　　1、inverse的权限在cascade之上，意思就是cascade是否有用，还得看inverse这个属性
+
+　　　　　　　　2、inverse的作用：在映射关系中，让其中一方去维护关系，好处就是能提高性能，不用重复维护。维护两种关系，看下
+
+　　　　　　　　　　　　2.1 控制级联关系是否有效
+
+　　　　　　　　　　　　　　　　cascade是否有效，就得看inserve的值，如果是自己方来维护关系，那么cascade就有效，反之无效
+
+　　　　　　　　　　　　2.2 控制外键关系
+
+　　　　　　　　　　　　　　　　这个就得通过让自己拥有对方的实例引用(可能是set，也可能就是单个存储对象的变量)，这样才具备控制外键关系的能力，然后看inserve的值，
+
+　　　　　　　　3、inverse只能在一的一方设置，并且默认值是true，也就是说，不设置inverse时，默认是让多的一方去维护关系，这种一般是在双向、外键关系中才设置inverse的值，如果是单向的，就只有一方有维护关系的权利。
+
+　　　　　　　　4、在以后的代码中，先要搞清楚关系，才能写出性能最好的代码。通过学习这两个属性，在测试代码中，就不必那么麻烦了，只需要考虑维护关系的一方，另一方就会自动保存了。
+
+　　　　　　　　5、如果你对测试代码发送了多少条sql语句不清楚的话，可以往前面看看那篇讲解一级缓存和三种状态的文章，通过快照区和session作用域来分析，到底会发送多少条sql语句。
+注解
+@Id
+    @GeneratedValue(generator="uuid")/定义一个主键生成策略
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @Column(length = 50)
+    private String id;
+　
+* 注释说明：   
+* @Entity —— 将一个类声明为一个实体bean(即一个持久化POJO类)   
+  @Id
+    /**
+     * 可选的主键的生成策略
+     * 可选的值：
+     TABLE,
+     SEQUENCE, //主要用于Oracle数据库
+     IDENTITY,
+     AUTO; //根据数据库定义主键生成策略，myql底层是自动增长主列
+     @GeneratedValue(strategy = GenerationType.AUTO) 
+/**
+     * 如果主键是指派的，就不能用jpa注解
+     */
+    @GeneratedValue(generator = "deptno") //定义一个主键生成策略
+    @GenericGenerator(name = "deptno",strategy = "assigned")
+ public Integer getEmpno() {
+        return empno;
+    }	
+* @Table —— 注解声明了该实体bean映射指定的表（table）,目录（catalog）和schema的名字   
+* @Column —— 注解声明了属性到列的映射。该注解有如下的属性   
+* name 可选，列名（默认值是属性名）   
+* unique 可选，是否在该列上设置唯一约束（默认值false）   
+* nullable 可选，是否设置该列的值可以为空（默认值false）   
+* insertable 可选，该列是否作为生成的insert语句中的一个列（默认值true）   
+* updatable 可选，该列是否作为生成的update语句中的一个列（默认值true）   
+* columnDefinition 可选，为这个特定列覆盖sql ddl片段（这可能导致无法在不同数据库间移植）   
+* table 可选，定义对应的表（默认为主表）   
+* length 可选，列长度（默认值255）   
+* precision 可选，列十进制精度（decimal precision)(默认值0）   
+* scale 可选，如果列十进制数值范围（decimal scale）可用，在此设置（默认值0）  
+ 
+* 
+*    1.native 对于orcale采用Sequence方式，对于MySQL和SQL Server采用identity(处境主键生成机制)，   
+*     native就是将主键的生成工作将由数据库完成，hibernate不管（很常用）   
+*     例：@GeneratedValue(generator = "paymentableGenerator")       
+*          @GenericGenerator(name = "paymentableGenerator", strategy = "native")   
+*      2.uuid 采用128位的uuid算法生成主键，uuid被编码为一个32位16进制数字的字符串。占用空间大（字符串类型）。   
+*       例：@GeneratedValue(generator = "paymentableGenerator")       
+*          @GenericGenerator(name = "paymentableGenerator", strategy = "uuid")   
+*      3.hilo 要在数据库中建立一张额外的表，默认表名为hibernate_unque_key，默认字段为integer类型，名称是next_hi（比较少用）   
+*       例：@GeneratedValue(generator = "paymentableGenerator")       
+*          @GenericGenerator(name = "paymentableGenerator", strategy = "hilo")   
+*      4.assigned 在插入数据的时候主键由程序处理（很常用），这是<generator>元素没有指定时的默认生成策略。等同于JPA中的AUTO。   
+*       例：@GeneratedValue(generator = "paymentableGenerator")       
+*          @GenericGenerator(name = "paymentableGenerator", strategy = "assigned")   
+*      5.identity 使用SQL Server和MySQL的自增字段，这个方法不能放到Oracle中，Oracle不支持自增字段，要设定sequence(MySQL和SQL Server中很常用)。等同于JPA中的IDENTITY   
+*       例：@GeneratedValue(generator = "paymentableGenerator")       
+*          @GenericGenerator(name = "paymentableGenerator", strategy = "identity")   
+*      6.select 使用触发器生成主键（主要用于早期的数据库主键生成机制，少用）   
+*       例：@GeneratedValue(generator = "paymentableGenerator")       
+*          @GenericGenerator(name = "paymentableGenerator", strategy = "select")   
+*      7.sequence 调用谨慎数据库的序列来生成主键，要设定序列名，不然hibernate无法找到。   
+*       例：@GeneratedValue(generator = "paymentableGenerator")      
+*    @GenericGenerator(name = "paymentableGenerator", strategy = "sequence",       
+*    parameters = { @Parameter(name = "sequence", value = "seq_payablemoney") })   
+*   8.seqhilo 通过hilo算法实现，但是主键历史保存在Sequence中，适用于支持Sequence的数据库，如Orcale(比较少用）    
+*   例：@GeneratedValue(generator = "paymentableGenerator")      
+*    @GenericGenerator(name = "paymentableGenerator", strategy = "seqhilo",       
+*    parameters = { @Parameter(name = "max_lo", value = "5") })   
+*   9.increnment 插入数据的时候hibernate会给主键添加一个自增的主键，但是一个hibernate实例就维护一个计数器，所以在多个实例运行的时候不能使用这个方法。   
+*   例：@GeneratedValue(generator = "paymentableGenerator")       
+*          @GenericGenerator(name = "paymentableGenerator", strategy = "increnment")   
+*      10.foreign 使用另一个相关的对象的主键。通常和<one-to-one>联合起来使用。   
+*      例：@Id       
+*    @GeneratedValue(generator = "idGenerator")      
+*    @GenericGenerator(name = "idGenerator", strategy = "foreign",       
+*         parameters = { @Parameter(name = "property", value = "info") })       
+*    Integer id;   
+* @OneToOne    
+* EmployeeInfo info;   
+*   11.guid 采用数据库底层的guid算法机制，对应MySQL的uuid()函数，SQL Server的newid()函数，ORCALE的rawtohex(sys_guid())函数等   
+*   例：@GeneratedValue(generator = "paymentableGenerator")        
+*    @GenericGenerator(name = "paymentableGenerator", strategy = "guid")    
+*   12.uuid.hex 看uudi,建议用uuid替换   
+*    例：@GeneratedValue(generator = "paymentableGenerator")        
+*    @GenericGenerator(name = "paymentableGenerator", strategy = "uuid.hex")   
+*   13.sequence-identity sequence策略的扩展，采用立即检索策略来获取sequence值，需要JDBC3.0和JDK4以上（含1.4）版本   
+*       例：@GeneratedValue(generator = "paymentableGenerator")      
+*    @GenericGenerator(name = "paymentableGenerator", strategy = "sequence-identity",       
+*         parameters = { @Parameter(name = "sequence", value = "seq_payablemoney") })    
+*         
+* @OneToOne 设置一对一个关联。cascade属性有五个值(只有CascadeType.ALL好用？很奇怪)，分别是CascadeType.PERSIST(级联新建)，CascadeType.REMOVE（级联删除），CascadeType.REFRESH（级联刷新），CascadeType.MERGE（级联更新），CascadeType.ALL（全部四项）   
+*    方法一   
+*    主表： ?@OneToOne(cascade = CascadeType.ALL)   
+*      @PrimaryKeyJoinColumn  
+*      public 从表类 get从表类(){return 从表对象}   
+*      从表：没有主表类。   
+*      注意：这种方法要求主表与从表的主键值想对应。   
+*   方法二   
+*      主表：?@OneToOne(cascade = CascadeType.ALL)   
+*          @JoinColumn(name="主表外键") //这里指定的是数据库中的外键字段。   
+*          public 从表类 get从表类(){return 从表类}   
+*      从表：@OneToOne(mappedBy = "主表类中的从表属性")//例主表User中有一个从表属性是Heart类型的heart，这里就填heart   
+*          public 主表类 get主表类(){return 主表对象}   
+*      注意：@JoinColumn是可选的。默认值是从表变量名+"_"+从表的主键（注意，这里加的是主键。而不是主键对应的变量）。   
+* 方法三   
+*      主表：@OneToOne(cascade=CascadeType.ALL)   
+*          @JoinTable( name="关联表名",   
+*     joinColumns = @JoinColumn(name="主表外键"),   
+*     inverseJoinColumns = @JoinColumns(name="从表外键")   
+*          )   
+*      从表：@OneToOne(mappedBy = "主表类中的从表属性")//例主表User中有一个从表属性是Heart类型的heart，这里就填heart   
+*          public 主表类 get主表类(){return 主表对象}       
+* @ManyToOne 设置多对一关联   
+*    方法一          
+*    @ManyToOne(cascade={CasCadeType.PERSIST,CascadeType.MERGE})   
+*    @JoinColumn(name="外键")   
+*    public 主表类 get主表类(){return 主表对象}   
+*    方法二   
+*    @ManyToOne(cascade={CascadeType.PERSIST,CascadeType.MERGE})   
+*    @JoinTable(name="关联表名"，   
+*    joinColumns = @JoinColumn(name="主表外键"),   
+*    inverseJoinColumns = @JoinColumns(name="从表外键")   
+*    )   
+* @OneToMany 设置一对多关联。cascade属性指定关联级别,参考@OneToOne中的说明。fetch指定是否延迟加载，值为FetchType.LAZY表示延迟，为FetchType.EAGER表示立即加载   
+*    方法一     使用这种配置，在为“一端”添加“多端”时，不会修改“多端”的外键。在“一端”加载时，不会得到“多端”。如果使用延迟加载，在读“多端”列表时会出异常，立即加载在得到多端时，是一个空集合（集合元素为0）。   
+*    “一端”配置   
+*    @OneToMany(mappedBy="“多端”的属性")   
+*    public List<“多端”类> get“多端”列表(){return “多端”列表}   
+*    “多端”配置参考@ManyToOne.        
+*    方法二   
+*    “一端”配置   
+*    @OneToMany(mappedBy="“多端”的属性")   
+*    @MapKey(name="“多端”做为Key的属性")   
+*    public Map<“多端”做为Key的属性的类,主表类> get“多端”列表（）{return “多端”列表}   
+*    “多端”配置参考@ManyToOne.    
+*    方法三 使用这种配置，在为“一端”添加“多端”时，可以修改“多端”的外键。   
+*    “一端”配置   
+*    @OneToMany  
+*    @JoinColumn(name="“多端”外键")    
+*    public List<“多端”类> get“多端”列表(){return “多端”列表}   
+*    “多端”配置参考@ManyToOne.   
+Hibernate注解详解(超全面不解释)
+双向一对一总结：
+
+　　首先表设计：主表：students,存在有phone的外键
+
+　　　　　　　　从表：没有外键，数据交给students管理；
+
+　　实体类的设计：主表：　　　　　　　　
+
+　　　　　　　　　　@OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+  　　　　　　　　 @JoinColumn(name="tel",unique = true)  //name指的是主表的外键，数据库中的外键,unique表示是否是唯一的
+　　　　　　　　　从表：
+
+　　　　@OneToOne(mappedBy = "phone",fetch = FetchType.LAZY) //phone为主表类中的从表实例即：private Phone phone ;中的phone
+ 单向的
+ /**
+     * emp是多方，dept是一方
+     *
+     */
+    @ManyToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER) //抓取策略是积极的
+    @JoinColumn(name = "deptno")//deptno是外键
+    public Dept getDept() {
+        return dept;
+		 @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JoinColumn(name = "deptno",updatable = false)
+    public Set<Emp> getEmps() {
+        return emps;
+    }
+　2.不要加mappedBy这一属性，因为加上这一属性只可以从多方进行级联，
+双向多对多
+
+Students.java
+
+复制代码
+    private Set<Teachers> teachers = new HashSet<>() ;
+    @ManyToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "stu_teach",
+            joinColumns = {@JoinColumn(name = "sid",updatable = false)},//该实体对应表的主键
+            inverseJoinColumns = {@JoinColumn(name="tid",updatable = false)}
+    )
+    public Set<Teachers> getTeachers() {
+        return teachers;
+    }
+复制代码
+Teacher.java
+
+复制代码
+ private Set<Students> stus = new HashSet<>();
+    @ManyToMany(cascade = CascadeType.MERGE,fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "stu_teach",
+            joinColumns = {@JoinColumn(name = "tid",updatable = false)},//该实体对应表的主键
+            inverseJoinColumns = {@JoinColumn(name="sid",updatable = false)}
+    )
+    public Set<Students> getStus() {
+        return stus;
+    }
+ 
+
+实现1多对一，emp中有dept属性，可是表字段名为deptno referencedColumnName = "id"如果加name 和
+referencedColumnName不一样，后者只是数值，前者才是表的字段名
+2一对多
+@Temporal(TemporalType.DATE)指定类型

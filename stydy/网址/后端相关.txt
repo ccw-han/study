@@ -1,0 +1,201 @@
+https://blog.csdn.net/he90227/article/details/38728831 						hiberate
+https://www.cnblogs.com/ityouknow/p/5662753.html 						springboot教程
+https://blog.csdn.net/he90227/article/details/38728831 						Hibernate注解大全和实战
+https://www.cnblogs.com/deng-cc/p/6428599.html 							Hibernate的DetachedCriteria使用（含Criteria）
+https://blog.csdn.net/yyj108317/article/details/81735650  					Angular前端与springBoot后端的http请求交互
+https://blog.csdn.net/gaochunhu/article/details/6328823						hibernate注解大全
+https://www.cnblogs.com/lovecindywang/p/4444915.html						如何写一个框架上
+https://www.cnblogs.com/lovecindywang/p/4447739.html						如何写一个框架下
+https://blog.csdn.net/zhemeban/article/details/71901759						mybatis example方法
+https://blog.csdn.net/biandous/article/details/65630783						mybatis example详细操作
+https://blog.51cto.com/zero01/2103911								mybatis缓存
+https://blog.csdn.net/blueheart20/article/details/44654007					事物属性详解
+https://blog.csdn.net/qq_29347295/article/details/79019221					很详细的事物管理
+https://www.cnblogs.com/daniels/p/8242592.html							动态代理原理
+https://www.cnblogs.com/fengxuehuanlin/p/5311648.html						ajax文件上传
+https://www.jb51.net/article/128664.htm								ajax多文件上传
+https://www.cnblogs.com/xdp-gacl/p/4200090.html							阿帕奇文件上传和下载
+https://www.cnblogs.com/fjsnail/p/3491033.html							spring文件上传和下载
+https://www.cnblogs.com/xuningchuanblogs/p/7683866.html						上传和下载
+https://blog.csdn.net/xingchen690606313/article/details/82907516				文件下载
+https://blog.csdn.net/czd3355/article/details/75340080						mybatis foreachcollection参数
+https://www.cnblogs.com/weiwang/p/3245915.html							mysql日期
+https://www.cnblogs.com/youfeng365/p/6398472.html?utm_source=itdadao&utm_medium=referral	sqlserver日期字符串
+https://www.cnblogs.com/lhuser/p/8988187.html						数据库连接配置
+https://www.cnblogs.com/xiaoluo501395377/p/3374955.html					hiberate注解
+https://blog.csdn.net/qq_35448976/article/details/77801991				hiberate二级缓存
+https://www.cnblogs.com/xiaoluo501395377/p/3377604.html					查询缓存详细
+https://www.cnblogs.com/fjdingsd/p/5273008.html						事物隔离
+https://baijiahao.baidu.com/s?id=1593192556844228644&wfr=spider&for=pc&isFailFlag=1	事务传播
+https://www.cnblogs.com/whgk/p/7112560.html						maven詳解
+https://www.cnblogs.com/jpfss/p/8352031.html						权限框架
+https://baijiahao.baidu.com/s?id=1593192556844228644&wfr=spider&for=pc&isFailFlag=1	事务例子
+https://www.cnblogs.com/hggen/p/6264475.html						tomcat的运行架构和原理
+https://www.cnblogs.com/duanxz/p/7493276.html						spring注解配置@Configuration等等启动spring
+https://blog.csdn.net/weixin_39805338/article/details/80770472				spring注解大全
+https://blog.csdn.net/weixin_40753536/article/details/81285046				springboot注解大全
+https://blog.51cto.com/superpcm/2095395							keepalived
+http://blog.itpub.net/31555484/viewspace-2565387/					优化sql
+https://blog.csdn.net/hellozpc/article/details/81436980					mq配置详细
+https://blog.csdn.net/hellozpc/article/details/78575773					dubbo教程
+https://me.csdn.net/blog/zpcandzhj							springcloud
+https://gitee.com/zkane/spring-cloud-demo						clouddemo
+https://blog.csdn.net/qq_37170583							rest风格的swager
+https://blog.csdn.net/qq_37170583							一个博客，boot整合各种，还有jdk
+http://www.sohu.com/a/256038402_100194412						数据结构
+https://blog.csdn.net/hellozpc/article/details/81436980					rebbitmq
+https://blog.csdn.net/weixin_44151971/article/details/85206076				正则
+https://blog.csdn.net/carechere/article/details/52315728				常用正则
+\https://blog.csdn.net/hry2015/article/details/79078312					mq持久化
+https://www.cnblogs.com/leemz-coding/p/7113530.html					dubbo入门
+https://www.cnblogs.com/xiaoluo501395377/p/3380270.html					深入hibenate的对象状态以及操作方法
+https://blog.csdn.net/yerenyuan_pku/article/details/52760010				hibenate的级联风格
+https://blog.csdn.net/xiaoxian8023/article/details/15380529				hibanate的inverse
+https://blog.csdn.net/liyiming2017/article/details/90218062				级联与删除正确操作方式
+https://www.cnblogs.com/fengmingyue/p/6193570.html					hibenate的抓取策略
+https://blog.csdn.net/wlwlwlwl015/article/details/42705585				抓取策略的注解
+https://www.cnblogs.com/crawl/p/7703679.html						jpa是规范，hibenate的实现
+http://www.ruanyifeng.com/blog/2018/10/restful-api-best-practices.html			restful规范
+https://www.cnblogs.com/gczmn/p/9438651.html						mybatis从表生成类
+https://blog.csdn.net/xjmchris03/article/details/81585070				spel运用
+https://www.cnblogs.com/yejg1212/p/3270152.html						getResource
+https://www.jianshu.com/p/43dae0b83755							restFul风格开发前后端分离
+http://c.biancheng.net/golang/								go语言学习
+https://blog.csdn.net/u013967628/article/details/84293834				netty运行原理
+https://blog.csdn.net/yezhenxu1992/article/details/51731237				nodeJs原理
+https://blog.csdn.net/ty497122758/article/details/78979302				很好的说明了同步异步阻塞非阻塞
+https://blog.csdn.net/dzq_boyka/article/details/74208156				java class方法
+https://www.cnblogs.com/1540340840qls/p/6184109.html					class获取流
+https://blog.csdn.net/chenluyao_it/article/details/78960055				spring接收参数
+https://blog.csdn.net/leo3070/article/details/81046383					@modalattribute详解
+https://blog.csdn.net/shenbug/article/details/78748346					springboot微信公众号开发
+https://blog.csdn.net/antgan/article/details/80288061					同上
+https://www.cnblogs.com/xdp-gacl/p/5151857.html						公众号原理
+https://www.cnblogs.com/caozengling/p/5668101.html					idea快捷键
+https://blog.csdn.net/weisong530624687/article/details/79012508				webstorm快捷键
+https://blog.csdn.net/voke_/article/details/76418116					webstorm破解
+https://blog.csdn.net/hcmony/article/details/80694560					redis问题
+https://blog.csdn.net/qitongce/article/details/72466318					gradle教程
+https://blog.csdn.net/daoming1112/article/details/77197558				bat文件语法
+https://blog.csdn.net/qq_38331606/article/details/80012182				MAVEN启动项目
+https://www.cnblogs.com/hendy326/p/8052967.html						同上
+https://blog.csdn.net/allWords/article/details/78222606					maven setting配置
+https://blog.csdn.net/qq_33363618/article/details/79438044				maven pom 设置
+https://www.cnblogs.com/wkrbky/p/6352188.html						maven命令
+https://blog.csdn.net/qq997404392/article/details/76986978				ant构建配置
+https://www.cnblogs.com/coprince/p/5984816.html						spring自带缓存
+https://blog.csdn.net/fansanjian/article/details/82048907				jetty插件
+https://www.cnblogs.com/fysola/p/6378400.html						spring缓存机制
+https://www.cnblogs.com/softidea/p/5962612.html						事务传播和嵌套
+https://www.cnblogs.com/huanongying/p/7021555.html					事务隔离
+https://www.cnblogs.com/h--d/p/6735110.html						poi
+https://www.cnblogs.com/hongten/p/java_poi_excel_xls_xlsx.html				poi
+http://www.importnew.com/29962.html							spring异常处理
+https://www.cnblogs.com/junzi2099/p/7840294.html					同上
+https://blog.csdn.net/addisonjing/article/details/55257065				java定时器
+https://blog.csdn.net/cliper9768/article/details/83818961				支付宝支付接口
+https://docs.alipay.com/mini/api/ui-navigate						支付宝小程序开发文档
+https://blog.csdn.net/a1786223749/article/details/80787379				微信公众号开发
+http://www.360doc.com/content/17/1226/10/16915_716361758.shtml				springboot开发
+https://www.cnblogs.com/admol/articles/4248159.html					mybatis批量插入
+https://www.cnblogs.com/hjtdlx/p/3944746.html						http非对称加密
+https://www.cnblogs.com/hongdiandian/p/9294970.html					token验证
+https://www.cnblogs.com/mujian/p/7665958.html						证书加密
+https://blog.csdn.net/Zheng_junming/article/details/79266165				resultType 驼峰配置
+https://blog.csdn.net/qq_32725403/article/details/79261094				oracle约束
+https://www.cnblogs.com/qianzf/p/6849108.html						数据库identiry用法
+https://ly-ltw.iteye.com/blog/1969544							mybatis拦截器使用分页
+https://blog.csdn.net/qq_36350477/article/details/82223986				sqlserver相当于posgre的generagic_servise
+https://blog.csdn.net/kevin_lcq/article/details/74846723				前后端分离token
+https://blog.csdn.net/shasharoman/article/details/81910915				token 和session区别
+https://blog.csdn.net/qq403580298/article/details/90756352				mysql分组原理
+https://www.cnblogs.com/franson-2016/p/5728280.html					java路径
+https://www.cnblogs.com/xiangzhong/p/5038338.html					存储过程
+https://blog.csdn.net/ttx_laughing/article/details/52881452				类加载网址
+https://blog.csdn.net/qq_39949109/article/details/80618400			mutipart下载文件
+https://blog.csdn.net/sanyaoxu_2/article/details/80555328			swagger使用 boot项目启动后  http://localhost:8080/swagger-ui.html
+https://blog.csdn.net/qq_31655965/article/details/55049192			枚举
+https://blog.csdn.net/zzq900503/article/details/80367821			springboot使用monogo
+
+https://www.cnblogs.com/jeffwongishandsome/p/spring-boot-integrate-mongodb-practise.html 	同上
+https://www.cnblogs.com/leskang/p/6000852.html					MOGODB语法
+https://blog.csdn.net/u010963948/article/details/79208328			boot事务
+https://blog.csdn.net/m0_37739193/article/details/85097477			servlet注解
+https://blog.csdn.net/nba_linshuhao/article/details/82783454			boot mapper注解
+https://blog.csdn.net/qq_39385706/article/details/79365849			boot多线程注解
+https://www.cnblogs.com/xiaobaizhiqian/p/7586857.html				web 过滤器执行逻辑
+https://blog.csdn.net/maaici/article/details/81033081				数据库schema
+https://blog.csdn.net/Fighting_mjtao/article/details/82788106			boot初始化sql文件
+https://blog.csdn.net/liwb94/article/details/83270381				mvc多环境
+https://blog.csdn.net/liujun03/article/details/82592929				boot多环境
+https://segmentfault.com/a/1190000016718525					springcloud 分布式事务解决方案
+https://www.cnblogs.com/xifenglou/p/8796607.html				mq解决事物问题
+https://blog.csdn.net/weixin_41605123/article/details/91905045			reids解决锁
+https://www.cnblogs.com/phoebeyue/p/10598719.html				各数据库 nosql 和 sql区别
+https://blog.csdn.net/qq_27317475/article/details/81168241			boot分页插件
+https://blog.csdn.net/u013631223/article/details/79092218			lombo springboot使用，自动生成getset
+https://blog.csdn.net/justry_deng/article/details/82259470			svn分支
+https://jingyan.baidu.com/article/6c67b1d6f524d52787bb1ef3.html			totersSvn
+https://blog.csdn.net/rth362147773/article/details/78966395			swagger使用
+https://jingyan.baidu.com/article/60ccbceb43e50364cbb19711.html			redis设置密码
+https://blog.csdn.net/fullbug/article/details/80643898				mybatis自增长
+https://www.cnblogs.com/hongdada/p/9956992.html					同上
+https://www.cnblogs.com/gulibao/p/5416245.html					mysql的double 和decimal的区别
+https://zhidao.baidu.com/question/579971553.html				mysql系统信息
+https://blog.csdn.net/born_mad/article/details/78062243				int转时间
+https://blog.csdn.net/u010931123/article/details/79390562			数据库时间互转
+https://www.jb51.net/article/100106.htm						ngnix代理配置、
+https://blog.csdn.net/xiao______xin/article/details/53216736/			详解ngnix
+https://www.cnblogs.com/nieliangcai/p/10362718.html				各个socket区别
+https://www.cnblogs.com/xiaohuizhenyoucai/p/10671290.html			WEBSOCKET教程
+https://www.cnblogs.com/love-wzy/p/10373639.html				springboot websocket教程
+http://blog.csdn.net/jdd92/article/details/81053404				springboot启动时机启动类
+https://www.cnblogs.com/ysq2018China/p/10241201.html				springboot内置外置启动
+https://blog.csdn.net/wangshuaiwsws95/article/details/80575742			springboot外置tomcat配置
+https://blog.csdn.net/qq_28016751/article/details/83585614			java自定义注解
+https://www.cnblogs.com/shizhengwen/p/9283973.html				redis文件备份特点
+https://blog.csdn.net/u013354805/article/details/48491427			svn分支管理
+https://www.cnblogs.com/shuideqing/p/9649590.html				soqrqube代码扫描质量
+https://blog.csdn.net/yxl_1207/article/details/80973622				idea debug
+https://blog.csdn.net/github_35169934/article/details/78233421  		springboot 默认配置文件
+https://blog.csdn.net/yamadeee/article/details/96479009				注解文档
+https://blog.csdn.net/u011983531/article/details/70941123			类方法和字段获取注解
+https://blog.csdn.net/hemin1003/article/details/82038244			springboot教程大全
+http://dockone.io/article/6051							docker概念
+https://blog.csdn.net/qq_41402200/article/details/82149110			SpringBoot整合MongoDB，使用mongoTemplate实现高级查询
+https://blog.csdn.net/dongzhensong/article/details/88659107			SpringBoot MongoDB批量插入数据
+SpringBoot整合MongoDB数据库实现简单的CRUD					https://blog.csdn.net/jiezai958921541/article/details/97897962
+springboot下使用MongoTemplate查询、聚合、分页mongodb				https://blog.csdn.net/yzh_1346983557/article/details/83146931
+MongoTemplate之MapReduce与Aggregation聚合					https://blog.csdn.net/u012794845/article/details/86577295
+mongoTemplate聚合操作Demo							https://www.cnblogs.com/tangzhe/p/9579908.html
+MongoTemplate进行增删改查							https://blog.csdn.net/sinat_35821285/article/details/83511203
+https://blog.csdn.net/fofabu2/article/details/78983741				mongodb设置密码
+https://blog.csdn.net/xindoo/article/details/78867843				springboot引入传统配置文件
+http://www.sohu.com/a/273525523_100212268					读取配置文件
+https://www.jianshu.com/p/b6549f086b21						springboot配置https访问
+https://blog.csdn.net/HcJsJqJSSM/article/details/84852967			springboot访问第三方https接口
+https://blog.csdn.net/justry_deng/article/details/81042379			httpclient使用
+https://www.jianshu.com/p/10382cc71127						OKHTTP请求
+https://www.cnblogs.com/javazhiyin/p/9851775.html				RESTtEMPLATE请求
+https://www.iteye.com/blog/lydawen-1246887					模拟超时
+https://www.cnblogs.com/woshimrf/p/springcloud-provider.html			springcloud创建一个服务提供者
+https://www.cnblogs.com/woshimrf/p/springcloud-consumer.html			服务消费者
+https://www.cnblogs.com/hellxz/p/9396282.html					CLOUDSTREAM
+https://www.jianshu.com/p/8bca50cb11d8						FEIGN cloud
+https://blog.sakuradon.com/index.php/archives/150/				tradeView
+https://www.liangzl.com/get-article-detail-18268.html				java各种日期
+https://www.jianshu.com/p/fff20fb93312						mysql的幂等性
+http://www.doc88.com/p-4039177469210.html					grafana可视化
+https://www.runoob.com/docker/docker-tutorial.html				docker
+https://blog.csdn.net/yxl_1207/article/details/80973622				idea调试
+https://help.aliyun.com/document_detail/53842.html?spm=a2c4g.11186623.6.782.685650dcsAmMNh		datav文档
+https://www.jianshu.com/p/ef9282217d07					okhttp很多东西
+https://blog.csdn.net/why15732625998/article/details/79348718			ajax添加请求头
+https://blog.csdn.net/zzk220106/article/details/81316092			ajax请求头
+https://www.cnblogs.com/sdcs/p/8484905.html					前端跨域设置
+https://www.cnblogs.com/brxHqs/p/11529307.html					后台跨域实现
+https://www.cnblogs.com/xiaodebing/p/9753602.html				okhttp添加cookie
+https://www.cnblogs.com/linjiqin/archive/2011/09/19/2181634.html		httpurlconnection
+https://blog.csdn.net/lightiff/article/details/80532272				el jsp应用api
+https://my.oschina.net/wangt10/blog/523015						springmvc shrio
+https://www.jianshu.com/p/b5efd979925a							shrio很全

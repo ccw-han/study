@@ -1,0 +1,4 @@
+<!--{{value[data.ngModel]}} || {{value[data.resultFieldName]}}-->
+<check-item-btn [showSkip]="data.showSkip"  [formCode]="data?.formCode" [inputFieldName]="data?.inputFieldName" [dependOnFieldName]="data?.dependOnFieldName"
+                [readonly]="value[data.ifReadonly] != null" [checkProject]="data.checkProject"  [modelData]="value"
+                [(ngModel)]="value[data.ngModel]" [resultFieldName]="data.resultFieldName" (check)="onCheck($event)" (audit)="onAudit($event)"></check-item-btn>

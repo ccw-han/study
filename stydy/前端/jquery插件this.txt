@@ -1,0 +1,4 @@
+$.fn.zyUpload=function（）{
+	console.log(this)//this  是一个数组，0是选中的元素，1是this的全局属性，2是原型链中的，其中有zyupload方法
+	$.isFunction( object )是jquery的方法
+}

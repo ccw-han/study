@@ -1,0 +1,21 @@
+组件
+一个外壳，可包含在模块中，组件和指令以及管道是私有的，服务是共有的，模块需要声明组件，
+其他模块需要用到此模块组件，需导出。
+使用ngModel需要用到FormModel模块，在appModule中导入。
+[class.selected]="hero === selectedHero"
+添加 @Input() hero 属性绑定机制。将页面属性，绑定到组件的hero属性中，单向
+import { Component, OnInit, Input } from '@angular/core';
+constructor(private heroService: HeroService) { }往组件中注入服务
+异步服务
+src/app/hero.service.ts (Observable imports)
+import { Observable, of } from 'rxjs';
+把 getHeroes 方法改成这样：
+getHeroes(): Observable<Hero[]> {
+  return of(HEROES);
+}
+of(HEROES) 会返回一个 Observable<Hero[]>，它会发出单个值，这个值就是这些模拟英雄的数组。
+在 HeroesComponent 中订阅
+getHeroes(): void {
+  this.heroService.getHeroes()
+      .subscribe(heroes => this.heroes = heroes);//里面的值
+}

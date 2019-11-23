@@ -1,0 +1,120 @@
+短信推送 用 这个  http://www.ihuyi.com
+
+
+
+package com.item.msmUtils;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.alibaba.fastjson.JSONObject;
+import com.base.util.StringUtil;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+
+public class testMsm {
+    /*** 验证码url*/
+    public static final String BASE_URL = "https://api.miaodiyun.com/20150822/industrySMS/sendSMS";
+    /*** 开发者注册后系统自动生成的账号，可在官网登录后查看*/
+    public static final String ACCOUNT_SID = "5315191509784cdd92a9935dac460f3f";
+    /*** 开发者注册后系统自动生成的TOKEN，可在官网登录后查看*/
+    public static final String AUTH_TOKEN = "bcb11092edcd4650a6bdfee79d1f7ee8";
+    /*** 响应数据类型, JSON或XML*/
+    public static final String RESP_DATA_TYPE = "json";
+
+    // 连接ssl
+    public static void main(String[] args) {
+        String res = post("13405787211");
+        if (!StringUtil.isEmpty(res) && res.indexOf("00000") > -1) {
+            System.out.println("发送成功！验证码为：" + res.split("_")[1]);
+        } else {
+            System.out.println(res);
+        }
+    }
+
+    public static String post(String phone) {
+        String result = "";
+        int mobileCode = (int) ((Math.random() * 9 + 1) * 100000);//随机码生成
+        // 创建默认的httpClient实例.
+        CloseableHttpClient httpclient = HttpClients.createDefault();
+        // 创建httppost
+        HttpPost httppost = new HttpPost(BASE_URL);
+        //参数添加
+        List<NameValuePair> formparams = new ArrayList<NameValuePair>();
+        formparams.add(new BasicNameValuePair("accountSid", ACCOUNT_SID));//sid
+        formparams.add(new BasicNameValuePair("smsContent", "【灵通布饰家】您的验证码为" + mobileCode + "，请于2分钟内正确输入，如非本人操作，请忽略此短信。"));//短信内容
+        formparams.add(new BasicNameValuePair("to", phone));//需要发送的人
+        Date date = new Date();
+        DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");//
+        String timestamp = df.format(date);
+        formparams.add(new BasicNameValuePair("timestamp", timestamp));
+        // 签名
+        String sig = DigestUtils.md5Hex(ACCOUNT_SID + AUTH_TOKEN + timestamp);
+        formparams.add(new BasicNameValuePair("sig", sig));
+        UrlEncodedFormEntity uefEntity;
+        try {
+            uefEntity = new UrlEncodedFormEntity(formparams, "UTF-8");
+            httppost.setEntity(uefEntity);
+//            System.out.println("executing request " + httppost.getURI());
+            CloseableHttpResponse response = httpclient.execute(httppost);
+//            System.out.println(EntityUtils.toString(uefEntity, "UTF-8"));
+            try {
+                HttpEntity entity = response.getEntity();
+                if (entity != null) {
+//                    System.out.println("--------------------------------------");
+                    String json = EntityUtils.toString(entity, "UTF-8");
+//                    System.out.println("Response content: " + json);
+
+                    JSONObject jsonObject = JSONObject.parseObject(json);
+//                    System.out.println("Response content: " + jsonObject.get("respCode"));
+                    if ("00000".equals(jsonObject.get("respCo" +
+                            "" +
+                            "de").toString().trim())) {
+                        result = jsonObject.get("respCode").toString().trim() + "_" + mobileCode;
+                    } else {
+                        result = "错误代码：" + jsonObject.get("respCode").toString().trim() + "_" + jsonObject.get("respDesc").toString().trim();
+                    }
+//                    System.out.println("--------------------------------------");
+                } else {
+                    result = "发送失败";
+                }
+            } finally {
+                response.close();
+            }
+        } catch (ClientProtocolException e) {
+            result = "发送失败";
+            e.printStackTrace();
+        } catch (
+                UnsupportedEncodingException e1) {
+            result = "发送失败";
+            e1.printStackTrace();
+        } catch (
+                IOException e) {
+            result = "发送失败";
+            e.printStackTrace();
+        } finally {
+            // 关闭连接,释放资源
+            try {
+                httpclient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
+    }
+}

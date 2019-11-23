@@ -1,0 +1,1 @@
+ajax不能响应文件下载，只能用form。submit方式

@@ -1,0 +1,95 @@
+3.进入标志
+
+"use strict";
+ 
+
+4.如何调用
+
+4.1针对单个脚本
+
+　<script>
+　　　　"use strict";
+　　　　console.log("这是严格模式。");
+　　</script>
+4.2针对单个函数
+
+复制代码
+function strict(){
+　　　　"use strict";
+　　　　return "这是严格模式。";
+　　}
+　　function notStrict() {
+　　　　return "这是正常模式。";
+　　}
+复制代码
+ 
+
+5.语法与行为改变
+
+严格模式对Javascript的语法和行为，都做了一些改变。
+
+5.1 全局变量显式声明
+
+在正常模式中，如果一个变量没有声明就赋值，默认是全局变量。严格模式禁止这种用法，全局变量必须显式声明。
+
+"use strict";
+　　v = 1; // 报错，v未声明
+　　for(i = 0; i < 2; i++) { // 报错，i未声明
+　　}
+因此，严格模式下，变量都必须先用var命令声明，然后再使用。
+
+ 
+
+5.2 禁止this关键字指向全局对象
+
+复制代码
+function f(){
+　　　　return !this;
+　　} 
+　　// 返回false，因为"this"指向全局对象，"!this"就是false
+　　function f(){ 
+　　　　"use strict";
+　　　　return !this;
+　　} 
+　　// 返回true，因为严格模式下，this的值为undefined，所以"!this"为true。
+复制代码
+因此，使用构造函数时，如果忘了加new，this不再指向全局对象，而是报错。
+
+function f(){
+　　　　"use strict";
+　　　　this.a = 1;
+　　};
+　　f();// 报错，this未定义
+ 
+
+5.3禁止删除变量
+
+严格模式下无法删除变量。只有configurable设置为true的对象属性，才能被删除。
+
+复制代码
+"use strict";
+　　var x;
+　　delete x; // 语法错误
+　　var o = Object.create(null, {'x': {
+　　　　　　value: 1,
+　　　　　　configurable: true
+　　}});
+　　delete o.x; // 删除成功
+复制代码
+5.4对象不能有重名的属性
+
+正常模式下，如果对象有多个重名属性，最后赋值的那个属性会覆盖前面的值。严格模式下，这属于语法错误。
+
+"use strict";
+　　var o = {
+　　　　p: 1,
+　　　　p: 2
+　　}; // 语法错误
+5.5函数不能有重名的参数
+
+正常模式下，如果函数有多个重名的参数，可以用arguments[i]读取。严格模式下，这属于语法错误。
+
+　"use strict";
+　　function f(a, a, b) { // 语法错误
+　　　　return ;
+　　}

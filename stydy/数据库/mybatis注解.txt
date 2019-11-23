@@ -1,0 +1,422 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!-- XML 配置文件包含对 MyBatis 系统的核心设置 -->
+
+<configuration>
+    <properties resource="db.properties" />
+    
+    <settings>
+        <!-- 指定 MyBatis 所用日志的具体实现 -->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!-- 打开懒加载的开关 -->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!-- 将积极加载改为消极加载 -->
+        <setting name="aggressiveLazyLoading" value="false"/>
+    </settings>
+    <!-- 定义别名 位置在setting之后 -->
+    <!--     
+    <typeAliases>
+        <typeAlias alias="user" type="org.model.User"></typeAlias>
+    </typeAliases> 
+    -->
+    <!-- 别名定义 推荐这种方式 扫描该包中的实体类以及子包中的实体类-->
+     <typeAliases>
+        <package name="model"/>
+    </typeAliases>
+    
+    <environments default="mysql">
+        <!-- 环境配置，即连接的数据库。 -->
+        <environment id="mysql">
+            <!-- 指定事务管理类型，type="JDBC"指直接简单使用了JDBC的提交和回滚设置 -->
+            <transactionManager type="JDBC" />
+            <!-- dataSource指数据源配置，POOLED是JDBC连接对象的数据源连接池的实现。 -->
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}" />
+                <property name="url" value="${url}" />
+                <property name="username" value="${username}" />
+                <property name="password" value="${password}" />
+            </dataSource>
+        </environment>
+    </environments>
+    <!-- mappers告诉了MyBatis去哪里找持久化类的映射文件 -->
+    <mappers>
+        <!-- <mapper resource="org/mapper/ten/proxy/UserMapper.xml"/> -->
+        <mapper class="Intefaceproxy.UserInterfaceMapper"/>
+    </mappers>
+</configuration> 
+1@Insert('...values(#{name},....)')
+@Options(useGeneratedKeys=true,keyProperties='id')
+int saveUser(User user);
+2@Delete('..')
+
+3@Select('')
+@Results({
+@Result(property='',column=""),
+@Result...
+})
+
+4@Update
+
+关联配置
+@One 一对一关联
+实体类中有另一个实体类的属性，在谁类中加在哪个类上注解
+@Select('...')
+@Results({
+@Result(id=true,property="id",column="id"),
+@Result(...),
+@Result(property="card", column="card_id",
+one=@One(select="Intefaceproxy.CardMapper.selectCardId",fetchType="FetchType.LAZY") ) 现有select * 关联
+Person selectPersonById(Interge id);
+})
+一对多关联
+表结构
+tb_class
+id code name 
+tb_student
+id  name sex age class_id
+class{
+private List students;
+
+}
+@Select('select * from tb_student where class_id = #{id}')//id为class的id值
+List<Student> selectStudentByCardId(Interge class_id)
+
+  @Select('select * from tb_class where id = #{id}')
+ @Results({
+ @Result(property='' ,column=''),
+ @Result(property="students",column="id",many=@Many(select="Intefaceproxy.StudentMapper.SelectStudentByCardId"),fetchType="FetchType.LAZY")
+ })//这里边的column意思是拿着class表中的id列去查student表中的数据,因为在class中配置，只能是class中的列，id列作为查询student的依据
+ Class selectById(Interge id);
+3多对多关系关联
+对象User2
+Article
+Orders{
+User2 user,//多对一关系
+List<Article> Articles//多对多关系                                 根据一方查多方。得用一方id   ，查一方直接就是一方的id
+																	要选表中配置有的字段
+}
+表结构
+user
+id username loginname password phone address
+article 
+id name price remark
+order
+id code total user_id
+item 
+order_id article_id amount
+@Select("select * from user where id=#{id}")
+User2 selectById(Integer id)
+@Select("select * from article where id in (select article_id from item where order_id=#(id))")
+List<Article> selectByOrderId(Integer order_id);
+
+
+@Select("select * from orders where id = #{id}")
+@Results({
+@Result(),
+@Result(property="user",column="user_id",one=@One("select="Intefaceproxy.manytomany.UserMapper.selectById",fetchType="fetchType.EAGER")),
+@Result(property='articles',column='id',many=@Many(select="Intefaceproxy.manytomany.ArticleMapper.SelectByOrderId"),fetchType="FetchType.LAZY")
+})
+Orders selectById(Integer id);
+
+动态sql
+实体类Employee
+public interface EmployeeMapper {
+    //动态查询  type:指定一个类    method:使用这个类中的selectWhitParamSql方法返回的sql字符串  作为查询的语句
+    @SelectProvider(type=Intefaceproxy.Dyno.EmployeeDynaSqlProvider.class,method="selectWhitParamSql")
+    List<Employee> selectWithParam(Map<String,Object> param);
+}
+返回sql语句的类
+package Intefaceproxy.Dyno;
+
+import java.util.Map;
+
+import org.apache.ibatis.jdbc.SQL;
+
+public class EmployeeDynaSqlProvider {
+    //方法中的关键字是区分大小写的  SQL SELECT WHERE
+    //该方法会根据传递过来的map中的参数内容  动态构建sql语句
+    public String selectWhitParamSql(Map<String, Object> param) {//也可以是对象，还是用get
+        return new SQL() {
+            {
+                SELECT("*");
+                FROM("tb_employee");
+                if (param.get("id")!=null) {
+                    WHERE("id=#{id}");
+                }
+                if(param.get("loginname")!=null) {
+                    WHERE("loginname=#{loginname}");
+                }
+                if(param.get("password")!=null) {
+                    WHERE("password=#{password}");
+                }
+                if(param.get("name")!=null) {
+                    WHERE("name=#{name}");
+                }
+                if(param.get("sex")!=null) {
+                    WHERE("sex=#{sex}");
+                }
+                if(param.get("age")!=null) {
+                    WHERE("age=#{age}");
+                }
+                if(param.get("phone")!=null) {
+                    WHERE("phone=#{phone}");
+                }
+                if(param.get("sal")!=null) {
+                    WHERE("sal=#{sal}");
+                }
+                if(param.get("state")!=null) {
+                    WHERE("state=#{state}");
+                }
+            }
+            
+        }.toString();
+    }
+}
+动态插入@InsertProvider
+
+//动态插入
+    @InsertProvider(type=Intefaceproxy.Dyno.EmployeeDynaSqlProvider.class,method="insertEmployeeSql")
+    @Options(useGeneratedKeys=true,keyProperty="id")
+    int insertEmployee(Employee employee);
+//insertEmployeeSql
+    public String insertEmployeeSql(Employee employee) {
+        return new SQL() {
+            {
+                INSERT_INTO("tb_employee");
+                if(employee.getLoginname()!=null) {
+                    VALUES("loginname","#{loginname}");
+                }
+                if(employee.getPassword()!=null) {
+                    VALUES("password", "#{password}");
+                }
+                if(employee.getName()!=null) {
+                    VALUES("name", "#{name}");
+                }
+                if(employee.getSex()!=null) {
+                    VALUES("sex", "#{sex}");
+                }
+                if(employee.getAge()!=null) {
+                    VALUES("age", "#{age}");
+                }
+                if(employee.getPhone()!=null) {
+                    VALUES("phone", "#{phone}");
+                }
+                if(employee.getSal()!=null) {
+                    VALUES("sal", "#{sal}");
+                }
+                if(employee.getState()!=null) {
+                    VALUES("state", "#{state}");
+                }
+            }
+        }.toString();
+    }
+	@UpdateProvider
+//动态更新
+    @UpdateProvider(type=Intefaceproxy.Dyno.EmployeeDynaSqlProvider.class,method="updateEmployeeSql")
+    void updateEmployee(Employee employee);
+
+//updateEmployeeSql
+    public String updateEmployeeSql(Employee employee) {
+        return new SQL() {
+            {
+                UPDATE("tb_employee");
+                if(employee.getLoginname()!=null) {
+                    SET("loginname=#{loginname}");
+                }
+                if(employee.getPassword()!=null) {
+                    SET("password=#{password}");
+                }
+                if(employee.getName()!=null) {
+                    SET("name=#{name}");
+                }
+                if(employee.getSex()!=null) {
+                    SET("sex=#{sex}");
+                }
+                if(employee.getAge()!=null) {
+                    SET("age=#{age}");
+                }
+                if(employee.getPhone()!=null) {
+                    SET("phone=#{phone}");
+                }
+                if(employee.getSal()!=null) {
+                    SET("sal=#{sal}");
+                }
+                if(employee.getState()!=null) {
+                    SET("state=#{state}");
+                }
+                WHERE("id=#{id}");
+            }
+        }.toString();
+    }
+	@DeleteProvider
+//动态删除
+@DeleteProvider(type=Intefaceproxy.Dyno.EmployeeDynaSqlProvider.class,method="deleteEmployeeSql")
+void deleteEmployee(Employee employee);
+//deleteEmployeeSql
+public String deleteEmployeeSql(Employee employee) {
+    return new SQL() {
+        {
+            DELETE_FROM("tb_employee");
+            if(employee.getLoginname()!=null) {
+                WHERE("loginname=#{loginname}");
+            }
+            if(employee.getPassword()!=null) {
+                WHERE("password=#{password}");
+            }
+            if(employee.getName()!=null) {
+                WHERE("name=#{name}");
+            }
+        }
+    }.toString();
+}
+mybtais参数类型
+<select id="queryList04" resultType="map" parameterType="java.util.List">
+          select CEZJRC_TXLJ,CEZJRC_XM,CEZJRC_ZY,CEZJRC_ZC from NRJRENCAI 
+          where CEZJRC_BM in 
+          <foreach collection="list" index="index" item="item" open="(" separator="," close=")">  
+            #{item}  
+        </foreach>
+  </select>
+其中<foreach>这个标签是用来循环传入的集合的，collection="list"这个参数中有list，map两种，还有就是自定义的参数，item="item"这个参数可以自定义，用来循环集合里面的值，这个参数的取名要和下面#（）这个里面的取名一致。
+
+parameterType="java.util.List"这个传入的参数类型必须这么写，不能简写成List，参数的返回类型也需要明确。
+在使用foreach的时候最关键的也是最容易出错的就是collection属性，该属性是必须指定的，但是在不同情况 下，该属性的值是不一样的，主要有一下3种情况：
+
+    1. 如果传入的是单参数且参数类型是一个List的时候，collection属性值为list
+    2. 如果传入的是单参数且参数类型是一个array数组的时候，collection的属性值为array
+    3. 如果传入的参数是多个的时候，我们就需要把它们封装成一个Map了，当然单参数也可
+
+以封装成map，实际上如果你在传入参数的时候，在breast里面也是会把它封装成一个Map的，map的key就是参数名，所以这个时候collection属性值就是传入的List或array对象在自己封装的map里面的key 下面分别来看看上述三种情况的示例代码：
+3.自己把参数封装成Map的类型
+
+1 <select id="dynamicForeach3Test" parameterType="java.util.HashMap" resultType="Blog">
+2         select * from t_blog where title like "%"#{title}"%" and id in
+3          <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+4               #{item}
+5          </foreach>
+6 </select>
+ 
+
+
+上述collection的值为ids，是传入的参数Map的key，对应的Mapper代码：
+public List dynamicForeach3Test(Map params);
+对应测试代码：
+   
+复制代码
+@Test
+    public void dynamicForeach3Test() {
+        SqlSession session = Util.getSqlSessionFactory().openSession();
+         BlogMapper blogMapper = session.getMapper(BlogMapper.class);
+          final List ids = new ArrayList();
+          ids.add(1);
+          ids.add(2);
+          ids.add(3);
+          ids.add(6);
+         ids.add(7);
+         ids.add(9);
+        Map params = new HashMap();
+         params.put("ids", ids);
+         params.put("title", "中国");
+        List blogs = blogMapper.dynamicForeach3Test(params);
+         for (Blog blog : blogs)
+             System.out.println(blog);
+         session.close();
+     }
+	 MyBatis查询，返回值Map或List<Map>
+一、返回值Map
+
+1、mapper.xml
+
+<select id="selectUserMapLimitOne" resultType="java.util.HashMap">  
+    select id,name  
+    from  
+    user order by id desc limit 1  
+</select>  
+2、接口定义
+
+/** 
+ * 获取仅含一个的map（map的size=字段个数） 
+ * @return 
+ */  
+Map<String,Object> selectUserMapLimitOne();  
+
+二、返回值List<Map>
+
+1、mapper.xml
+<select id="selectUserMapList" resultType="java.util.HashMap">  
+    select id,name from  
+    user order by id desc limit 2  
+</select>  
+ 
+
+2、接口定义 
+/** 
+ * 获取map list 
+ * @return 
+ */  
+List<Map<String,Object>> selectUserMapList();
+　<select id="selectByParams" parameterType="map" resultType="user">
+
+　　　　select * from user
+
+　　　　<where>
+
+　　　　　　<if test="id != null ">id=#{id}</if>
+
+　　　　　　<if test="name != null and name.length()>0" >and name=#{name}</if>
+
+　　　　　　<if test="gender != null and gender.length()>0">and gender = #{gender}</if>
+
+　　　　</where>
+
+　　</select>　　
+
+<update id="updateByPrimaryKeySelective" parameterType="RecruitmentConfBanner">
+        UPDATE conf_banner t
+        <set> 
+            <if test="bannerName != null">
+                t.banner_name = #{bannerName},
+            </if>
+            <if test="bannerUrl != null">
+                t.banner_url = #{bannerUrl},
+            </if>
+            <if test="bannerLogo != null">
+                t.banner_logo = #{bannerLogo},
+            </if>
+            <if test="bannerDescription != null">
+                t.banner_description = #{bannerDescription},
+            </if>
+            <if test="sort != null">
+                t.sort = #{sort},
+            </if>
+             <if test="isEnabled != null">
+                t.is_enabled = #{isEnabled},
+            </if>
+        </set>
+        where t.banner_id = #{bannerId}
+    </update>
+	当你使用了使用@Param注解来声明参数时，如果使用 #{} 或 ${} 的方式都可以。
+
+    @Select("select column from table where userid = ${userid} ")
+    public int selectColumn(@Param("userid") int userid);
+
+ 
+
+当你不使用@Param注解来声明参数时，必须使用使用 #{}方式。如果使用 ${} 的方式，会报错。
+
+    @Select("select column from table where userid = ${userid} ")
+    public int selectColumn(@Param("userid") int userid);
+
+ 
+
+2，不使用@Param注解
+
+不使用@Param注解时，参数只能有一个，并且是Javabean。在SQL语句里可以引用JavaBean的属性，而且只能引用JavaBean的属性。
+
+    // 这里id是user的属性
+
+    @Select("SELECT * from Table where id = ${id}")
+    Enchashment selectUserById(User user);
+	mybaits可以直接全部赋值，就算有下划线也可以赋值　　　

@@ -1,0 +1,17 @@
+proxy.conf.json
+{
+  "/api": {
+    "target": "http://localhost:8080/modular-web-overlay",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {"^/api" : ""}
+  }
+}
+start.bat
+ng serve --proxy-config proxy.conf.json
+spring
+  2.@RestController注解，相当于@Controller+@ResponseBody两个注解的结合，
+  返回json数据不需要在方法前面加@ResponseBody注解了，
+  但使用@RestController这个注解，就不能返回jsp,html页面，
+  视图解析器无法解析jsp,html页面
+  其他一样，参数用requestbody注解

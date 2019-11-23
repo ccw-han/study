@@ -1,0 +1,8 @@
+<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+            <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+            <!--<property name="basePackage" value="com.rextec"/>-->
+            <property name="basePackage" value="com.rextec.*.dal.dao"/>
+            <property name="annotationClass" value="com.rextec.sssj.dal.dao.common.MyBatisDao"/>
+        </bean>
+
+dao层加自定义@MyBatisDao注解

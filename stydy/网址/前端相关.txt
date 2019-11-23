@@ -1,0 +1,119 @@
+https://mp.weixin.qq.com/debug/cgi-bin/sandbox?t=sandbox/login
+https://www.runoob.com/angularjs/angularjs-tutorial.html  				angularjs
+https://www.angular.cn/guide/quickstart    						angular官網  
+http://www.ruanyifeng.com/blog/2012/11/require_js.html    				requireJs
+http://www.datatables.club/example/diy.html						datatable
+https://mp.weixin.qq.com/debug/cgi-bin/sandbox?t=sandbox/login
+https://blog.csdn.net/jiangyu1013/article/details/79611937 
+https://www.w3cschool.cn/typescript/typescript-interfaces.html				typescript
+https://yq.aliyun.com/articles/20649  							css网址
+https://www.cnblogs.com/xiashengwang/p/8087181.html 					datatable
+https://www.primefaces.org/primeng/#/table  						png插件
+https://www.cnblogs.com/liyixiang/p/6038122.html 					js日期大全
+https://blog.csdn.net/evelen/article/details/72802134					angular路由实战笔记
+https://www.cnblogs.com/dojo-lzz/p/5907171.html						angular理由器模型
+https://ng.ant.design/components/avatar/zh      					angular組建庫
+https://www.cnblogs.com/HCJJ/p/6611669.html 						requireJs实战
+https://blog.csdn.net/try_try_try/article/details/80168694				angular目录结构详解
+https://my.oschina.net/u/2410638/blog/761312						谷歌f12工具使用
+https://blog.csdn.net/andy2019/article/details/80632368					f12
+https://www.jianshu.com/p/7350b1d80f60							ionic命令
+https://ionicframework.com/docs/components/#alert					ionicui库
+https://www.imooc.com/learn/156								angular测试代码编写
+https://blog.csdn.net/u010130282/article/details/53462805				angular单元测试
+https://www.cnblogs.com/laixiangran/p/8723166.html					angualrng-content使用
+http://www.runoob.com/ionic/ionic-creat-app.html					ionic创建app
+https://segmentfault.com/a/1190000009070500						angular2自定义组件
+http://www.datatables.club/example/diy.html						datatable中文网
+https://blog.csdn.net/adayabetter/article/details/81064604				百度地图SDK功能接入博客
+http://lbsyun.baidu.com/index.php?title=androidsdk/guide/navigation/walknavi		百度地图接入官网
+http://www.cnblogs.com/wangfupeng1988/p/3977924.html  					js闭包
+https://segmentfault.com/a/1190000008464065?utm_source=tag-newest        		RxJs
+https://baijiahao.baidu.com/s?id=1610674863169471032&wfr=spider&for=pc			es6新特性
+https://www.cnblogs.com/jingmin/p/6294982.html						jquery异步验证
+https://www.cnblogs.com/jackydalong/p/3356965.html					jquery的this应用
+https://www.cnblogs.com/zhuzhenwei918/p/6139880.html					事件冒泡和捕获
+https://blog.csdn.net/yuyuking/article/details/77096285					鼠标事件，
+https://www.cnblogs.com/karila/p/5991340.html						js获取url参数
+https://blog.csdn.net/prettywhitewolf_xiao/article/details/7659570			jquery扩展方法
+http://192.168.1.181:5080/zentao/index.php?m=project&f=task&projectID=6	禅道 		caichengwei Ccw920314
+https://www.jianshu.com/p/b10b6e93ddec							立即执行函数
+https://blog.csdn.net/honeyhanyu/article/details/78004495				js内部函数
+https://www.cnblogs.com/chenhuichao/p/8268547.html					表格插件
+http://blog.mn886.net/jqGrid/						表格插件官网
+https://www.cnblogs.com/woodk/p/5546847.html				bootstrap验证插件
+https://blog.csdn.net/menggx1/article/details/80671162			BOOTBOX模态框
+chrome://inspect/#devices						在pc运行真机
+https://www.cnblogs.com/liuhongfeng/p/5150389.html			表单提交
+http://es6.ruanyifeng.com/#docs/promise						promise很好的教程
+https://blog.csdn.net/debbysky/article/details/79264576				rxjs	 2
+https://blog.csdn.net/weixin_39460408/article/details/82051310			rxjs操作符   1
+https://www.cnblogs.com/zhansu/p/5661695.html					jquery的extend中的this用法
+
+http://www.w3school.com.cn/svg/svg_inhtml.asp					svg绘图
+https://ionicframework.com/docs/v3/native/barcode-scanner/							ionic插件
+https://www.runoob.com/html/html5-canvas.html								h5图画处理
+https://www.cnblogs.com/qianduanjingying/p/5812139.html							hammer.js
+https://www.jianshu.com/p/b9eb6d824d4b								canvas图片处理
+https://blog.csdn.net/leeyefang/article/details/38925017							jsp对象详解
+http://www.jq22.com/jquery-info9322									图片裁剪插件croppor
+https://www.cnblogs.com/sghy/p/7244500.html								父子组件通讯inject和viewchild
+https://www.jianshu.com/p/0f5332f2bbf8									ngContainer ngContent ngTemplate
+https://www.cnblogs.com/hxling/articles/7794799.html							各种视图引用
+https://ng-alain.com/zh										脚手架，ngalain
+https://www.jianshu.com/p/a004e866f86f									ngalainst表格
+https://segmentfault.com/a/1190000010928087								angular变更检查策略
+https://www.jianshu.com/p/0efd6148926d								同上
+https://www.cnblogs.com/lovesong/p/5323973.html								js异步编程实现手段
+https://www.jianshu.com/p/c299bdb09932								ionic懒加载配置
+https://www.jianshu.com/p/342227797a86								ionic启动原理
+https://www.w3cschool.cn/intellij_idea_doc/intellij_idea_doc-xkw92gar.html					ideaw3c教学
+https://blog.angularindepth.com/here-is-what-you-need-to-know-about-dynamic-components-in-angular-ac1e96167f9e	动态组件angular
+https://angular.io/guide/dynamic-component-loader							同上
+https://blog.csdn.net/u011127019/article/details/79114886							ng命令
+https://www.jb51.net/article/133327.htm									angular自定义指令
+https://www.angular.cn/guide/dynamic-component-loader							angualr动态组件
+https://blog.csdn.net/fengyao1995/article/details/52927202							注册windows服务与依赖
+https://www.cnblogs.com/qiaojie/p/5746688.html								js call和apply区别
+
+https://my.oschina.net/u/3412211/blog/898112								angular父子路由
+https://blog.csdn.net/qw222pzx/article/details/53405412					jquery插件开发
+https://blog.csdn.net/nirvana_cx/article/details/80433207					ES6新特性，很全
+https://www.cnblogs.com/rlann/p/7222150.html						js...操作符
+https://blog.csdn.net/xiaolinlife/article/details/73548938					ionic和cordava理解
+http://www.imooc.com/article/80118							rxjs创建流方式 3
+https://blog.csdn.net/debbysky/article/details/79264576					rxjs	 2
+https://blog.csdn.net/weixin_39460408/article/details/82051310				rxjs操作符   1
+https://www.jianshu.com/p/82237a7ca6e5						promise用法
+http://www.jq22.com/jquery-info6010							插件轮播
+https://liyunpeng.iteye.com/blog/2280710						css垂直外边距问题
+https://www.cnblogs.com/libin-1/p/7098468.html						BFCCSS
+https://www.cnblogs.com/lzbk/p/6057097.html						bfc盒子应用
+https://blog.csdn.net/baobab_cc/article/details/79271346					angularviewChild应用
+http://www.php.cn/js-tutorial-402235.html						angular父子组件通讯
+https://blog.csdn.net/weixin_33834628/article/details/85965351				ionic-angular的控制器 alert actionsheet ActionSheetController
+http://www.hubwiz.com/exchange/56986cbe3b64224e6948bd8b				angular检查
+ http://www.bubuko.com/infodetail-2477822.html						同上
+https://ionicframework.com/docs/v3/api/components/select/Select/				ionic 框架
+https://blog.csdn.net/xiangzhihong8/article/details/79157986					Rxjs详细	4
+https://juejin.im/post/59e85eebf265da430d571f89						js执行顺序
+https://www.cnblogs.com/goloving/p/9393541.html						js异步四种方式
+http://www.amazeui.org/css/icon							amaze ui库
+http://www.runoob.com/font-awesome/fontawesome-icons-currency.html			font-awsome图标
+https://blog.csdn.net/qqfo24/article/details/81383986					解決跨域
+https://www.cnblogs.com/wennice/p/7150461.html						前端解决跨域
+https://segmentfault.com/a/1190000012737779						angular跨域
+http://svgtrick.com/tricks/dd749787f3c5fe258ea86e5573e4e6d4				裁剪css
+https://www.w3cplus.com/css3/clipping-masking-css.html					裁剪
+https://www.cnblogs.com/coco1s/p/6992177.html						同上
+https://blog.csdn.net/yufengaotian/article/details/80594461					同上
+https://www.cnblogs.com/lyzg/p/5133250.html						js模板引擎
+http://www.cnblogs.com/starof/p/4718550.html						特殊字符
+https://www.cnblogs.com/starof/p/4459991.html						为元素用法
+https://developer.mozilla.org/zh-CN/docs/Web/API/FormData/Using_FormData_Objects		fromdata
+https://blog.csdn.net/cuishizun/article/details/80380824				rxjs用法
+https://www.cnblogs.com/Unknw/p/6440808.html						同上
+https://blog.csdn.net/shan1991fei/article/details/78966297				PROMISE ES6
+https://www.cnblogs.com/donaldtdz/p/7892960.html					ngzero
+https://www.jianshu.com/p/96560dacc40d							ui框架
+https://www.jianshu.com/p/48167450e5c1							cube ui

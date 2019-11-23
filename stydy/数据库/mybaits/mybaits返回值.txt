@@ -1,0 +1,141 @@
+一、返回一般数据类型
+比如要根据 id 属性获得数据库中的某个字段值。
+
+
+mapper 接口：
+
+    // 根据 id 获得数据库中的 username 字段的值
+   
+ String getEmpNameById(Integer id);
+1
+2
+SQL 映射文件：
+
+    
+<!-- 
+        指定 resultType 返回值类型时 String 类型的，
+        string 在这里是一个别名，代表的是 java.lang.String 
+
+       
+ 对于引用数据类型，都是将大写字母转小写，比如 HashMap 对应的别名是 'hashmap'
+        基本数据类型考虑到重复的问题，
+会在其前面加上 '_'，比如 byte 对应的别名是 '_byte'
+    -->
+    <select id="getEmpNameById" resultType="string">
+        
+select username from t_employee where id = #{id}
+    </select>
+
+二、返回 JavaBean 类型
+比如根据某个字段获得数据库中的信息，把查询的结果信息封装成某个 JavaBean 类型的数据。
+
+
+mapper 接口：
+
+    
+// 根据 id 查询信息，并把信息封装成 Employee 对象
+    Employee getEmpById(Integer id);
+1
+2
+SQL 映射文件：
+
+    
+<!-- 
+        通过 resultType 指定查询的结果是 Employee 类型的数据  
+       
+ 只需要指定 resultType 的类型，MyBatis 会自动将查询的结果映射成 JavaBean 中的属性
+    -->
+    
+<select id="getEmpById" resultType="employee">
+        select * from t_employee where id = #{id}
+    </select>
+
+三、返回List类型
+有时候我们要查询的数据不止一条，比如：模糊查询，全表查询等，这时候返回的数据可能不止是一条数据，
+对于多数据的处理可以存放在List集合中。
+
+mapper 接口：
+
+    
+// 假如是全表查询数据，将查询的数据封装成 Employee 类型的集合
+    List<Employee> getAllEmps();
+SQL 映射文件：
+
+   
+ <!--
+        注意这里的 resultType 返回值类型是集合内存储数据的类型，不是 'list'
+    -->
+    
+<select id="getAllEmps" resultType="employee">
+        select * from t_employee
+    </select>
+
+四、返回Map类型
+MyBatis 还支持将查询的数据封装成Map。
+
+
+1. 如果查询的结果是一条，我们可以把查询的数据以{表字段名， 对应的值}方式存入到Map中。
+
+mapper 接口：
+
+    
+//  根据 id 查询信息，并把结果信息封装成 Map 
+    Map<String, Object> getEmpAsMapById(Integer id);
+SQL 映射文件：
+
+    
+<!-- 
+        注意这里的 resultType 返回值类型是 'map'
+     -->
+    <select id="getEmpAsMapById" resultType="map">
+        
+select * from t_employee where id = #{id}
+    </select>
+下面把查询的结果数据贴出来供大家参考： 
+
+
+2. 如果查询的结果是多条数据，我们也可以把查询的数据以{表中某一字段名, JavaBean}方式来封装成Map。
+
+mapper 接口：
+
+    
+// 查询所有员工的信息，把数据库中的 'id' 字段作为 key,对应的 value 封装成 Employee 对象
+    
+// @MapKey 中的值表示用数据库中的哪个字段名作 key
+    
+@MapKey("id")
+    Map<Integer, Employee> getAllEmpsAsMap();
+
+SQL 映射文件：
+
+    
+<!--
+        注意 resultType 返回值类型，不再是 'map'，而是 Map 的 value 对应的 JavaBean 类型
+    -->
+    
+<select id="getAllEmpsAsMap" resultType="employee">
+        select * from t_employee
+    
+</select>
+
+下面是查询的结果 (只截取了一部分)：
+ 
+
+
+MyBatis 允许查询的结果封装成Map，这种机制是极好的。
+3返回<select id="selectUserMapList" resultType="java.util.HashMap">
+	select id,name from
+	
+user order by id desc limit 
+	
+</select>
+
+2、接口定义
+
+/**
+ * 获取map list
+	 * @return
+ */
+	
+List<Map<String,Object>> selectUserMapList();
+

@@ -1,0 +1,201 @@
+<page-home>
+  <ion-content class="check-form-font-size" width="100%">
+    <h3>
+      <font face="Microsoft YaHei">PRP使用对照表 -NQ</font>
+    </h3>
+    <form-usage>
+      <ion-grid>
+        <ion-row>
+          <ion-col col-12 style="color:#1d89cf">*要点:照合确认时逐项及时记录，防止遗漏或记录错误;</ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-6>1.在所使用的PRP打“√”；</ion-col>
+          <ion-col col-6>2.在所使用的品种打“√”；</ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-6>3.产气药LOT/品种无变更时，HOPPER内无产气药残留/粉尘堆积确认打“-”；</ion-col>
+        </ion-row>
+      </ion-grid>
+    </form-usage>
+
+    <table class="table table-striped check-table-border" border="1">
+      <thead>
+        <tr>
+          <td colspan="11">NQ 产气药PRP使用对照确认表--DSSC制</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td></td>
+          <td>日期</td>
+          <td>
+            <input [disabled]="data.id" type="date" class="check-input" [(ngModel)]="data.checkDate">
+          </td>
+          <td colspan="8">
+            <button *ngIf="!data.id" type="button" class="btn btn-primary btn-sm" (click)="saveRecord()">确定</button>
+          </td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="data.id">
+        <tr>
+          <td>1</td>
+          <td colspan="2">产线</td>
+          <td colspan="2">
+            {{data.lineSn}}
+          </td>
+          <td colspan="2">班次</td>
+          <td colspan="4">
+            <select [disabled]="confirmPerson" class="form-control" [(ngModel)]="data.shift"
+              (ngModelChange)="saveRecord()">
+              <option *ngFor="let opt of shiftCodes" value="{{opt.name}}">{{opt.name}}</option>
+            </select>
+            <select [disabled]="confirmPerson" class="form-control" [(ngModel)]="data.classInfo"
+              (ngModelChange)="saveRecord()">
+              <option *ngFor="let opt of classCodes" value="{{opt.name}}">{{opt.name}}</option>
+            </select>
+          </td>
+        </tr>
+
+        <tr>
+          <td>2</td>
+          <td colspan="2">品种</td>
+          <td colspan="8">
+            <select [disabled]="confirmPerson" class="form-control" [(ngModel)]="data.varieties"
+              (ngModelChange)="saveRecord()">
+              <option></option>
+              <option *ngFor="let item of codeList" value="{{item.name}}">{{item.name}}</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td rowspan="3">3</td>
+          <td colspan="2" rowspan="3">现品票</td>
+          <td colspan="8">
+            <div class="image-container" *ngIf="data.ticketPic">
+              <img [src]="data.ticketPic" (click)="viewImage()">
+            </div>
+            <button type="button" class="btn btn-primary" (click)="getPicture()" *ngIf="!confirmPerson">
+              <i class="fa fa-plus" aria-hidden="true"></i>
+            </button>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="8">
+            第<input [disabled]="confirmPerson" type="text" class="check-input" [(ngModel)]="data.ticketBox"
+              (blur)="saveRecord()">箱
+          </td>
+        </tr>
+        <tr>
+          <td colspan="8" class="scanner-part">
+            <input [readonly]="confirmPerson" type="text" class="check-input" style="background: skyblue;" maxlength="1" [(ngModel)]="data.ticket0" (blur)="saveRecord()">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.ticket1">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.ticket2">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.ticket3">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.ticket4">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.ticket5">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.ticket6">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.ticket7">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.ticket8">
+            <svg *ngIf="!confirmPerson" style="height: 40px;width:auto;" (click)="scanner('ticket')" t="1561421794266"
+              class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7927"
+              width="200" height="200">
+              <path
+                d="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"
+                p-id="7928"></path>
+            </svg>
+          </td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td colspan="2">铝箔袋LOT确认</td>
+          <td colspan="8" class="scanner-part">
+            <input [readonly]="confirmPerson" type="text" class="check-input" style="background: skyblue;" maxlength="1" [(ngModel)]="data.aluminum0" (blur)="saveRecord()">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum1">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum2">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum3">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum4">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum5">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum6">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum7">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.aluminum8">
+            <svg *ngIf="!confirmPerson" style="height: 40px;width:auto;" (click)="scanner('aluminum')" t="1561421794266" class="icon"
+              viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7927" width="200"
+              height="200">
+              <path
+                d="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"
+                p-id="7928"></path>
+            </svg>
+          </td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td colspan="2">塑料袋LOT确认（仅限于DSSC制）</td>
+          <td colspan="8" class="scanner-part">
+            <input [readonly]="confirmPerson" type="text" class="check-input" style="background: skyblue;" maxlength="1" [(ngModel)]="data.plastic0" (blur)="saveRecord()">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic1">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic2">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic3">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic4">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic5">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic6">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic7">
+            <input [readonly]="true" type="text" class="check-input" [(ngModel)]="data.plastic8">
+            <svg *ngIf="!confirmPerson" style="height: 40px;width:auto;" (click)="scanner('plastic')" t="1561421794266"
+              class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7927"
+              width="200" height="200">
+              <path
+                d="M136 384h56c4.4 0 8-3.6 8-8V200h176c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H196c-37.6 0-68 30.4-68 68v180c0 4.4 3.6 8 8 8zM648 200h176v176c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8V196c0-37.6-30.4-68-68-68H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zM376 824H200V648c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v180c0 37.6 30.4 68 68 68h180c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM888 640h-56c-4.4 0-8 3.6-8 8v176H648c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h180c37.6 0 68-30.4 68-68V648c0-4.4-3.6-8-8-8zM904 476H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8z"
+                p-id="7928"></path>
+            </svg>
+          </td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td colspan="2">确认三点照合一致为OK</td>
+          <td colspan="8">
+            {{data.nqJudges}}
+          </td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td colspan="2">产气药LOT/品种有无变更确认（有：√/无：×）</td>
+          <td colspan="8">
+            <check-item-btn [formCode]="tableName" [inputFieldName]="'data.medicineJudges'" [readonly]="confirmPerson"
+              [leftContent]="'√'" [rightContent]="'×'" [leftValue]="'OK'" [rightValue]="'NG'" [modelData]="data"
+              [(ngModel)]="data.medicineJudges" (check)="saveRecord()" (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td colspan="2">HOPPER内清扫确认及清扫后状态确认(清扫并确认清扫后Hopper内无产气药残留/粉尘堆积为OK)</td>
+          <td colspan="8">
+            <check-item-btn [showSkip]="true" [formCode]="tableName" [inputFieldName]="'data.hopperJudges'" [readonly]="confirmPerson"
+              [modelData]="data" [(ngModel)]="data.hopperJudges" (check)="saveRecord()" (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td colspan="2">湿度卡判定确认</td>
+          <td colspan="8">
+            <check-item-btn [formCode]="tableName" [inputFieldName]="'data.humidityJudges'" [readonly]="confirmPerson"
+              [modelData]="data" [(ngModel)]="data.humidityJudges" (check)="saveRecord()" (audit)="saveRecord()">
+            </check-item-btn>
+          </td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td colspan="2">确认者</td>
+          <td colspan="8">
+            <user-confirm-input
+              *ngIf="data.shift && data.classInfo && data.varieties && data.ticketPic && data.nqJudges && data.ticketBox && data.humidityJudges && data.medicineJudges && data.hopperJudges"
+              [title]="'记录表确认'" [(ngModel)]="confirmPerson" (userConfirmed)="userConfirmed()" [roleType]="'3'">
+            </user-confirm-input>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </ion-content>
+</page-home>

@@ -1,0 +1,255 @@
+<page-home class="page-home">
+
+  <div class="draw" *ngIf="drawShow == 'show'">
+    <canvas id="myCanvas" (touchstart)="canvasDrawStart($event)" (touchmove)="canvasDrawMove($event)" (touchend)="canvasDrawEnd()"></canvas>
+    <div class="draw-operation">
+      <div class="cancel">
+        <button (click)="canvasDrawCancel()">取消</button>
+      </div>
+      <div class="color">
+        <div class="red" [ngClass]="{'color-select': color == 'red'}" (click)="canvasColorSelect('red')">
+          <div></div>
+        </div>
+        <div class="black" [ngClass]="{'color-select': color == 'black'}" (click)="canvasColorSelect('black')">
+          <div></div>
+        </div>
+      </div>
+      <div class="confirm">
+        <button (click)="canvasDrawConfirm()">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <ion-content>
+    <h3>
+      <font face="Microsoft YaHei">CAUTION LABEL打印记录表</font>
+    </h3>
+    <form-usage>
+      <ion-grid>
+        <ion-row>
+          <ion-col col-6>1、实物确认：打印人需用黑笔对Caution Label的确认点确认并画“△”</ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col col-6>2、确认人需用红色笔再次对Caution Label确认点确认并画“○”</ion-col>
+        </ion-row>
+      </ion-grid>
+    </form-usage>
+    <div style="width:100%;overflow: scroll;">
+      <table border="1" class="table table-striped check-table-border">
+        <thead>
+          <tr>
+            <th>点检日期</th>
+            <th>品种</th>
+            <th>识别点1</th>
+            <th>识别点2</th>
+            <th>年份</th>
+            <th>线别</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td rowspan="2">
+              <input type="date" class="check-input" [readonly]="pData.id" [(ngModel)]="pData.checkDate">
+            </td>
+            <td rowspan="2">
+              <select class="check-input" [disabled]="pData.id" [(ngModel)]="pData.variety">
+                <option value="EGE,GGE,EGF,GGF">EGE,GGE,EGF,GGF</option>
+                <option value="EFS">EFS</option>
+                <option value="AGK,EGK,GGK,EHB">AGK,EGK,GGK,EHB,TGK</option>
+              </select>
+            </td>
+            <td rowspan="2">
+              <select class="check-input" [disabled]="pData.id" [(ngModel)]="pData.idenpoint">
+                <option value="EL-02">EL-02</option>
+                <option value="EL-03">EL-03</option>
+                <option value="EL-04">EL-04</option>
+              </select>
+            </td>
+            <td rowspan="2">DEL-5002</td>
+            <td>确认当前年份</td>
+            <td>确认C7</td>
+            <td rowspan="2" style="min-width: 100px;">
+              <button *ngIf="!pData.id && pData.checkDate && pData.variety && pData.idenpoint" type="button"
+                class="btn btn-primary btn-sm" (click)="saveRecord()">确定</button>
+              <button *ngIf="pData.id && flag" type="button" class="btn btn-primary btn-sm"
+                (click)="inputCom()">录入完成</button>
+            </td>
+          </tr>
+          <tr>
+            <td>当前年份的末尾数</td>
+            <td>7</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="pData.id != null" style="width:100%;overflow: scroll;">
+      <table class="table table-striped check-table-border" border="1">
+        <thead>
+          <tr>
+            <th style="width: 120px;">
+              <label>日期</label>
+            </th>
+            <th style="width: 120px;">
+              <label>时间</label>
+            </th>
+            <th>
+              <label>全黑点检
+                <br>（条码打印无断线确认,识别点“{{pData.idenpoint}}”）
+              </label>
+            </th>
+            <th>
+              <label>始业点检
+                <br>（打印位置/识别点“DEL5002”）
+              </label>
+            </th>
+            <th>
+              <label>打印首件序列号
+                <br>（线别/年份确认）
+              </label>
+            </th>
+            <th>
+              <label>打印人</label>
+            </th>
+            <th>
+              <label>确认人</label>
+            </th>
+            <th>
+              <label>打印末件序列号
+                <br>（线别/年份确认）
+              </label>
+            </th>
+            <th>
+              <label>打印人</label>
+            </th>
+            <th>
+              <label>确认人</label>
+            </th>
+            <th *ngIf="pData.recordStatus != '已完成'">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="pData.recordStatus != '已完成'">
+            <td>
+              <input type="date" class="check-input" [(ngModel)]="data.date" (ngModelChange)="saveColData()">
+            </td>
+            <td>
+              <input type="time" class="check-input" [(ngModel)]="data.time" (ngModelChange)="saveColData()">
+            </td>
+            <td>
+              <div class="image-left">
+                <img *ngIf="data.pic1" [src]="data.pic1" (click)="viewImage(data.pic1)">
+              </div>
+              <div class="image-right">
+                <button type="button" class="btn btn-primary" (click)="getPicture('pic1','imageId1')">
+                  <i class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+                <button *ngIf="data.pic1" type="button" class="btn btn-primary"
+                  (click)="editImage(data.pic1, 'pic1', 'imageId1')">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <div class="image-left">
+                <img *ngIf="data.pic2" [src]="data.pic2" (click)="viewImage(data.pic2)">
+              </div>
+              <div class="image-right">
+                <button type="button" class="btn btn-primary" (click)="getPicture('pic2','imageId2')">
+                  <i class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+                <button *ngIf="data.pic2" type="button" class="btn btn-primary"
+                  (click)="editImage(data.pic2, 'pic2', 'imageId2')">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <div class="image-left">
+                <img *ngIf="data.pic3" [src]="data.pic3" (click)="viewImage(data.pic3)">
+              </div>
+              <div class="image-right">
+                <button type="button" class="btn btn-primary" (click)="getPicture('pic3','imageId3')">
+                  <i class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+                <button *ngIf="data.pic3" type="button" class="btn btn-primary"
+                  (click)="editImage(data.pic3, 'pic3', 'imageId3')">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <user-confirm-input [title]="'打印人确认'" [(ngModel)]="printer1" (userConfirmed)="userConfirmed('printer1')"
+                [roleType]="'3'"></user-confirm-input>
+            </td>
+            <td>
+              <user-confirm-input [title]="'确认者确认'" [(ngModel)]="confirmPerson"
+                (userConfirmed)="userConfirmed('confirmPerson')" [roleType]="'3'">
+              </user-confirm-input>
+            </td>
+            <td>
+              <div class="image-left">
+                <img *ngIf="data.pic4" [src]="data.pic4" (click)="viewImage(data.pic4)">
+              </div>
+              <div class="image-right">
+                <button type="button" class="btn btn-primary" (click)="getPicture('pic4','imageId4')">
+                  <i class="fa fa-plus" aria-hidden="true"></i>
+                </button>
+                <button *ngIf="data.pic4" type="button" class="btn btn-primary"
+                  (click)="editImage(data.pic4, 'pic4', 'imageId4')">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </button>
+              </div>
+            </td>
+            <td>
+              <user-confirm-input [title]="'打印人确认'" [(ngModel)]="printer2" (userConfirmed)="userConfirmed('printer2')"
+                [roleType]="'3'">
+              </user-confirm-input>
+            </td>
+            <td>
+              <user-confirm-input [title]="'确认者确认'" [(ngModel)]="confirmPerson2"
+                (userConfirmed)="userConfirmed('confirmPerson2')" [roleType]="'3'">
+              </user-confirm-input>
+            </td>
+            <td>
+              <button type="button" class="btn btn-success btn-sm" (click)="saveData()">保存</button>
+            </td>
+          </tr>
+
+          <tr *ngFor="let item of datas;let idx = index">
+            <td> {{item.date}} </td>
+            <td> {{item.time}} </td>
+            <td>
+              <div class="image-left">
+                <img [src]="item.pic1" (click)="viewImage(item.pic1)">
+              </div>
+            </td>
+            <td>
+              <div class="image-left">
+                <img [src]="item.pic2" (click)="viewImage(item.pic2)">
+              </div>
+            </td>
+            <td>
+              <div class="image-left">
+                <img [src]="item.pic3" (click)="viewImage(item.pic3)">
+              </div>
+            </td>
+            <td> {{item.printer1}} </td>
+            <td> {{item.confirmPerson}} </td>
+            <td>
+              <div class="image-left">
+                <img [src]="item.pic4" (click)="viewImage(item.pic4)">
+              </div>
+            </td>
+            <td> {{item.printer2}} </td>
+            <td> {{item.confirmPerson2}} </td>
+            <td *ngIf="pData.recordStatus != '已完成'">
+              <button type="button" class="btn btn-warning btn-sm" (click)="deleteData(item.id)">删除</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ion-content>

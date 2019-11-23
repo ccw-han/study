@@ -1,0 +1,2 @@
+freemarker三目运算
+${(volumn=="NaN")?string('0',volumn)}

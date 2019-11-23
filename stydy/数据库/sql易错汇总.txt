@@ -1,0 +1,5 @@
+fl01.check_person LIKE  concat('%',#{checkPerson},'%')
+!@org.apache.commons.lang3.StringUtils@isBlank(checkDateTo)
+<insert id="addMmFormC7Fs101" parameterType="com.rextec.sssj.dal.entity.chenkcell.MmFromC7Fs101"
+    keyProperty="id" useGeneratedKeys="true">
+	值赋给bean了，用bean。get方法获取

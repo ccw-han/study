@@ -1,0 +1,373 @@
+﻿import { Httpimport { NetService } from './../user/net-service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { SQLite, SQLiteObject } from '@ionic-native/sqlite';
+import { Platform } from 'ionic-angular';
+import { Observable ,} from 'rxjs';
+import Rx from 'rxjs';
+import 'rxjs/add/operator/map';
+import { UUID } from 'angular2-uuid';
+
+@Injectable()
+export class NativeProvider {
+    private _db: any;
+    private win: any = window;
+    database: SQLiteObject;
+    constructor(public http: HttpClient, public sqlite: SQLite, private platform: Platform, private netService: NetService) {
+        if (this.win.sqlitePlugin) {
+            this._db = sqlite.create({
+                name: 'appdata.db',
+                location: 'default'
+            })
+                .then((db: SQLiteObject) => {
+                    this.database = db;
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+        } else {
+            this._db = this.win.openDatabase("windata.db", '1.0', 'database', 5 * 1024 * 1024);
+        }
+    }
+
+    /**
+     * 执行SQL语句，返回一个承诺,通过 .then(result=>{}).catch(err=>{})来处理结果
+     * @param sql  sql语句
+     * @param params sql参数值，可选参数，只有sql语句中用到 ? 传参方式时，params参数值才有效
+     */
+    execSql(sql: string, params = []): Promise<any> {
+        return new Promise((resolve, reject) => {
+            if (this.isMobile()) {
+                this.database.executeSql(sql, []).then((data) => {
+                    resolve({res: data});
+                }, (err) => {
+                    reject(err);
+                    console.log('Unable to execute sql: ' + err);
+                });
+            } else {
+                try {
+                    this._db.transaction((tx) => {
+                        tx.executeSql(sql, params,
+                            (tx, res) => resolve({ tx: tx, res: res }),
+                            (tx, err) => reject({ tx: tx, err: err }));
+                    },
+                        (err) => reject({ err: err }));
+                } catch (err) {
+                    reject({ err: err });
+                }
+            }
+        });
+    }
+
+    /**
+        * 是否真机环境
+        * @return {boolean}
+        */
+    isMobile(): boolean {
+        return this.platform.is('mobile') && !this.platform.is('mobileweb');
+    }
+
+    createTable(tableName: string, data: {}) {
+        let fieldName = "";
+        for (let prop in data) {
+            fieldName += '"' + prop + '"' + " text,";
+
+        }
+        fieldName = fieldName.substring(0, fieldName.length - 1);
+        console.log("create table if not exists " + tableName + "(" + fieldName + ")");
+        this.execSql("create table if not exists " + tableName + "(" + fieldName + ")", [])
+            .then(() => console.log('创建表成功'))
+            .catch(e => alert(JSON.stringify(e)));
+    }
+
+    insertData(tableName: string, data: {}) {
+        let fieldNameStr = "";
+        for (let prop in data) {
+            fieldNameStr += '"' + data[prop] + '"' + ",";
+        }
+        fieldNameStr = fieldNameStr.substring(0, fieldNameStr.length - 1);
+        this.execSql("insert into " + tableName + " values(" + fieldNameStr + ")", [])
+            .then(() => console.log('插入数据成功'))
+            .catch(e => console.log(e));
+    }
+    selectData(tableName: string): Observable<any> {
+        return Rx.Observable.fromPromise(this.execSql("select * from " + tableName + " where ID = '4658d991-a410-db62-dd0a-112ae8016b03'", [])).map(data => data.res.rows.item(0));
+    }
+
+    saveDate(tableName: string, dateInfo: {}) {
+        if (dateInfo['id'] === undefined ||dateInfo['id'] =='') {
+            dateInfo['id'] = UUID.UUID().toString();
+            let id = dateInfo['id'];
+            let fieldNameStr = dateInfo['kind'];
+            let value = dateInfo['value'];
+            console.log("insert into " + tableName + "(id," + fieldNameStr + ")" + " values(" + "'" + id + "'" + ',' + value + ")");
+            this.execSql("insert into " + tableName + "(id," + fieldNameStr + ")" + " values(" + "'" + id + "'" + ',' + "'" + value + "'" + ")", [])
+                .then(() => console.log('插入日期成功'))
+                .catch(e => console.log(e));
+        } else {
+            let id = dateInfo['id'];
+            let fieldNameStr = dateInfo['kind'];
+            let value = dateInfo['value'];
+            console.log("UPDATE " + tableName + " set " + fieldNameStr + " = " + value + " where id = " + "'" + id + "'");
+            this.execSql("UPDATE " + tableName + " set " + fieldNameStr + " = " + "'" + value + "'" + "  where id = " + "'" + id + "'", [])
+                .then(() => console.log('修改日期成功'))
+                .catch(e => console.log(e));
+        }
+    }
+
+
+    saveData(tableName: string, sqlInfo: {}) {
+        let fieldNameStr = sqlInfo['fieldName'];
+        let value = sqlInfo['value'];
+        let fieldNameRes = sqlInfo['fieldResult'];
+        let result = sqlInfo['result'];
+        if (sqlInfo['id'] === undefined) {
+            //insert data
+            sqlInfo['id'] = UUID.UUID().toString();
+            let id = sqlInfo['id'];
+            console.log("insert into " + tableName + "(id," + fieldNameStr + ',' + fieldNameRes + ")" + " values(" + "'" + id + "'" + ',' + value + "'" + ',' + "'" + result + "'" + ")");
+            this.execSql("insert into " + tableName + "(id," + fieldNameStr + ',' + fieldNameRes + ")" + " values(" + "'" + id + "'" + ',' + "'" + value + "'" + ',' + "'" + result + "'" + ")", [])
+                .then(() => console.log('插入数据成功'))
+                .catch(e => console.log(e));
+        } else {
+            //update data
+            let id = sqlInfo['id'];
+            console.log("UPDATE " + tableName + " set " + fieldNameStr + " = " + value + ',' + fieldNameRes + " = " + result + " where id = " + "'" + id + "'");
+            this.execSql("UPDATE " + tableName + " set " + fieldNameStr + " = " + "'" + value + "'" + ',' + fieldNameRes + " = " + "'" + result + "'" + "  where id = " + "'" + id + "'", [])
+                .then(() => console.log('修改数据成功'))
+                .catch(e => console.log(e));
+        }
+    }
+    saveHandle(tableName: string, monitorInfo: {}) {
+        let fieldNameStr = monitorInfo['kind'];
+        let value = monitorInfo['value'];
+        //update data
+        let id = monitorInfo['id'];
+        console.log("UPDATE " + tableName + " set " + fieldNameStr + " = " + value + " where id = " + "'" + id + "'");
+        this.execSql("UPDATE " + tableName + " set " + fieldNameStr + " = " + "'" + value + "'" + "  where id = " + "'" + id + "'", [])
+            .then(() => console.log('修改数据成功'))
+            .catch(e => console.log(e));
+    }
+
+    createNGTable() {
+        this.execSql("create table if not exists ngdetail (ID INTEGER PRIMARY KEY AUTOINCREMENT, TableName text, ProjectName text, EQ_NAME text,LINE_SN text, PictureUrl text, TextElaborate text)", [])
+            .then(() => console.log('创建图片及文字详情表成功'))
+            .catch(e => console.log(e));
+    }
+
+    insertText(readyText) {
+        this.execSql("insert into ngdetail (TextElaborate) values(" + "'" + readyText + "'" + ")", [])
+            .then(() => console.log('插入文字描述成功'))
+            .catch(e => console.log(e));
+    }
+
+    createITAG(itag: {}) {
+        let fieldName = "";
+        for (let prop in itag) {
+            fieldName += prop + " text,";
+        }
+        fieldName = fieldName.substring(0, fieldName.length - 1);
+        let sql = "create table if not exists itagdetail (" + fieldName + ")";
+        console.log(sql);
+        this.execSql(sql,[])
+            .then(() => console.log('创建itag表成功'))
+            .catch(e => console.log(e));
+    }
+
+    insertItag(itag: {}) {
+        let fieldNameStr = "";
+        for (let prop in itag) {
+            fieldNameStr += '"' + itag[prop] + '"' + ",";
+        }
+        fieldNameStr = fieldNameStr.substring(0, fieldNameStr.length - 1);
+        this.execSql("insert into itagdetail values(null," + fieldNameStr + ")", [])
+            .then(() => console.log('插入itag数据成功'))
+            .catch(e => console.log(e));
+    }
+
+    selectItag(): Observable<any> {
+        return Rx.Observable.fromPromise(this.execSql("select * from itagdetail where ID = 2", [])).map(data => data.res.rows.item(0));
+    }
+
+    selectCheckList(tableName: string): Observable<any> {
+        return Rx.Observable.fromPromise(this.execSql("select * from " + tableName + " where date = '2018-11-20'", [])).map(data => data.res.rows.item(0));
+    }
+
+    selectAllData(tableName: string): Observable<any> {
+        console.log("select * from " + tableName + " where monitors != '' order by rowid desc");
+        return Rx.Observable.fromPromise(this.execSql("select * from " + tableName + " where monitors != '' order by rowid desc", [])).map(data => {
+          let res = [];
+          if(data.res.rows.length){
+            for (let index = 0; index < data.res.rows.length; index++) {
+              res.push(data.res.rows.item(index));
+            }
+          }
+          return res;
+        });
+    }
+    selectAllOperatorQualification1(tableName: string): Observable<any> {
+        console.log("select * from " + tableName + " where monitors != '' order by rowid desc");
+        return Rx.Observable.fromPromise(this.execSql("select * from " + tableName + " where state = '未完成' ", [])).map(data => data.res.rows);
+    }
+    selectAllOperatorQualification2(tableName: string): Observable<any> {
+        console.log("select * from " + tableName + " where monitors != '' order by rowid desc");
+        return Rx.Observable.fromPromise(this.execSql("select * from " + tableName + " where state = '未同步' ", [])).map(data => data.res.rows);
+    }
+    selectOperatorQualification(tableName: string, infoId: string): Observable<any> {
+        return Rx.Observable.fromPromise(this.execSql("select * from " + tableName + " where id = " + "'" + infoId + "'", [])).map(data => data.res.rows.item(0));
+    }
+    saveOperatorQualification(tableName: string, operatorInfo: {}) {
+        if (operatorInfo['id'] === undefined) {
+            //insert data
+            operatorInfo['id'] = UUID.UUID().toString();
+            let fieldNameStr = operatorInfo['kind1'] + "," + operatorInfo['kind2'] + "," + operatorInfo['kind3'] + "," + operatorInfo['kind4'] ;
+            let fieldName = '"' + operatorInfo['id'] + '"' + "," + '"' + operatorInfo['lineSn'] + '"' + "," + '"' + operatorInfo['class'] + '"' + "," + '"' + operatorInfo['name'] + '"' + "," + '"' + operatorInfo['state'] + '"' + "," + '"' + operatorInfo['StartTime'] + '"' + "," + '"' + operatorInfo['EndTime'] + '"' + "," + '"' + operatorInfo['Result'] + '"' + "," + '"' + operatorInfo['checker'] + '"';
+            console.log("insert into " + tableName + "(id,lineSn,class,name,state," + fieldNameStr + ")" + " values(" + fieldName + ")");
+            this.execSql("insert into " + tableName + "(id,lineSn,class,name,state," + fieldNameStr + ")" + " values(" + fieldName + ")", [])
+                .then(() => console.log('插入数据成功'))
+                .catch(e => console.log(e));
+        } else {
+            //update data
+            console.log("UPDATE " + tableName + " set " + operatorInfo['kind1'] + " = " + "'" + operatorInfo['StartTime'] + "'" + "," + operatorInfo['kind2'] + " = " + "'" + operatorInfo['EndTime'] + "'" + "," + operatorInfo['kind3'] + " = " + "'" + operatorInfo['Result'] + "'" + "  where id = " + "'" + operatorInfo['id'] + "'");
+            this.execSql("UPDATE " + tableName + " set " + operatorInfo['kind1'] + " = " + "'" + operatorInfo['StartTime'] + "'" + "," + operatorInfo['kind2'] + " = " + "'" + operatorInfo['EndTime'] + "'" + "," + operatorInfo['kind3'] + " = " + "'" + operatorInfo['Result'] + "'" + "  where id = " + "'" + operatorInfo['id'] + "'", [])
+                .then(() => console.log('修改数据成功'))
+                .catch(e => console.log(e));
+        }
+    }
+    selectByDateCl104s(tableName: string,date:string,lineSn:string ): Observable<any> {
+        //console.log("select * from " + tableName + " where date = "+"'"+date+"'");
+        return Rx.Observable.fromPromise(this.execSql("select * from " + tableName + " where date = "+"'"+date+"'"+"and lineSn="+"'"+lineSn+"'", [])).map(data => {
+          let res = [];
+          if(data.res.rows.length){
+            for (let index = 0; index < data.res.rows.length; index++) {
+              res.push(data.res.rows.item(index));
+            }
+          }
+          return res;
+        });
+    }
+    selectByDate00124s(tableName: string,date:string,lineSn:string ): Observable<any> {
+        //console.log("select * from " + tableName + " where date = "+"'"+date+"'");
+        return Rx.Observable.fromPromise(this.execSql("select * from " + tableName + " where checkDate = "+"'"+date+"'"+"and lineSn="+"'"+lineSn+"'", [])).map(data => {
+          let res = [];
+          if(data.res.rows.length){
+            for (let index = 0; index < data.res.rows.length; index++) {
+              res.push(data.res.rows.item(index));
+            }
+          }
+          return res;
+        });
+    }
+
+    public selectTotalSpecic(listId: string): Observable<any> {
+        let sql = "select sum(fault1) fault1,sum(fault2) fault2,sum(fault3) fault3,sum(fault4) fault4,sum(fault5) fault5,sum(varietyReplacement1) varietyReplacement1,sum(varietyReplacement2) varietyReplacement2,sum(varietyReplacement3) varietyReplacement3,sum(maintain1) maintain1,"
+                + "sum(maintain2) maintain2,sum(maintain3) maintain3,sum(maintain4) maintain4,sum(maintain5) maintain5,sum(maintain6) maintain6,sum(maintain7) maintain7,sum(maintain8) maintain8,sum(maintain9) maintain9,sum(maintain10) maintain10,sum(maintain11) maintain11,"
+                + "sum(maintain12) maintain12,sum(other1) other1,sum(other2) other2,sum(other3) other3,sum(other4) other4,sum(other5) other5,sum(other6) other6,sum(other7) other7,sum(other8) other8,sum(other9) other9,sum(planStopTime1) planStopTime1,sum(planStopTime2) planStopTime2,"
+                + "sum(planStopTime3) planStopTime3,sum(planStopTime4) planStopTime4,sum(planStopTime5) planStopTime5,sum(planStopTime6) planStopTime6,sum(planStopTime7) planStopTime7,sum(planStopTime8) planStopTime8,sum(planStopTime9) planStopTime9,sum(planStopTime10) planStopTime10,"
+                + "sum(planMaintain1) planMaintain1,sum(planMaintain2) planMaintain2,sum(rest) rest"
+                + " from mm_form_00_00_specific where listId = '"+listId+"'";
+        console.log(sql);
+        return Rx.Observable.fromPromise(this.execSql(sql, [])).map(data => data.res.rows.length ? data.res.rows.item(0) : null);
+      }
+
+    saveRecord(tableName: string, data: {}): Observable<any> {
+        if (data['id'] === undefined) {
+            //insert data
+            data['id'] = UUID.UUID().toString();
+            return this.insertRecord(tableName, data);
+        } else {
+            //update data
+            return this.updateRecord(tableName, data, "id = '" + data['id'] + "'");
+        }
+    }
+
+    insertRecord(tableName: string, data: {}): Observable<any> {
+        let fieldNames = [],fieldValues = [];
+        for (let fieldName in data){
+            if(fieldName == 'constructor' || fieldName.endsWith("Moveon")){
+                continue;
+            }
+            if (data[fieldName] === null) {
+                data[fieldName] = "";
+            }
+            fieldNames.push(fieldName);
+            fieldValues.push("'" + data[fieldName] + "'");
+        }
+        let sql = "insert into " + tableName + "(" + fieldNames.join(",") + ")" + " values(" + fieldValues.join(",") + ")";
+        console.log(sql);
+        return Rx.Observable.fromPromise(this.execSql(sql, []).then(() =>  {
+            console.log('插入数据成功!!');
+            if (tableName.startsWith("mm_") && this.netService.network){
+                let httpOptions = {
+                    headers: new HttpHeaders({ 'Authorization': 'Bearer ' + localStorage.getItem('token') })
+                };
+                let obj = {};
+                obj['data'] = JSON.stringify(data);
+                obj['tableName'] = tableName;
+                obj['id'] = data['id'];
+                obj['type'] = 'insert';
+                this.http.post("/api/r/task/ajax/execute/sql",obj,httpOptions).subscribe(data => {
+                    console.log(data);
+                });
+            }
+        })
+        .catch(e => console.log(e)));
+    }
+
+    updateRecord(tableName: string, data: {}, updateWhere: string = '') : Observable<any>{
+        let fields = [];
+        for (let fieldName in data){
+            if(fieldName == 'constructor' || fieldName.endsWith("Moveon")){
+                continue;
+            }
+            if (data[fieldName] === null) {
+                data[fieldName] = "";
+            }
+            fields.push(fieldName + "= '" + data[fieldName] + "'");
+        }
+        let sql = "UPDATE " + tableName + " set " + fields.join(",") + " where 1 = 1";
+        if(updateWhere){
+            sql += " and " + updateWhere;
+        }
+        console.log(sql);
+        return Rx.Observable.fromPromise(this.execSql(sql, [])
+            .then(() => {
+                console.log('修改数据成功')
+                if (tableName.startsWith("mm_") && this.netService.network){
+                    let httpOptions = {
+                        headers: new HttpHeaders({ 'Authorization': 'Bearer ' + localStorage.getItem('token') })
+                    };
+                    let obj = {};
+                    obj['data'] = JSON.stringify(data);
+                    obj['tableName'] = tableName;
+                    obj['id'] = data['id'];
+                    obj['type'] = 'update';
+                    this.http.post("/api/r/task/ajax/execute/sql",obj,httpOptions).subscribe(data => {
+                        console.log(data);
+                    });
+                }
+            })
+            .catch(e => console.log(e)));
+    }
+
+    deleteRecord(tableName: string, id:string, deleteWhere: string = '') : Observable<any> {
+        let sql = "DELETE FROM " + tableName + " where 1 = 1 " + ( id ? " and id = '" + id + "'" : "") + ( deleteWhere ? " and " + deleteWhere : "");
+        console.log(sql);
+        return Rx.Observable.fromPromise(this.execSql(sql, [])
+            .then(() => console.log('删除数据成功'))
+            .catch(e => console.log(e)));
+    }
+
+    selectRecord(tableName: string, selectFields: string[], whereStr: string, orderStr: string): Observable<any> {
+        let sql = "select " + (selectFields == null ? "*" : selectFields.join(",")) + " from " + tableName + " where " + (whereStr ? whereStr : ' 1=1 ') + (orderStr ? " order by " + orderStr : '');
+        console.log(sql);
+        return Rx.Observable.fromPromise(this.execSql(sql, [])).map(data => data.res.rows);
+    }
+
+    selectOne(tableName: string, selectFields: string[], whereStr: string): Observable<any> {
+        let sql = "select " + (selectFields == null ? "*" : selectFields.join(",")) + " from " + tableName + " where " + (whereStr ? whereStr : ' 1=1 ');
+        console.log(sql);
+        return Rx.Observable.fromPromise(this.execSql(sql, [])).map(data => data.res.rows.length ? data.res.rows.item(0) : null);
+    }
+
+}

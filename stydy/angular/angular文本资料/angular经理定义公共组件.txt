@@ -1,0 +1,222 @@
+import { ModalController, AlertController } from 'ionic-angular';
+import { Output, EventEmitter, Input} from '@angular/core';
+import { CheckItemRes } from '../../model/check-item-res';
+
+export abstract class CheckItemComponent{
+
+  @Input() checkProject: string;//检查项标题
+  @Input() benchmark: string;//基准值
+  @Input() modelData: any;//数据模型对象
+  @Input() resultFieldName: string;//对应的结果项属性名称
+  @Input() dependOnFieldName: string;//依赖的属性名称
+  @Input() readonly: boolean = false;//为true时只读，不能执行任何操作，为false时可以编辑
+  @Input() baseLineData: any;//曲线基准数值，单个数值或数组，如果不设定，则从benckmark自动解析
+  @Output() check: EventEmitter<any> = new EventEmitter<any>();
+  @Output() audit: EventEmitter<any> = new EventEmitter<any>();//审批操作选择新开(new)、作废(cancel)时抛出事件，监听后可进行相关操作
+  propagateChange = (_: any) => { };
+  userConfirmCallback = (_: any) => { };
+  inputValue:string = "";
+  checkResult: string = "";//判定结果Y，N
+  constructor(
+    public modalCtrl: ModalController,
+    public alertCtrl: AlertController,
+    ){}
+
+  ngOnInit() {
+  }
+
+  // 显示
+  show() {
+    if(this.readonly){//TODO:显示修改历史？
+        return;
+    }
+    this.checkResult = this.checkInputValue();
+    if(this.checkResult == 'Y'){//之前判定正确，点击后直接进入修改审核
+      this.showUserConfirm(this.handleInput);
+    }else if(this.checkResult == 'N'){//之前判定错误
+      this.showAuditOption();//选择操作
+    }else{
+      if(!this.dependOnFieldName){//如果没有任何依赖项
+        this.handleInput();
+      }else {//有依赖项
+        let dependOnValue = this.modelData[this.dependOnFieldName];
+
+        let moveOnFlag = this.modelData[this.dependOnFieldName + "Moveon"];
+        if(dependOnValue != 'Y' && !moveOnFlag){//依赖项的判断为N，且没有审核 继续的
+          this.handleDisable();
+          return;//不能做任何操作
+        }else{
+          this.handleInput();
+        }
+      }
+    }
+  }
+
+  showAuditOption(){
+    let alert = this.alertCtrl.create();
+    alert.setTitle('选择操作');
+
+    alert.addInput({
+      type: 'radio',
+      label: 'NG资料',
+      value: 'photo'
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: '新开',
+      value: 'new'
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: '作废',
+      value: 'cancel'
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: '继续',
+      value: 'moveon'
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: '修改',
+      value: 'modify'
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: '变化点记录',
+      value: 'change'
+    });
+    alert.addButton('Cancel');
+    alert.addButton({
+      text: '确定',
+      handler: (data: any) => {
+        switch (data) {
+          case 'new'://新开
+          case 'cancel'://作废
+            this.showUserConfirm(() => { this.audit.emit(data) });//新开、作废由主画面处理
+            break;
+          case 'moveon'://继续
+            this.showUserConfirm(() => {
+              this.modelData[this.resultFieldName + "Moveon"] = true;//设置标记为
+             });
+            break;
+          case 'change'://生成变化点信息
+            //TODO:modal弹出变化点录入界面
+            this.showUserConfirm(() => { console.log("......") });
+            break;
+          case 'modify'://修正
+            this.showUserConfirm(() => { this.showModifyReason() });
+            break;
+          case 'photo'://拍照资料
+            this.showNgPhoto();//TODO: 实现直接弹出 图片、文字输入界面
+            break;
+          default:
+            break;
+        }
+      }
+    });
+
+    alert.present();
+  }
+
+  showModifyReason(){
+    let alert = this.alertCtrl.create();
+    alert.setTitle('选择原因');
+
+    alert.addInput({
+      type: 'radio',
+      label: '手误，设置错了',
+      value: 'reason1'
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: '的确为 NG',
+      value: 'reason2'
+    });
+
+    alert.addButton({
+      text: '确定',
+      handler: (data: any) => {
+        this.handleInput();
+      }
+    });
+
+    alert.present();
+  }
+
+  showUserConfirm(callback){
+    this.userConfirmCallback = callback;
+    let userConfirmModal = this.modalCtrl.create('UserConfirmComponent', {title: '修改审核'});
+    userConfirmModal.onDidDismiss(data => {
+      if(data){
+        this.userConfirmCallback(data);
+      }
+    });
+    userConfirmModal.present();
+  }
+
+
+  showNgPhoto(){
+    let photoModal = this.modalCtrl.create('xxx');
+    photoModal.onDidDismiss(data => {
+      console.log(data);//TODO:
+    });
+    photoModal.present();
+  }
+
+  checkInputValue(): string{
+    if(this.inputValue == undefined || this.inputValue == ''){
+      return "";
+    }
+    if(!this.benchmark){// TODO: 无基准值的直接返回输入值？OK，NG需要转换为Y.N
+      return this.inputValue;
+    }
+    let OK = this.preprocessInputValue(this.inputValue);
+    return eval(this.benchmark) ? 'Y' : 'N';
+  }
+
+  preprocessInputValue(value){
+    return value
+  }
+
+  handleInput(){
+  }
+
+  //无法录入时处理逻辑
+  handleDisable(){
+
+  }
+
+  confirmCheckInput(value, result){
+    this.inputValue = "" + this.preprocessInputValue(value);
+    let res: CheckItemRes = new CheckItemRes();
+    res.checkResult = result;
+    res.inputValue = this.inputValue;
+
+    //直接修改模板对象的判定结果项
+    if (this.modelData && this.resultFieldName) {
+      this.modelData[this.resultFieldName] = res.checkResult;
+    }
+    this.propagateChange(this.inputValue);
+    this.check.emit(res);
+
+  }
+
+
+  writeValue(value: any) {
+    this.inputValue = value;
+  }
+
+  registerOnChange(fn: any) {
+    this.propagateChange = fn;
+  }
+
+  registerOnTouched() {}
+
+}

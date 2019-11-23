@@ -1,0 +1,1007 @@
+DataTables 默认情况已启用一些功能，搜索、 排序、 分页等功能已经开启，如本示例所示。
+DOM定位
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "dom": '<"top"i>rt<"bottom"flp><"clear">'
+    } );
+} );
+jQuery-UI风格的垂直滚动条
+$(document).ready(function() {
+     $('#example').dataTable( {
+         "scrollY": 200,
+         "scrollCollapse": true,
+         "jQueryUI": true
+     } );
+ } );
+ 不同的分页样式
+  默认情况下 Datatables 的分页就是上一页、下一页和6个页数按钮，这适合大部分情况。不过也有用户不喜欢这样，Datatables提供了四个模式供用户选择，通过设置pagingType选项来配置
+
+numbers - 只有只有数字按钮
+simple - 只有上一页、下一页两个按钮
+simple_numbers - 除了上一页、下一页两个按钮还有页数按钮，Datatables默认是这个
+full - 有四个按钮首页、上一页、下一页、末页
+full_numbers - 除首页、上一页、下一页、末页四个按钮还有页数按钮
+first_last_numbers - 除首页、末页两个按钮还有页数按钮
+ <script>
+     $(document).ready(function() {
+           $('#example').DataTable({
+                 "pagingType":   "full_numbers"
+           });
+      });
+</script>
+保存状态
+Datatables设置 stateSave选项后，可以保存最后一次分页信息、排序信息，当页面刷新，或者重新进入这个页面，恢复上次的状态。 
+这个状态的保存用了html5的本地储存和session储存，这样更加有效率。如果你的数据是异步获取的，你可以使用 stateSaveCallback和 stateLoadCallback选项. 
+需要注意的是，这个特性不支持ie6、ie7 
+默认情况下，这个状态会保存2小时，如果你希望设置的时间更长，通过设置参数 stateDuration来初始化表格 
+这个参数值也可以控制是本地储存(0~更大)还是session储存(-1) 
+下面的例子展示了Datatables设置 stateSave选项初始化后，实现的状态保存
+$(document).ready(function() {
+  $('#example').dataTable( {
+    stateSave: true
+  } );
+} );
+功能启用/禁用
+如果你不想使用datatables的某项特性，那么你可以禁用它，下面的例子展示了只启用查找功能(默认是启用的)
+$(document).ready(function() {
+  $('#example').dataTable( {
+    "paging":   false,
+    "ordering": false,
+    "info":     false
+  } );
+} );
+垂直滚动条
+如果在一个固定高度的容器里放table，这个时候可能需要用到垂直滚动条，才能展示所有数据。 
+开启垂直滚动条很简单，只要设置scrollY和scrollCollapse选项即可
+$(document).ready(function() {
+  $('#example').dataTable( {
+    "scrollY": "200px",
+    "scrollCollapse": "true",
+     "paging": "false"
+  } );
+} );
+水平滚动条
+开启水平滚动条，设置scrollX选项 
+在这个例子中还加入css样式 th, td { white-space: nowrap; } ，使文字内容在一行里
+ $(document).ready(function() {
+    $('#example').dataTable( {
+        "scrollX": true
+    } );
+} );
+th, td { white-space: nowrap; }
+              div.dataTables_wrapper {
+                width: 800px;
+                margin: 0 auto;
+              }
+制定复杂的表头(和并列/合并行)//只要在th或td加colspan或者rowspan即可
+在使用表格的时候总会遇到要分组列的情况，datatables完全支持合并列/合并行，下面的例子告诉你怎么使用
+多列排序
+datatables允许同时指定多个列排序，有很多不同的方法来实现：
+ $(document).ready(function() {
+  $('#example').dataTable( {
+ 
+    columnDefs: [ {
+      targets: [ 0 ],
+      orderData: [ 0, 1 ]  //如果第一列进行排序，有相同数据则按照第二列顺序排列
+    }, {
+      targets: [ 1 ],
+      orderData: [ 1, 0 ]  //如果第二列进行排序，有相同数据则按照第一列顺序排列
+    }, {
+      targets: [ 4 ],
+      orderData: [ 4, 0 ]  //如果第五列进行排序，有相同数据则按照第一列顺序排列
+    } ]
+  } );
+} );
+格式化数字显示格式
+通过 language.decimal选项可以配置数字的友好显示，比如1200450，显示为12.004,50
+$(document).ready(function() {
+  $('#example').dataTable( {
+     "language": {
+        "decimal":",",
+        "thousands":"."
+    }
+  } );
+} );
+语言国际化
+你可以使用language选项来国际化Datatables的相关信息
+$(document).ready(function() {
+         $('#example').dataTable( {
+             "language": {
+                 "lengthMenu": "每页 _MENU_ 条记录",
+                 "zeroRecords": "没有找到记录",
+                 "info": "第 _PAGE_ 页 ( 总共 _PAGES_ 页 )",
+                 "infoEmpty": "无记录",
+                 "infoFiltered": "(从 _MAX_ 条记录过滤)"
+             }
+         } );
+ } );
+ 隐藏列
+有些数据不希望显示在屏幕上，或者需要什么条件才会显示，你可以使用columns.visible选项来实现
+
+被隐藏的列依然是表格的一部分，通过column().visible()方法来显示
+
+被隐藏的列既然是表格的一部分，那么用户也可以搜索和访问被隐藏的列的相关内容
+
+下面的例子展示了office和age两列不显示（隐藏的列不会生成dom，他存在于DT的内部数据中），并且不能被搜索到
+$(document).ready(function() {
+  $('#example').DataTable( {
+    "columnDefs": [
+      {
+        "targets": [ 2 ],
+        "visible": false,
+        "searchable": false
+      },
+      {
+        "targets": [ 3 ],
+        "visible": false
+      }
+    ]
+  } );
+} );
+默认排序
+在datatables初始化时你可以使用order选项指定列怎么排序，
+order可以接受多个二维数组数据，数组第一个位置为第几列，第二个位置为标示asc(升序)或desc(降序)
+$(document).ready(function() {
+              $('#example').dataTable( {
+              //跟数组下标一样，第一列从0开始，这里表格初始化时，第四列默认降序
+                "order": [[ 3, "desc" ]]
+              } );
+            } );
+Datatables自定义事件
+Datatables有几个自定义事件，你可以用代码处理这些，比如当搜索事件触发的时候你要处理什么事情。
+这个例子演示使用当触发了搜索、排序、分页事件后打印日志
+搜索 事件 - 1535435124037
+排序 事件 - 1535435124044
+$(document).ready(function() {
+    var eventFired = function(type) {
+        var n = $('#demo_info')[0];
+        n.innerHTML += '<div>' + type + ' 事件- ' + new Date().getTime() + '</div>';
+        n.scrollTop = n.scrollHeight;//滚动条总高，和当前高度，scollY表示滚动条本身高度
+    }
+    $('#example').on('order.dt',
+    function() {
+        eventFired('排序');
+    }).on('search.dt',
+    function() {
+        eventFired('搜索');
+    }).on('page.dt',
+    function() {
+        eventFired('翻页');
+    }).dataTable();
+});
+Html5数据属性
+在有些情况下，显示的数据可能不是用来排序的，只是为了直观的展示给用户看，比如电话号码xxxx-xxxxxxxx，中间有一个斜杠，对于程序排序不怎么好处理 html5有 data-sort或者data-order来排序 ，data-filter或者data-search来搜索，下面的例子演示了， 显示的和搜索的是不同
+以Tiger Nixon 为例，显示的是 T. Nixon，搜索的是Tiger Nixon
+<tbody>
+                        <tr>
+                            <td data-search="Tiger Nixon">T. Nixon</td>
+                            <td>System Architect</td>
+                            <td>Edinburgh</td>
+                            <td>61</td>//让他好排
+                            <td data-order="1303686000">Mon 25th Apr 11</td>
+                            <td data-order="320800">$320,800/y</td>
+                        </tr>
+                        <tr> 	
+                            <td data-search="Garrett Winters">G. Winters</td>
+                            <td>Accountant</td>
+                            <td>Tokyo</td>
+                            <td>63</td>
+                            <td data-order="1311548400">Mon 25th Jul 11</td>
+                            <td data-order="170750">$170,750/y</td>
+                        </tr>
+ 
+列渲染
+更多关于render 的用法连接详见 columns.renderOption columns.render 1不定时一讲 columns.render 
+2不定时一讲 columns.render 
+3不定时一讲 columns.render 4不定时一讲
+$(document).ready(function() {
+    $('#example').dataTable({
+        "columnDefs": [{
+            "render": function(data, type, row) {
+                return data + ' (' + row[3] + ')';//代表第四个td的数据
+            },
+            "targets": 0
+        },
+        {
+            "visible": false,
+            "targets": [3]
+        }]
+    });
+});
+<tr>
+    <td>Cedric Kelly</td>
+    <td>Senior Javascript Developer</td>
+    <td>Edinburgh</td>
+    <td>22</td>
+    <td>2012/03/29</td>
+    <td>$433,060</td>
+</tr>
+ columnDefs: [{
+		        targets: 0,
+		        width: '50%',
+		        render: function(data, type, row, meta) {
+		            return '<input type="radio" name="radios">';
+		        }
+		    } 
+		    ],
+创建行回调
+此例子演示了，当工资大于4000的时候用高亮显示，注意columns.createdCell选项也可以实现同样的效果
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "createdRow": function ( row, data, index ) {
+            if ( data[5].replace(/[\$,]/g, '') * 1 > 4000 ) {
+                $('td', row).eq(5).css('font-weight',"bold").css("color","red");
+            }
+        }
+    } );
+} );
+多个表格操作元素
+你可以使用 dom来定位Datatables的一些控件，比如搜索框，分页控件等等，此例子演示了在表格上面和下面同时显示长度菜单，分页菜单和搜索框。 你还可以看之前简单初始化例子 DOM定位
+
+注意，很明显表格控件应该只要使用一次
+$(document).ready(function() {
+    $('#example').dataTable({
+        "dom": '<"top"iflp<"clear">>rt<"bottom"iflp<"clear">>'
+    });
+});
+读Html数据对象
+Datatables会读表格中的信息到一个内部的一个数组储存，而你可以通过 columns.data属性定义获取到， 如果你是使用ajax获取数据
+$(document).ready(function() {
+    $('#example').DataTable({
+        "columns": [
+            { "data": "name" },
+            { "data": "position" },
+            { "data": "office" },
+            { "data": "age" },
+            { "data": "start_date" },
+            { "data": "salary" }
+        ]
+    });
+} );
+自定义工具按钮元素
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "dom": '<"toolbar">frtip'
+    } );
+ 
+    $("div.toolbar").html('<b style="color:red">自定义文字、图片等等</b>');
+} );
+自定义长度菜单的选项
+$(document).ready(function() {
+    $('#example').dataTable({
+        "lengthMenu": [[2, 4, 6, -1], [2, 4, 6, "All"]]
+    });
+});
+行分组
+此例子演示了以工作地点分组数据，同时隐藏工作地点这一列
+$(document).ready(function() {
+    var table = $('#example').DataTable({
+        "columnDefs": [{
+            "visible": false,
+            "targets": 2
+        }],
+        "order": [[2, 'asc']],
+        "displayLength": 25,//那个info显示每页多少条
+        "drawCallback": function(settings) {
+            var api = this.api();
+            var rows = api.rows({
+                page: 'current'
+            }).nodes();
+            var last = null;
+ 
+            api.column(2, {
+                page: 'current'
+            }).data().each(function(group, i) {
+                if (last !== group) {
+                    $(rows).eq(i).before('<tr class="group"><td colspan="5">' + group + '</td></tr>');
+ 
+                    last = group;
+                }
+            });
+        }
+    });
+ 
+    // 根据组排序
+    $('#example tbody').on('click', 'tr.group',
+    function() {
+        var currentOrder = table.order()[0];
+        if (currentOrder[0] === 2 && currentOrder[1] === 'asc') {
+            table.order([2, 'desc']).draw();
+        } else {
+            table.order([2, 'asc']).draw();
+        }
+    });
+});
+表格foot回调
+此例子演示通过 footerCallback回调函数统计本页工资总数
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "footerCallback": function ( row, data, start, end, display ) {
+            var api = this.api(), data;
+ 
+            // Remove the formatting to get integer data for summation
+            var intVal = function ( i ) {
+                return typeof i === 'string' ?
+                    i.replace(/[\$,]/g, '')*1 :
+                    typeof i === 'number' ?
+                        i : 0;
+            };
+ 
+            // Total over all pages
+            total = api
+                .column( 4 )
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                } );
+ 
+            // Total over this page
+            pageTotal = api
+                .column( 4, { page: 'current'} )
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0 );
+ 
+            // Update footer
+            $( api.column( 4 ).footer() ).html(
+                '$'+pageTotal +' ( $'+ total +' total)'
+            );
+        }
+    } );
+} );
+语言文件
+Datatables支持国际化，你可以把语言定义在文件中，使用language.url选项来初始化
+$(document).ready(function() {
+    $('#example').dataTable({
+        "language": {
+            "url": "../resources/zh_CN.txt"
+        }
+    });
+});
+复杂的表头
+通过rowspan / colspan制作复杂的表头，下面的例子演示了怎么隐藏一列，还可以参考简单初始化例子 制定复杂的表头(和并列/合并行)
+$(document).ready(function() {
+    $('#example').dataTable({
+        "columnDefs": [{
+            "visible": false,
+            "targets": -1
+        }]
+    });
+});
+高级排序控制
+此例子演示了
+
+第1列默认排序
+第2列默认排序
+第3列只升序
+第4列降序排序，其次是升序，然后再升序
+第5列只降序
+第6列默认排序
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "aoColumns": [
+            null,
+            null,
+            { "orderSequence": [ "asc" ] },
+            { "orderSequence": [ "desc", "asc", "asc" ] },
+            { "orderSequence": [ "desc" ] },
+            null
+        ]
+    } );
+} );
+默认设置
+在多个页面使用Datatables，你可能将dom设置为公共的值，让所有的表格都有相同的布局，这个时候你可以使用 $.fn.dataTable.defaults 当设置此对象后，所有Datatables在初始化的时候都会使用这个参数设置 
+此例子演示了默认禁用搜索和排序功能
+$.extend( $.fn.dataTable.defaults, {
+    "searching": false,
+    "ordering": false
+} );
+
+
+$(document).ready(function() {
+    $('#example').dataTable();
+} );
+reduce 为数组中的每一个元素依次执行回调函数，不包括数组中被删除或从未被赋值的元素，接受四个参数：初始值（或者上一次回调函数的返回值），当前元素值，当前索引，调用 reduce 的数组。
+
+回调函数第一次执行时，previousValue 和 currentValue 可以是一个值，如果 initialValue 在调用 reduce 时被提供，那么第一个 previousValue 等于 initialValue ，并且currentValue 等于数组中的第一个值；如果initialValue 未被提供，那么previousValue 等于数组中的第一个值，currentValue等于数组中的第二个值。
+
+如果数组为空并且没有提供initialValue， 会抛出TypeError 。如果数组仅有一个元素（无论位置如何）并且没有提供initialValue， 或者有提供initialValue但是数组为空，那么此唯一值将被返回并且callback不会被执行。
+
+例如执行下面的代码
+
+[0,1,2,3,4].reduce(function(previousValue, currentValue, index, array){
+  return previousValue + currentValue;
+});
+回调被执行四次，每次的参数和返回值如下表：
+
+ 	previousValue	currentValue	index	array	return value
+first call	0	1	1	[0,1,2,3,4]	1
+second call	1	2	2	[0,1,2,3,4]	3
+third call	3	3	3	[0,1,2,3,4]	6
+fourth call	6	4	4	[0,1,2,3,4]	10
+reduce 的返回值是回调函数最后一次被调用的返回值（10）。
+
+如果把初始值作为第二个参数传入 reduce，最终返回值变为20，结果如下：
+
+[0,1,2,3,4].reduce(function(previousValue, currentValue, index, array){
+  return previousValue + currentValue;
+}, 10);
+//定义按钮
+                        buttons: [//有点像dom添加div
+                        {
+                            text: '<i class="fa fa-plus"></i>新增产品行记录',//按钮内容
+                            id: "addTODetail",
+                            action: function () {
+                                var id = "";
+                                if(!$("#inputForm").validationEngine("validate")){
+                                    return false;
+                                }
+                                add_toDetail(id);
+                            },
+                            //样式名死的
+                            className: 'btn btn-sm green btn-primary'
+                        },
+                        {   //只能单选有用，不然没用
+                            extend:'selectedSingle',
+                            text: '<i class="fa fa-plus"></i>编辑产品行记录',
+                            id: "editAsnMp",
+                            action: function (e, dt, node, config) {
+                                var selectedRow = dt.row({selected: true}).data();
+                                edit_toDetail(selectedRow,"edit","编辑预订单明细");
+                            },
+                            className: 'btn btn-sm green btn-primary'
+                        },
+                        {
+                            extend:'selected',
+                            text: '<i class="fa fa-plus"></i>删除产品行记录',
+                            id: "deleteTODetail",
+                            action: function (e, dt, node, config) {
+                                var selectedRow = dt.rows({selected: true}).data();
+                                var check_val = [];
+                                $.each(selectedRow,function(i,item){
+                                    check_val.push(item.code);
+                                });
+                                //alert(check_val);
+                                if (check_val.length == 1) {
+                                    toDetail_delete("one","");
+                                } else toDetail_delete("multi",check_val);
+                            },
+                            className: 'btn btn-sm green btn-primary'
+                        }
+                    ],
+发送分页编写模式
+ var dataTable = $("#dataTable").DataTable(theme.prepareTableSetting({
+                ajax: {
+                    url: appConfig.appCtx + "/to/ajax/list/dataTablejson/maintain",
+                    type: "POST",
+                    data: function (param) {
+                        return $.extend(param,{
+                            customerNoticeTimeFrom:$("#customerNoticeTimeFrom").val(),
+                            customerNoticeTimeTo:$("#customerNoticeTimeTo").val(),
+                            deliveryTimeFrom:$("#deliveryTimeFrom").val(),
+                            deliveryTimeTo:$("#deliveryTimeTo").val(),
+                            selectNumGtZero: "1",
+                            code:$("#code").val(),
+                            shipper:$("#shipper").val(),
+                            trModel:$("[name='trModel']:checked").val(),
+                        });
+                    }
+                },
+                "pageLength": 15,
+                "order": [
+                    [0, 'asc'],
+                ],
+                "ordering": false,
+                "columns": [
+                    /*{
+                     "data": null, "render": function (data, type, row) {
+                     var result, dockId = row.id;
+                     result = "<input type='checkbox' value='" + row.id + "' status='"+row.statusCode+"' name='check'/>";
+                     return result;
+                     }
+                     },*/
+                    {
+                        orderable: false,
+                        "className": "dt-center",
+                        "data": null,
+                        "render": function (data, type, row, meta) {
+                            var info = dataTable.page.info();
+                            return (info.page * info.length) + meta.row + 1;
+                        }
+                    },
+                    {"data": null, "render": function(data, type, row){
+                        return "<a href='javascript:void(0)' rowId='"+row.id+"' class='showInfo'>"+row.code+"</a>";
+                    }},
+                    {"data": "status_name", "defaultContent": ""},
+                    {"data": "customer_notice_time", "defaultContent": ""},
+                    {"data": "shipper_name", "defaultContent": ""},
+                    {"data": "loading_path", "defaultContent": ""},
+                    {"data": "receiving_path", "defaultContent": ""},
+                    {"data": "sku_num","defaultContent": ""},
+                    {"data": "remaining_num","defaultContent": ""},
+                    {"data": "gross_weight_total", "defaultContent": ""},
+                    {"data": "cubic_total", "defaultContent": ""},
+                    {"data": "transport_model", "defaultContent": ""},
+                    {"data": "emergency_name", "defaultContent": ""},
+                    {"data": "transportmode_name", "defaultContent": ""},
+                    {"data": "transportModelRemarks_name", "defaultContent": ""},
+                    {"data": "remarks", "defaultContent": ""},
+                ]
+            }));
+点击事件
+  $("#dataTable").on("click","tbody tr",function(){
+                var selectedRows = dataTable.rows({selected: true}).data();
+                var weight = 0, volume = 0, totalWeight = 0, totalVolume = 0;
+                for (var i = 0; i < selectedRows.length; i++) {
+                    weight += selectedRows[i].gross_weight_total;
+                    volume += selectedRows[i].cubic_total;
+                }
+                totalWeight = weight;
+                totalVolume = volume;
+                $("#weight").text(weight);
+                $("#volume").text(volume);
+                $("#totalWeight").text(totalWeight);
+                $("#totalVolume").text(totalVolume);
+            });
+调用已定义好的方法
+$("#searchBtn").on("click", reloadDataTable);
+通过使用 columns.dataDT 选项用于告诉Datatables找到每一列的数据源对象中对应的属性。
+$(document).ready(function() {
+    $('#example').DataTable( {
+        "ajax": "data/objects.txt",
+        "columns": [
+            { "data": "name" },
+            { "data": "position" },
+            { "data": "office" },
+            { "data": "extn" },
+            { "data": "start_date" },
+            { "data": "salary" }
+        ]
+    } );
+} );
+该例子展示Datatables最简单的ajax数据源的用法，数据格式如下： 
+[ "Tiger Nixon", "System Architect", "Edinburgh", "5421", "2011/04/25", "$3,120" ]
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "ajax": "data/arrays.txt"
+    } );
+} );
+{ "name": "Tiger Nixon", 
+"hr": { "position": "System Architect", "salary": "$3,120", "start_date": "2011/04/25" }, "contact": [ "Edinburgh", "5421" ] }
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "processing": true,
+        "ajax": "data/objects_deep.txt",
+        "columns": [
+            { "data": "name" },
+            { "data": "hr.position" },
+            { "data": "contact.0" },
+            { "data": "contact.1" },
+            { "data": "hr.start_date" },
+            { "data": "hr.salary" }
+        ]
+    } );
+} );
+嵌套对象数据（数组），该例子的数据模型如下： 
+{ "name": [ "Nixon", "Tiger" ], "hr": [ "System Architect", "$3,120", "2011/04/25" ], "office": "Edinburgh", "extn": "5421" }
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "ajax": "data/objects_subarrays.txt",
+        "columns": [
+            { "data": "name[, ]" },
+            { "data": "hr.0" },
+            { "data": "office" },
+            { "data": "extn" },
+            { "data": "hr.2" },
+            { "data": "hr.1" }
+        ]
+    } );
+} );
+ $(document).ready(function() {
+        $('#example').DataTable( {
+            "ajax": "data/arrays.txt",
+            //当处理大数据时，延迟渲染数据，有效提高Datatables处理能力
+            "deferRender": true
+        } );
+    } );
+	{
+    "name":    "Tiger Nixon",
+    "position":   "System Architect",
+    "salary":    "$3,120",
+    "start_date": {
+        "display": "Mon 25th Apr 11",
+        "timestamp": "1303682400"
+    },
+    "office":    "Edinburgh",
+    "extn":    "5421"
+}
+$(document).ready(function() {
+    $('#example').dataTable( {
+        ajax: "data/orthogonal.txt",
+        columns: [
+            { data: "name" },
+            { data: "position" },
+            { data: "office" },
+            { data: "extn" },
+            { data: {
+                _:    "start_date.display",
+                sort: "start_date.timestamp"
+            } },
+            { data: "salary" }
+        ]
+    } );
+} );
+在某些情况下你可能需要自动创建内容，这时你可以使用 columns.renderDT 参数，来渲染每一行数据 
+对于简单的静态的数据可以使用 columns.defaultContentDT 参数
+
+本示例演示如何使用 columns.defaultContentDT 在表的最后一列中创建按钮并添加点击事件，通过 row().data()DT 方法得到这行的数据，并alert出相关信息
+
+此外注意到列中的 columns.dataDT 选项已被设置为 null，表示列不会获得数据源对象的信息。
+$(document).ready(function() {
+    var table = $('#example').DataTable( {
+        "ajax": "data/arrays.txt",
+        "columnDefs": [ {
+            "targets": -1,
+            "data": null,
+            "defaultContent": "<button>Click!</button>"
+        } ]
+    } );
+ 
+    $('#example tbody').on( 'click', 'button', function () {
+        var data = table.row( $(this).parents('tr') ).data();
+        alert( data[0] +"'s salary is: "+ data[ 5 ] );
+    } );
+} );
+var dataSet = [
+    ['Trident','Internet Explorer 4.0','Win 95+','4','X'],
+    ['Trident','Internet Explorer 5.0','Win 95+','5','C'],
+    ['Trident','Internet Explorer 5.5','Win 95+','5.5','A'],
+    ['Trident','Internet Explorer 6','Win 98+','6','A'],
+    ['Trident','Internet Explorer 7','Win XP SP2+','7','A'],
+    ['Trident','AOL browser (AOL desktop)','Win XP','6','A'],
+    ['Gecko','Firefox 1.0','Win 98+ / OSX.2+','1.7','A'],
+    ['Gecko','Firefox 1.5','Win 98+ / OSX.2+','1.8','A'],
+    ['Gecko','Firefox 2.0','Win 98+ / OSX.2+','1.8','A'],
+    ['Gecko','Firefox 3.0','Win 2k+ / OSX.3+','1.9','A'],
+    ['Gecko','Camino 1.0','OSX.2+','1.8','A'],
+    ['Gecko','Camino 1.5','OSX.3+','1.8','A'],
+    ['Gecko','Netscape 7.2','Win 95+ / Mac OS 8.6-9.2','1.7','A'],
+    ['Gecko','Netscape Browser 8','Win 98SE+','1.7','A'],
+    ['Gecko','Netscape Navigator 9','Win 98+ / OSX.2+','1.8','A'],
+    ['Gecko','Mozilla 1.0','Win 95+ / OSX.1+',1,'A'],
+    ['Gecko','Mozilla 1.1','Win 95+ / OSX.1+',1.1,'A'],
+    ['Gecko','Mozilla 1.2','Win 95+ / OSX.1+',1.2,'A'],
+    ['Gecko','Mozilla 1.3','Win 95+ / OSX.1+',1.3,'A'],
+    ['Gecko','Mozilla 1.4','Win 95+ / OSX.1+',1.4,'A'],
+    ['Gecko','Mozilla 1.5','Win 95+ / OSX.1+',1.5,'A'],
+    ['Gecko','Mozilla 1.6','Win 95+ / OSX.1+',1.6,'A'],
+    ['Gecko','Mozilla 1.7','Win 98+ / OSX.1+',1.7,'A'],
+    ['Gecko','Mozilla 1.8','Win 98+ / OSX.1+',1.8,'A'],
+    ['Gecko','Seamonkey 1.1','Win 98+ / OSX.2+','1.8','A'],
+    ['Gecko','Epiphany 2.20','Gnome','1.8','A'],
+    ['Webkit','Safari 1.2','OSX.3','125.5','A'],
+    ['Webkit','Safari 1.3','OSX.3','312.8','A'],
+    ['Webkit','Safari 2.0','OSX.4+','419.3','A'],
+    ['Webkit','Safari 3.0','OSX.4+','522.1','A'],
+    ['Webkit','OmniWeb 5.5','OSX.4+','420','A'],
+    ['Webkit','iPod Touch / iPhone','iPod','420.1','A'],
+    ['Webkit','S60','S60','413','A'],
+    ['Presto','Opera 7.0','Win 95+ / OSX.1+','-','A'],
+    ['Presto','Opera 7.5','Win 95+ / OSX.2+','-','A'],
+    ['Presto','Opera 8.0','Win 95+ / OSX.2+','-','A'],
+    ['Presto','Opera 8.5','Win 95+ / OSX.2+','-','A'],
+    ['Presto','Opera 9.0','Win 95+ / OSX.3+','-','A'],
+    ['Presto','Opera 9.2','Win 88+ / OSX.3+','-','A'],
+    ['Presto','Opera 9.5','Win 88+ / OSX.3+','-','A'],
+    ['Presto','Opera for Wii','Wii','-','A'],
+    ['Presto','Nokia N800','N800','-','A'],
+    ['Presto','Nintendo DS browser','Nintendo DS','8.5','C/A<sup>1</sup>'],
+    ['KHTML','Konqureror 3.1','KDE 3.1','3.1','C'],
+    ['KHTML','Konqureror 3.3','KDE 3.3','3.3','A'],
+    ['KHTML','Konqureror 3.5','KDE 3.5','3.5','A'],
+    ['Tasman','Internet Explorer 4.5','Mac OS 8-9','-','X'],
+    ['Tasman','Internet Explorer 5.1','Mac OS 7.6-9','1','C'],
+    ['Tasman','Internet Explorer 5.2','Mac OS 8-X','1','C'],
+    ['Misc','NetFront 3.1','Embedded devices','-','C'],
+    ['Misc','NetFront 3.4','Embedded devices','-','A'],
+    ['Misc','Dillo 0.8','Embedded devices','-','X'],
+    ['Misc','Links','Text only','-','X'],
+    ['Misc','Lynx','Text only','-','X'],
+    ['Misc','IE Mobile','Windows Mobile 6','-','C'],
+    ['Misc','PSP browser','PSP','-','C'],
+    ['Other browsers','All others','-','-','U']
+];
+$('#example').dataTable( {  
+    "data": [  
+        [ "Tiger Nixon", "System Architect", "$3,120", "2011/04/25", "Edinburgh", 5421 ],  
+        [ "Garrett Winters", "Director", "$8,422", "2011/07/25", "Edinburgh", 8422 ],  
+        // ...  
+    ]  
+    //or...  
+  "data": [  
+        {  
+            "name":       "Tiger Nixon",  
+            "position":   "System Architect",  
+            "salary":     "$3,120",  
+            "start_date": "2011/04/25",  
+            "office":     "Edinburgh",  
+            "extn":       5421  
+        },  
+        {  
+            "name": "Garrett Winters",  
+            "position": "Director",  
+            "salary": "5300",  
+            "start_date": "2011/07/25",  
+            "office": "Edinburgh",  
+            "extn": "8422"  
+        },  
+        // ...  
+    ],  
+  
+} );  
+ 
+$(document).ready(function() {
+    $('#demo').html( '<table cellpadding="0" cellspacing="0" border="0" class="display" id="example"></table>' );
+ 
+    $('#example').dataTable( {
+        "data": dataSet,
+		//直接写title，自动填写
+        "columns": [
+            { "title": "Engine" },
+            { "title": "Browser" },
+            { "title": "Platform" },
+            { "title": "Version", "class": "center" },
+            { "title": "Grade", "class": "center" }
+        ]
+    } );
+} );
+$(document).ready(function() {
+        $('#example').dataTable( {
+            "processing": true,
+            "serverSide": true,
+            "ajax": "http://dt.thxopen.com/example/resources/server_processing_customCUrl.php"
+        } );
+    } );
+	定义按钮
+	 buttons: [
+                {
+                    extend:'selectedSingle',
+                    text: '<i class="fa fa-plus"></i>编辑',
+                    id: "editTO",
+                    action: function (e, dt, node, config) {
+                        var selectedRow = dt.row({selected: true}).data();
+                        var id = selectedRow.id;
+                        /*to.addTO(id, {
+                            end: reloadDataTable
+                        },"edit","编辑预订单");*/
+                        window.location.href=appConfig.adminCtx + "/to/ajax/form?id="+id+"&flag=edit";
+                    },
+                    className: 'btn btn-sm green btn-primary'
+                },
+	服务器处理
+	$(document).ready(function() {
+        $('#example').dataTable( {
+            "processing": true,
+            "serverSide": true,
+            "ajax": "http://dt.thxopen.com/example/resources/server_processing_customCUrl.php"
+        } );
+    } );
+	服务器处理
+Datatables有许多方法来获取你的数据，如果你的数据量比较大，这个时候你需要使用服务器模式来处理你的数据。 在服务器模式下，所有的分页，搜索，排序等操作，Datatables都会交给服务器去处理。所以每次绘制Datatables， 都会请求一次服务器获取需要的数据。
+
+通过配置serverSideDT 这个属性来打开Datatables的服务器模式，下面的例子展示了Datatables打开服务器模式。
+$(document).ready(function() {
+    $('#example').dataTable( {
+        "processing": true,
+        "serverSide": true,
+        "ajax": "../resources/server_processing_custom.php"
+    } );
+} );
+$('#example').dataTable( {  
+  "ajax": {  
+    "url": "data.json",  
+    "data": {  
+        "user_id": 451  
+    }  
+  }  
+} );  
+$('#example').dataTable( {  
+  "ajax": {  
+    "url": "data.json",  
+    "data": function ( d ) {  
+        d.extra_search = $('#extra').val();  
+    }  
+  }  
+} );  
+$('#example').dataTable( {  
+  "ajax": {  
+    "url": "data.json",  
+    "data": function ( d ) {  
+      return $.extend( {}, d, {  
+        "extra_search": $('#extra').val()  
+      } );  
+    }  
+  }  
+} );  
+3.如果ajax是一个function 
+那么你通过这个function可以完全控制ajax请求。 
+function ajax( data, callback, settings ) 
+data - 发送到服务器的参数 
+callback - 回调函数 服务器回传的集合应该传给这个回调函数，作为其参数 
+settings - DT的配置对象。 
+例子： 
+
+Js代码  收藏代码
+$('#example').dataTable( {  
+  "ajax": function (data, callback, settings) {  
+    callback(  
+      JSON.parse( localStorage.getItem('dataTablesData') )  
+    );  
+  }  
+} ); 
+2.2.2 如果是一个function 
+他就受一个object 代表了服务器发来的全部请求内容（不仅仅是data！） 
+返回一个array 你定制完成以后，DT用来构造table的用的数据 
+例子： 
+
+Js代码  收藏代码
+$('#example').dataTable( {  
+  "ajax": {  
+    "url": "data.json",  
+    "dataSrc": function ( json ) {  
+      for ( var i=0, ien=json.data.length ; i<ien ; i++ ) {  
+        json.data[i][0] = '<a href="/message/'+json.data[i][0]+'>View message</a>';  
+      }  
+      return json.data;  
+    }  
+  }  
+} );  
+2.2.1 如果是一个string 
+指定用于dt中table body的数据对象名字（如果返回来的不是一个对象，而是一个纯数组。那么这个地方设为""） 
+一般ajax返回来的请求，除了数据部分，还包括分页，排序等等其他信息 
+这里的string就是指数据部分对应的对象的名字。 
+例子： 
+
+Js代码  收藏代码
+$('#example').dataTable( {  
+  "ajax": {  
+    "url": "data.json",  
+    "dataSrc": "tableData"  
+  }  
+//假设传回的集合是{tableData:[{...},{...}],page:{...},...}  
+} ); 
+$('#example').dataTable( {  
+  "ajax": {  
+    "url": "data.json",  
+    "data": {  
+        "user_id": 451  
+    }  
+  }  
+} );  
+$(document).ready(function() {
+    $('#example').DataTable( {
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "scripts/post.php",
+            "type": "POST"
+        },
+        "columns": [
+            { "data": "first_name" },
+            { "data": "last_name" },
+            { "data": "position" },
+            { "data": "office" },
+            { "data": "start_date" },
+            { "data": "salary" }
+        ]
+    } );
+} );
+行详情
+function format ( d ) {
+    return 'Full name: '+d.first_name+' '+d.last_name+'<br>'+
+        'Salary: '+d.salary+'<br>'+
+        'The child row can contain any data you wish, including links, images, inner tables etc.';
+}
+ 
+$(document).ready(function() {
+    var dt = $('#example').DataTable( {
+        "processing": true,
+        "serverSide": true,
+        "ajax": "scripts/ids-objects.php",
+        "columns": [
+            {
+                "class":          "details-control",
+                "orderable":      false,
+                "data":           null,
+                "defaultContent": ""
+            },
+            { "data": "first_name" },
+            { "data": "last_name" },
+            { "data": "position" },
+            { "data": "office" }
+        ],
+        "order": [[1, 'asc']]
+    } );
+ 
+    // Array to track the ids of the details displayed rows
+    var detailRows = [];
+ 
+    $('#example tbody').on( 'click', 'tr td.details-control', function () {
+        var tr = $(this).closest('tr');
+        var row = dt.row( tr );
+        var idx = $.inArray( tr.attr('id'), detailRows );
+ 
+        if ( row.child.isShown() ) {
+            tr.removeClass( 'details' );
+            row.child.hide();
+ 
+            // Remove from the 'open' array
+            detailRows.splice( idx, 1 );
+        }
+        else {
+            tr.addClass( 'details' );
+            row.child( format( row.data() ) ).show();
+ 
+            // Add to the 'open' array
+            if ( idx === -1 ) {
+                detailRows.push( tr.attr('id') );
+            }
+        }
+    } );
+ 
+    // On each draw, loop over the `detailRows` array and show any child rows
+    dt.on( 'draw', function () {
+        $.each( detailRows, function ( i, id ) {
+            $('#'+id+' td.details-control').trigger( 'click' );
+        } );
+    } );
+} );
+行选择
+$(document).ready(function() {
+    var selected = [];
+ 
+    $("#example").DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": "scripts/ids-arrays.php",
+        "rowCallback": function( row, data ) {
+            if ( $.inArray(data.DT_RowId, selected) !== -1 ) {
+                $(row).addClass('selected');
+            }
+        }
+    });
+ 
+    $('#example tbody').on('click', 'tr', function () {
+        var id = this.id;
+        var index = $.inArray(id, selected);
+ 
+        if ( index === -1 ) {
+            selected.push( id );
+        } else {
+            selected.splice( index, 1 );
+        }
+ 
+        $(this).toggleClass('selected');
+    } );
+} );
+跨域
+$(document).ready(function() {
+    $('#example').DataTable( {
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "scripts/jsonp.php",
+            "dataType": "jsonp"
+        }
+    } );
+} );
+延迟加载数据
+$(document).ready(function() {
+    $('#example').DataTable( {
+        "processing": true,
+        "serverSide": true,
+        "ajax": "scripts/server_processing.php",
+        "deferLoading": 57
+    } );
+} );

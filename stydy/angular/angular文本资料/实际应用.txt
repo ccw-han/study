@@ -1,0 +1,21 @@
+﻿//根据id删除记录
+    public deleteCheckMmFs101(idValue):Observable<any>{
+      return this.http.post("/api/r/MmFormC7Df1011/check/mmFormC7Df1011/delete",idValue ,{
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+      }); 
+    }
+	@Output() check: EventEmitter<any> = new EventEmitter<any>();
+	propagateChange = (_: any) => { };
+	 implements ControlValueAccessor
+	  providers: [{
+    provide: NG_VALUE_ACCESSOR,
+    useExisting: forwardRef(() => CheckInputComponent),
+    multi: true
+  }]
+<ng5-slider [(value)]="mm001240.water2State" [options]="sliderOptions0"></ng5-slider>
+sliderOptions0: Options = {
+        floor: 0,
+        ceil: 100,
+        vertical: true,
+        readOnly:false
+      };

@@ -1,0 +1,22 @@
+我们通过document.cookie来获取当前网站下的cookie的时候，得到的是字符串的形式的值，它包含了
+当前网站下的所有cookie，它会把所有cookie通过一个分号+空格的形式串联起来。
+
+我们想长时间存放一个cookie，需要在设置这个cookie的时候必须设置一个过期时间；
+document.cookie='名称=值;expires='+(字符串格式的)时间;
+cookie默认是临时存储，当浏览器关闭进程的时候，自动销毁；
+
+*/
+
+//document.cookie='名字=值';
+//document.cookie='name=Jack';
+//document.cookie='pwd=123456';
+
+//设置一个过期时间
+//var oDate=new Date();
+//oDate.setDate(oDate.getDate()+7);//设置为当前时间起算7天后过期
+//document.cookie='name=Jack;expires='+oDate.toGMTString();
+//alert(typeof oDate);//odate类型是object类型，需要转换为字符串；
+//alert(oDate.getDate());	//获取的是当前月份的日号，如5月25，输出的是25
+
+//读取cookie:document.cookie;
+//alert(document.cookie);//name=Jack; pwd=123456

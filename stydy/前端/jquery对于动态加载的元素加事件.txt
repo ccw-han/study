@@ -1,0 +1,26 @@
+$('.js-album-list-ul').on('mouseenter','.js-album-transition',function (){
+        $(this).find("span.js-album-op-tip").css("display", "block");
+    }).on('mouseleave','.js-album-transition',function (){
+        console.log(111111);
+        $(this).find("span.js-album-op-tip").css("display", "none");
+        $(this).find("div.photo-op-list").css("display", "none");
+    });
+
+
+    $('.js-album-list-ul').on('click','.icon-down-open',function() {
+        if ($(this).parent().next().is(':visible')) {
+            $(this).parent().next().hide();
+        } else {
+            $(this).parent().next().show();
+        }
+    });
+
+    $('.js-album-list-ul').on('click','.js-album-modify',function(){
+        console.log($(this).parent().parent().attr("id"));
+    });
+
+    $('.js-album-list-ul').on('click','.js-album-dele',function(){
+        console.log($(this).parent().parent().attr("id"));
+    });
+
+加在加载事件中

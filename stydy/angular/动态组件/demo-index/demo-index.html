@@ -1,0 +1,61 @@
+<page-home>
+  <div class="card card-pm-summary">
+    <div class="card-body">
+      <div class="clearfix">
+        <div class="float-left">
+          <div class="h3 text-primary">
+            <strong>demo-index</strong>
+          </div>
+        </div>
+
+
+      </div>
+      <!-- end clearfix -->
+
+      <div class="row">
+        <div *ngFor='let item of list; let idx = index' class="col-lg-3 col-md-4"
+             (click)='toForm(item.id,pageName,tableName)'>
+          <div class="card border-secondary mb-3" style="max-width: 20rem;">
+            <div
+              class="card-header {{item.recordStatus == '进行中' ? 'bg-warning text-white' : ((item.confirmResult == 'Y' ) ? 'bg-success text-white' : 'bg-danger text-white')}}">
+              demo-index
+            </div>
+            <div class="card-body">
+              <h5 class="card-title text-primary">
+                <font face="黑体" size="4">
+                  <div>点检日期：
+                    <span>{{item.checkDate}}</span>
+                  </div>
+                </font>
+              </h5>
+              <p class="card-text">
+                <font face="黑体" size="2">
+                  <div>点检者：
+                    <span>{{item.checkPerson}}</span>
+                  </div>
+                </font>
+              </p>
+              <p class="card-text">
+                <font face="黑体" size="2">
+                  <div>确认者：
+                    <span>{{item.confirmPerson}}</span>
+                  </div>
+                </font>
+              </p>
+              <p class="card-text ta-r">
+                <button *ngIf="item.recordStatus  == '进行中'" type="button" class="btn btn-danger btn-sm f-r"
+                        (click)="delRecord(idx,$event)">作废
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div style="padding-left:10px;">
+          <create-check-list-btn [formCode]="'demo'" (click)='toForm(null,pageName,tableName)'></create-check-list-btn>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- end card-body -->
+</page-home>

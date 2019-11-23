@@ -1,0 +1,70 @@
+data: {id:$("#id").val()}？controller如何接受
+页面上有一个数组，里面存放了多个json，需要将该数组作为参数传给java后台。
+
+var data= [{name:"jon",age:"12"},{name:"jic",age:"18"},{name:"petter",age:"14"}]
+
+$.ajax({
+               url:'./service/iposremoteapprove/caseToUser.do',
+               data:{
+                ds:JSON.stringify(data)   /* 特别需要注意这里，
+				需要现将json数组通过JSON.stringify()处理一下之后，
+				才能作为我们需要的参数传过去
+               },
+               type:'post',
+               dataType:"json",
+               success:function(json){
+                $.messager.alert("提示","成功","info");
+               }
+  });
+  springMVC自动接收json转换映射到dto实体
+
+1，必须引入jar：jackson-mapper-asl
+
+2，controller层配置：
+
+@RequestMapping(value="/user/saveUser",method=RequestMethod.POST,consumes="application/json")
+@ResponseBody
+public ResultDto saveUser(@RequestBody User user,HttpServletRequest request){
+try {
+logger.info("保存用户-start");
+logger.info("user实体： "+user);
+this.userServcie.saveUser(user);
+return ResultUtil.getResult(CodeConst.CODE_SUCCEED, CodeConst.MSG_SUCCEED_SAVEUSER, null);
+} catch (ServiceException e) {
+throw new APIBusinessException(e);
+} catch (Exception e) {
+e.printStackTrace();
+logger.error("保存用户-系统异常", e);
+throw new APISystemException("保存用户-系统异常", e);
+}
+}
+
+提交方法method：post
+
+声明接受数据格式consumes:：application/json
+
+json映射到目标实体：@RequestBody
+
+
+
+3，客户端提交json
+
+如：html使用jquery提交json
+
+$("#sub").on("click",function(){
+console.log(333);
+var i = “{\"userId\":10,\"userName\":\"小明\"}”;
+
+$.ajax({
+            type: "POST",
+            contentType: "application/json",
+            url: "interface/user/saveUser",
+            data: i,
+            dataType: "json",
+            success: function(data){
+            console.log(data);
+                     }
+        });
+});
+
+contentType=application/json

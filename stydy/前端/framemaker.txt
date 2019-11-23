@@ -1,0 +1,55 @@
+1framemarker绑定数据
+<input type="hidden" name="id" id="id" value="${(to.id)!''}">
+2framemarker标签判断
+<#if flag??&&(flag=="show") || to.status??&&(to.status.code!="to-status-001")>
+                        ${(to.proSource.name)!''}
+                    <#else>
+                        <select class="form-control" id="proSource" name="proSource">
+                            <option value="">--请选择--</option>
+                            <#if toSources??>
+                                <#list toSources as toSource>
+                                    <#if to.proSourrce??&&to.proSourrce.id==toSource.id>
+                                        <option value="${toSource.code}" selected>${toSource.name}</option>
+                                    <#else>
+                                        <option value="${toSource.code}">${toSource.name}</option>
+                                    </#if>
+                                </#list>
+                            </#if>
+                        </select>
+                    </#if>
+3 <tr>
+                    <td class="fmLbl"><label>客户通知时间</label><span class="mandatory">*</span></td>
+                    <td class="fmData" style="vertical-align: top" colspan="3">
+                    <#if flag??&&(flag=="show") || to.status??&&(to.status.code!="to-status-001")>
+                        ${((to.customerNoticeTime)?string("yyyy-MM-dd HH:mm:ss"))!''}
+                    <#else>
+                        <input value="${((to.customerNoticeTime)?string("yyyy-MM-dd HH:mm:ss"))!''}" id="customerNoticeTime" type="text" onFocus="WdatePicker({lang:'zh-cn',dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false})"
+                               name="customerNoticeTime" class="validate[required] form-control" maxlength="50"/>
+                    </#if>
+                    </td>
+                </tr>
+4framemarke转换格式
+<input value="${((to.createDate)?string("yyyy-MM-dd HH:mm:ss"))!''}" id="createDate" type="text" onFocus="WdatePicker({lang:'zh-cn',dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false})"
+                               name="createDate" class="validate[required] form-control" maxlength="50"/>
+5<input id="loadingPhone" name="loading.phone" class="validate[required] form-control" type="text"
+                               onkeyup="value=value.replace(/[^\d.]/g,'')" value="${(to.loading.phone)!''}" maxlength="11"/>
+7function to_submit(flag) {
+        var options = {
+            beforeSubmit: function () {
+                return $("#inputForm").validationEngine("validate");
+            },
+            data:{flag:flag},
+            dataType: "json",
+            success: function (data) {
+                if(data && data.flag=="add"){
+                    window.location.href=appConfig.adminCtx + "/to/ajax/form/afterAddTo?id="+data.id+"&flag=add";
+                    return true;
+                }
+                theme.showInfo("保存预订单："+ data.code + "成功！");
+                window.location.href = appConfig.adminCtx + "/to/ajax/form/list/confirm";
+            },
+            url: appConfig.adminCtx + "/to/ajax/submit",
+            type: 'post'
+        };
+        $("#inputForm").ajaxSubmit(options);
+    }

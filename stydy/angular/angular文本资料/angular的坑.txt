@@ -1,0 +1,4 @@
+自定义控件，只能从视图有值传给value，value再给ts的属性赋值value，
+反过来再input填值，然后那个值给writeValue中的value。value在给css选择器中的
+属性，那个属性没有值。
+$event 在事件方法中，直接用变量接收即可，a(event){var b=event}

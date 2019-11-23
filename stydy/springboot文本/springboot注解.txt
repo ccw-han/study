@@ -1,0 +1,42 @@
+﻿@SpringBootApplication：包含了@ComponentScan、@Configuration和@EnableAutoConfiguration注解。
+其中@ComponentScan让spring Boot扫描到Configuration类并把它加入到程序上下文。
+@Configuration 等同于spring的XML配置文件；使用Java代码可以检查类型安全。
+
+@EnableAutoConfiguration 自动配置。
+
+@ComponentScan 组件扫描，可自动发现和装配一些Bean。
+@SpringBootApplication：包含了@ComponentScan、@Configuration和@EnableAutoConfiguration注解。
+其中@ComponentScan让spring Boot扫描到Configuration类并把它加入到程序上下文。
+@Configuration 等同于spring的XML配置文件；使用Java代码可以检查类型安全。
+
+@EnableAutoConfiguration 自动配置。
+
+
+@RestController注解是@Controller和@ResponseBody的合集,表示这是个控制器bean,并且是将函数的返回值直 接填入HTTP响应体中,是REST风格的控制器。
+
+@Autowired自动导入。
+
+@PathVariable获取参数。
+@ResponseBody：表示该方法的返回结果直接写入HTTP response body中，一般在异步获取数据时使用，用于构建RESTful的api。在使用@RequestMapping后，返回值通常解析为跳转路径，加上@responsebody后返回结果不会被解析为跳转路径，而是直接写入HTTP response body中。比如异步获取json数据，加上@responsebody后，会直接返回json数据。该注解一般会配合@RequestMapping一起使用。示例代码：
+@Import：用来导入其他配置类。
+@Service：一般用于修饰service层的组件
+
+@Repository：使用@Repository注解可以确保DAO或者repositories提供异常转译，这个注解修饰的DAO或者repositories类会被ComponetScan发现并配置，同时也不需要为它们提供XML配置项。
+
+@Bean：用@Bean标注方法等价于XML中配置的bean。
+
+@Value：注入Spring boot application.properties配置的属性的值。示例代码：
+@Qualifier：当有多个同一类型的Bean时，可以用@Qualifier(“name”)来指定。与@Autowired配合使用。@Qualifier限定描述符除了能根据名字进行注入，但能进行更细粒度的控制如何选择候选者，具体使用方式如下：
+
+@Autowired 
+@Qualifier(value = “demoInfoService”) 
+private DemoInfoService demoInfoService;
+@ControllerAdvice：包含@Component。可以被扫描到。统一处理异常。
+
+@ExceptionHandler（Exception.class）：用在方法上面表示遇到这个异常就执行以下方法。
+@PathVariable:路径变量。如
+
+RequestMapping(“user/get/mac/{macAddress}”) 
+public String getByMacAddress(@PathVariable String macAddress){ 
+//do something; 
+} 

@@ -1,0 +1,12 @@
+proxy.config.json
+{
+  "/api": {
+    "target": "http://localhost:8080/modular-web-overlay",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {"^/api" : ""}
+  }
+}
+start.bat
+ng serve --proxy-config proxy.conf.json
+spring中，@RestController其他一样，只传输数据

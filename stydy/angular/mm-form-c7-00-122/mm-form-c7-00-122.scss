@@ -1,0 +1,119 @@
+mm-form-c7-00-122 {
+  text-align: center;
+
+  table {
+    td, th {
+      white-space: nowrap;
+      div[class='image-left'] {
+        display: inline-block;
+        width: 200px;
+        height: auto;
+        image {
+          width: 200px;
+          height: auto;
+        }
+      }
+        
+      div[class='image-right'] {
+        display: inline-block;
+        width: 120px;
+
+      }
+    }
+  }
+
+  .draw { // canvas样式
+    position: fixed;
+    top: 0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    z-index: 100000;
+    background: #CBD5E4;
+    text-align: center;
+    overflow: hidden;
+
+    #myCanvas {
+      
+    }
+
+    .draw-operation { // 操作区域
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 50px;
+      line-height: 50px;
+      background: #F5F6F7;
+
+      .cancel { // 取消
+        float: left;
+        width: 20%;
+        text-align: left;
+
+        button {
+          height: 50px;
+          width: 80px;
+          letter-spacing: 3px;
+          color: skyblue;
+          background: #F5F6F7;
+        }
+      }
+
+      .color { // 颜色
+        float: left;
+        width: 60%;
+
+        .red {
+          float: left;
+          width: 30px;
+          height: 30px;
+          margin-top: 10px;
+
+          div {
+            width: 100%;
+            height: 100%;
+            background: red;
+            border-radius: 5px;
+          }
+        }
+
+        .black {
+          float: left;
+          width: 30px;
+          height: 30px;
+          margin-top: 10px;
+          margin-left: 10px;
+
+          div {
+            width: 100%;
+            height: 100%;
+            background: black;
+            border-radius: 5px;
+          }
+        }
+
+        .color-select {
+          border: 2px solid blue;
+          border-radius: 5px;
+          padding: 3px;
+        }
+
+      }
+
+      .confirm { // 确认
+        float: left;
+        width:20%;
+        text-align: right;
+
+        button {
+          height: 50px;
+          width: 80px;
+          letter-spacing: 3px;
+          color: skyblue;
+          background: #F5F6F7;
+        }
+      }
+    }
+  }
+}

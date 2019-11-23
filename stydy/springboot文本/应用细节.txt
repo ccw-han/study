@@ -1,0 +1,183 @@
+spring
+
+1加载properties文件，通过java注解获取
+在spring.xml
+文件中进行读取
+然后
+@Value("${}")
+在其他xml文件中可直接用${}
+2直接使用注解方式注入
+使用propertiesFactoryBean 这个工厂配置，然后直接使用
+@Value("#{propertiesFactoryBean ...}")
+
+
+springboot 
+1默认配置文件
+直接在配置文件中 是 application的properties中
+使用${key}
+2自定义文件
+
+@Component
+@PropertySource("classpath:eshengtai.properties") 
+@Value("${spring.boot}")
+	private String springName;
+ 配置文件有4个
+
+application-dev.properties? 开发环境 ?，server.port=1111服务器端口1111
+
+application-prod.properties?正式环境?，server.port=2222服务器端口2222
+
+application-test.properties? 测试环境?，server.port=3333服务器端口3333
+
+application.properties? 主要启动配置文件，配置切换启动读哪个文件初始化环境?spring.profiles.active 动态切换读取配置文件，修改服务器的访问端口变化，测试
+
+spring.profiles.active=dev ? ?#springboot启动读取?application-dev.properties，并且访问端口为1111
+
+spring.profiles.active=prod?? ?#springboot启动读取?application-prod.properties，并且访问端口为2222
+
+spring.profiles.active=test? ?#springboot启动读取?application-.propertiestt，并且访问端口为3333
+3一、@ConfigurationProperties方式
+
+自定义配置类：PropertiesConfig.java
+三、使用Environment
+程序启动类：Applaction.java
+
+  @Autowired private Environment env;  
+ map.put("type", env.getProperty("com.zyd.type2"));  
+四、使用PropertiesLoaderUtils
+app-config.properties
+
+（三）外部属性文件-XML方式 
+data.properties
+user=root1
+url=http://localhost
+password=12445
+application_datasource.xml xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:data.properties"></context:property-placeholder>
+
+    <bean class="com.dataSource.DataSource" p:password="${password}" p:url="${url}" p:user="${user}">
+    </bean>
+</beans>
+类
+package com.dataSource;
+
+public class DataSource {
+    private String url;
+    private String user;
+    private String password;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "DataSource{" +
+                "url='" + url + '\'' +
+                ", user='" + user + '\'' +
+                ", password='" + password + '\'' +
+                '}';
+    }
+}
+一、PropertyPlaceholderConfigurer类的作用
+
+PropertyPlaceholderConfigurer 是 BeanFactory 后置处理器的实现，也是 BeanFactoryPostProcessor 接口的一个实现。允许将上下文（配置文件）中的属性值放在另一个单独的标准 JavaProperties 文件中去。在 XML 文件中用类似 EL 表达式的 ${key} 替换指定的 properties 文件中的值。这样的话，以后更改参数时，我们直接替换 properties 文件中的值就可以了。
+
+二、在配置文件中如何使用这个类呢？
+
+1. 在 Spring 中，使用 PropertiesPlaceholderConfigurer 在 XML 配置文件中引入外部属性文件，还可以指定编码格式。
+
+<bean id="propertyConfigurer"class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="location">
+        <value>jdbc.properties</value>
+    </property>
+    <property name="fileEncoding">
+        <value>UTF-8</value>
+    </property>
+</bean>
+当有多个属性文件时
+
+<bean id="propertyConfigurer"class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <property name="locations">
+        <list>
+            <value>/WEB-INF/db.properties</value>
+            <!-- 注意这两种value值的写法 -->
+            <value>classpath: jdbc.properties</value>
+        </list>
+    </property>
+</bean>
+2. 创建标准的 JavaProperties 文件 jdbc.properties
+
+jdbc.driverClass=com.mysql.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost/mysqldb?useUnicode=true&amp;characterEncoding=UTF-8&amp;zeroDateTimeBehavior=round;
+jdbc.username=root
+jdbc.password=123456
+3. 在 Spring 配置文件中使用引入的外部文件中的值
+
+一个简单的数据源：使用 ${} 调用
+
+<bean id="dataSource"class="org.apache.commons.dbcp.BasicDataSource"destroy-method="close">
+    <property name="driverClassName"value="${jdbc.driverClass}" />
+    <property name="url" value="${jdbc.url}" />
+    <property name="username" value="${jdbc.username}"/>
+    <property name="password"value="${jdbc.password}" />
+</bean>
+PropertyPlaceholderConfigurer 起的作用就是将占位符指向的数据库配置信息放在 bean 中定义的工具。
+
+三、使用时的两点注意事项
+
+1. PropertyPlaceholderConfigurer 默认在指定的 properties 文件中找不到你需要的属性，它还会在 Java 的 System 类属性中查找。
+
+我们可以通过如下方法给 Spring 配置文件传递参数
+
+System.setProperty(key, value);
+这种默认行为也可以通过 systemPropertiesModeName 或者 systemPropertiesModel 参数来改变。
+
+PropertyPlaceholderConfigurer 类为我们提供了三种模式。
+
+SYSTEM_PROPERTIES_MODE_NEVER: 只允许在 properties 文件中查找，不允许去System类中查找。
+SYSTEM_PROPERTIES_MODE_FALLBACK: 默认模式。
+SYSTEM_PROPERTIES_MODE_OVERRIDE: 优先 System 类中查找，找不到再去 properties 文件中查找，与默认模式正好相反。
+<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <!-- 优先在System类中查找 -->
+    <property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+    <property name="locations">
+        <list>
+            <value>classpath*:/jdbc.properties</value>
+        </list>
+    </property>
+</bean>
+2. Spring2.5 以后，引入了简化的引入外部文件的方式，如下：
+
+<context:property-placeholder location="classpath:db.properties"/>
+location 属性定义在 PropertyPlaceholderConfigurer 的祖宗类 PropertiesLoaderSupport 中，并且只有 setter 方法。
+
+spring返回值
+https://segmentfault.com/a/1190000019079980?utm_medium=referral&utm_source=tuicool

@@ -1,0 +1,8 @@
+日期比较，日期减去天数
+select check_date, check_value4 as value
+        from
+            mm_form_c7_df_101_a t
+        where line_sn = 'C7' and check_value4 is not null
+        and check_date >= to_char(now()-INTERVAL'30 day', 'yyyy-mm-dd')
+        and    check_date <= to_char(now(), 'yyyy-mm-dd')
+        ORDER BY check_date

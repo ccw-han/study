@@ -1,0 +1,13 @@
+SELECT
+        ?? ??? ??? ?convert(char(10), DATEADD(dd,number,#{startTime}),120) AS time,
+        count(tb.id) AS itag
+        ?? ??? ?FROM
+        ?? ??? ??? ?master..spt_values
+        LEFT JOIN( SELECT * FROM task_process_info WHERE check_date >= #{startTime} AND check_date  &lt;= #{endTime} AND
+        line_sn=#{line} AND itag_id is not null) tb ON convert(char(10), DATEADD(dd,number,#{startTime}),120) =
+        tb.check_date
+        ?? ??? ?WHERE
+        ?? ??? ??? ?type = 'p'
+        ?? ??? ?AND DATEDIFF(MI,DATEADD(dd,number,#{startTime}),#{endTime}) > 0
+        GROUP BY convert(char(10), DATEADD(dd,number,#{startTime}),120)
+        ORDER BY convert(char(10), DATEADD(dd,number,#{startTime}),120)

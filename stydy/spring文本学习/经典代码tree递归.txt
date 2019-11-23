@@ -1,0 +1,40 @@
+@Override
+    public List<Map<String, Object>> selectVersionResourceTree(Map<String, Object> params) {
+        // 角色权限
+        List<ResourceEx> resources = mapper.selectVersionResourceTree(params);
+        // 权限树
+        List<Map<String, Object>> tree = new ArrayList<Map<String, Object>>();
+        // 根据父id分类存放权限
+        Map<String, List<Map<String, Object>>> map = new HashMap<String, List<Map<String, Object>>>(30);
+        for (ResourceEx resource: resources) {
+            Map<String,Object> node = new HashMap<String,Object>(10);
+            node.put("title", resource.getName());
+            node.put("key", resource.getId());
+            node.put("version", resource.getVersionId());
+            if (Constants.RESOURCE_DEFAULT_PARENT.equals(resource.getPid())){
+                tree.add(node);
+            } else {
+                List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+                if (map.containsKey(resource.getPid())){
+                    list = map.get(resource.getPid());
+                } else {
+                    map.put(resource.getPid(), list);
+                }
+                list.add(node);
+            }
+        }
+        convert2Tree(tree, map);
+        return tree;
+    }
+
+    private void convert2Tree(List<Map<String, Object>> tree, Map<String, List<Map<String, Object>>> map){
+        for (Map<String, Object> parent: tree){
+            if (map.containsKey(String.valueOf(parent.get("key")))) {
+                parent.put("expanded", true);
+                this.convert2Tree(map.get(String.valueOf(parent.get("key"))), map);
+                parent.put("children", map.get(String.valueOf(parent.get("key"))));
+            } else {
+                parent.put("isLeaf", true);
+            }
+        }
+    }

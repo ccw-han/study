@@ -1,0 +1,3 @@
+<!--{{value.confirmResult}}-->
+<user-confirm-input *ngIf="value.confirmResult" name="confirmPerson" [(ngModel)]="confirmPerson"
+                    (userConfirmed)="userConfirmed()" [roleType] = "data.roleType"></user-confirm-input>

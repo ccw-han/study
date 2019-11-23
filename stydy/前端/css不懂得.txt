@@ -1,0 +1,19 @@
+style="display:table-cell; vertical-align:middle"表格内容垂直居中
+hidden-border{ 去掉input的边框
+   .hidden-border-c{
+    border: none;
+    outline:none;
+    cursor: pointer;
+    background-color: transparent;
+    appearance:none; 
+    -webkit-appearance:none;
+    resize:none ;
+    box-shadow:none;
+}
+}
+.form-control  {
+        font-size: 12px !important;
+        width:80px !important;
+        margin-left: 30px !important;
+    }
+	style="word-wrap: none;white-space: nowrap;"

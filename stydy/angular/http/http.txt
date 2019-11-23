@@ -1,0 +1,176 @@
+getHeroes (): Observable<Hero[]> {
+  return this.http.get<Hero[]>(this.heroesUrl)
+}
+HttpClient.get 默认情况下把响应体当做无类型的 JSON 对象进行返回。 
+如果指定了可选的模板类型 <Hero[]>，就会给返回你一个类型化的对象。
+启用 HTTP 服务
+
+HttpClient 是 Angular 通过 HTTP 与远程服务器通讯的机制。
+要让 HttpClient 在应用中随处可用，请
+打开根模块 AppModule，
+从 @angular/common/http 中导入 HttpClientModule 符号，
+把它加入 @NgModule.imports 数组。
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+getHeroes (): Observable<Hero[]> {
+  return this.http.get<Hero[]>(this.heroesUrl)
+}
+import { catchError, map, tap } from 'rxjs/operators';
+getHeroes (): Observable<Hero[]> {
+  return this.http.get<Hero[]>(this.heroesUrl)
+    .pipe(
+      catchError(this.handleError('getHeroes', []))
+    );
+}
+private handleError<T> (operation = 'operation', result?: T) {
+  return (error: any): Observable<T> => {
+ 
+    // TODO: send the error to remote logging infrastructure
+    console.error(error); // log to console instead
+ 
+    // TODO: better job of transforming error for user consumption
+    this.log(`${operation} failed: ${error.message}`);
+ 
+    // Let the app keep running by returning an empty result.
+    return of(result as T);
+  };
+}
+窥探 Observable
+
+HeroService 的方法将会窥探 Observable 的数据流，并通过 log() 函数往页面底部发送一条消息。
+它们可以使用 RxJS 的 tap 操作符来实现，该操作符会查看 Observable 中的值，
+使用那些值做一些事情，并且把它们传出来。 这种 tap 回调不会改变这些值本身。
+下面是 getHeroes 的最终版本，它使用 tap 来记录各种操作。
+/** GET heroes from the server */
+getHeroes (): Observable<Hero[]> {
+  return this.http.get<Hero[]>(this.heroesUrl)
+    .pipe(
+      tap(heroes => this.log('fetched heroes')),
+      catchError(this.handleError('getHeroes', []))
+    );
+}
+修改
+/** PUT: update the hero on the server */
+updateHero (hero: Hero): Observable<any> {
+  return this.http.put(this.heroesUrl, hero, httpOptions).pipe(
+    tap(_ => this.log(`updated hero id=${hero.id}`)),
+    catchError(this.handleError<any>('updateHero'))
+  );
+}
+HttpClient.put() 方法接受三个参数
+URL 地址
+要修改的数据（这里就是修改后的英雄）
+选项
+URL 没变。英雄 Web API 通过英雄对象的 id 就可以知道要修改哪个英雄。
+英雄 Web API 期待在保存时的请求中有一个特殊的头。 
+这个头是在 HeroService 的 httpOptions 常量中定义的。
+const httpOptions = {
+  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+};
+ <button (click)="add(heroName.value); heroName.value=''">
+ addHero (hero: Hero): Observable<Hero> {
+  return this.http.post<Hero>(this.heroesUrl, hero, httpOptions).pipe(
+    tap((hero: Hero) => this.log(`added hero w/ id=${hero.id}`)),
+    catchError(this.handleError<Hero>('addHero'))
+  );
+}
+HeroService.addHero() 和 updateHero 有两点不同。
+
+它调用 HttpClient.post() 而不是 put()。
+它期待服务器为这个新的英雄生成一个 id，然后把它通过 Observable<Hero> 返回给调用者。
+刷新浏览器，并添加一些英雄。
+把 delete() 处理器添加到组件中。
+src/app/heroes/heroes.component.ts (delete)
+content_copy
+delete(hero: Hero): void {
+  this.heroes = this.heroes.filter(h => h !== hero);
+  this.heroService.deleteHero(hero).subscribe();
+}
+虽然这个组件把删除英雄的逻辑委托给了 HeroService，但扔保留了更新它自己的英雄列表的职责。
+ 组件的 delete() 方法会在 HeroService 对服务器的操作成功之前，先从列表中移除要删除的英雄。
+组件与 heroService.delete() 返回的 Observable 还完全没有关联。必须订阅它。
+如果你忘了调用 subscribe()，本服务将不会把这个删除请求发送给服务器。 作为一条通用的规则，
+Observable 在有人订阅之前什么都不会做。
+你可以暂时删除 subscribe() 来确认这一点。点击“Dashboard”，然后点击“Heroes”，
+就又看到完整的英雄列表了。
+添加 HeroService.deleteHero()
+把 deleteHero() 方法添加到 HeroService 中，代码如下。
+src/app/hero.service.ts (delete)
+/** DELETE: delete the hero from the server */
+deleteHero (hero: Hero | number): Observable<Hero> {
+  const id = typeof hero === 'number' ? hero : hero.id;
+  const url = `${this.heroesUrl}/${id}`;
+
+  return this.http.delete<Hero>(url, httpOptions).pipe(
+    tap(_ => this.log(`deleted hero id=${id}`)),
+    catchError(this.handleError<Hero>('deleteHero'))
+  );
+}
+AsyncPipe
+如你所愿，*ngFor 重复渲染出了这些英雄。
+
+仔细看，你会发现 *ngFor 是在一个名叫 heroes$ 的列表上迭代，而不是 heroes。
+<li *ngFor="let hero of heroes$ | async" >
+$ 是一个命名惯例，用来表明 heroes$ 是一个 Observable，而不是数组。
+
+*ngFor 不能直接使用 Observable。 不过，它后面还有一个管道字符（|），
+后面紧跟着一个 async，它表示 Angular 的 AsyncPipe。
+AsyncPipe 会自动订阅到 Observable，这样你就不用再在组件类中订阅了。
+1. 先来看看请求使用方法：
+post、put、patch三种方法都参数顺序不可调整，url、body是必须参数，options为可选参数；
+get、delete、head、request、options这五种方法传递参数为1(或2)个，options为可选参数；
+如果上面post请求的body参数为空，即不需要传递请求体部分，不能省略，需传入一个空对象，如： 
+return this.http.post(api,{},{headers:headers}).map(res=>res.json());
+ this.headers = new Headers({ 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' });
+        this.options = new RequestOptions({ headers: this.headers });
+
+this.http.post(url,{},{
+      params : new HttpParams().set("phone",this.phone)
+    }).subscribe(data => {
+      console.log(data);
+      this.content = data.toString();
+    });
+url是你要发送的地址，{}这个是body，body是可以为空的，第三个参数是options，里面可以有很多个参数设置，这里我们只使用url的参数。假如this.phone=1234567890，这样它就会在url的后面加上?phone=1234567890。
+post(url: string, body: any | null, options?: {
+
+headers?: HttpHeaders; //这里方法便是解决所有区别的关键
+
+observe?: 'body';
+
+params?: HttpParams;
+
+reportProgress?: boolean;
+
+responseType?: 'json';
+
+withCredentials?: boolean;
+
+}): Observable<Object>;
+只能用json请求头，并只能发送对象，并且spring只能用bean接收
+this.http.post(this.url, JSON.stringify({ 'id': '1' }), options).subscribe(function (data) { 
+ 
+console.log(data) 
+出于安全的考虑，网络浏览器会阻止调用与当前页面不“同源”的远端服务器的XHR。所谓源就是 URI 的协议 (scheme) 、主机名 (host) 和端口号 (port) 这几部分的组合。这被称为同源策略。
+针对返回数据是json格式的响应对象，可以把Response解析成 JavaScript 对象——只要调一下 response.json() 就可以了，这时候我们就可以利用map操作符来进行处理，例如
+this.jsonp.get(this.url) 
+ 
+.map((rsp:Response)=>{ 
+ 
+return rsp.json() 
+ 
+}) 
+ 
+.subscribe((data) => { 
+ 
+console.log(data); 
+ 
+});
+虽然 Angular 的 http 客户端 API 返回的是 Observable<Response> 类型的对象，但我们也可以把它转成 Promise<Response>。这很容易，只需要调用可观察对象 Observable< Response >的方法toPromise()就能够进行转化。例如
+this.jsonp.get(this.url) 
+ 
+.toPromise() 
+ 
+.then((rsp: Response) => { 
+ 
+console.log(rsp) 
+ 
+});

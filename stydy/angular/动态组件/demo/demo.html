@@ -1,0 +1,47 @@
+<page-home>
+  <ion-content class="'check'-form-font-size" width="100%">
+    <h3>51.
+      <font face="Microsoft YaHei">作业员资格认定表</font>
+    </h3>
+    <form-usage>
+      <ion-grid>
+        <ion-row>
+          <ion-col col-12>
+            1、认定结果在相应位置划“√”;<br>
+            2、班长承认前必须确认作业者相应教育记录;<br>
+            3、班长根据此表修改作业者技能矩阵表！
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </form-usage>
+    <form #myForm="ngForm">
+      <div style="width:950px; height:600px; overflow:scroll;">
+        <table style="text-align: center;background: white;width:130%;white-space: nowrap;" border="1" cellpadding="0"
+               cellspacing="0">
+          <button *ngIf="!demoIndex.id" type="button" class="btn btn-primary btn-sm" (click)="saveRecord()">确定</button>
+          <tbody style="overflow-y: scroll;display: block;" *ngIf="demoIndex.id">
+          <ng-container *ngFor="let tr  of trs;let idx1 = index">
+            <tr>
+              <ng-container *ngFor="let td  of tr;let idx2 = index">
+                <td *ngIf="td != null" width="{{td.width}}" attr.colspan="{{td.colspan}}" attr.rowspan="{{td.rowspan}}">
+                  <div *ngIf="td.label != null || td.confirmResultLabel || td.checkPersonLabel; else heroTr">
+                    <span *ngIf="td.confirmResultLabel">{{dataValue.confirmResult}}</span>
+                    <span *ngIf="td.checkPersonLabel">{{dataValue.checkPerson}}</span>
+                    <span *ngIf="td.label">{{td.label}}</span>
+                  </div>
+                  <ng-template #heroTr>
+                    <hero-tr [name]="idx1 + '|' + idx2" ngDefaultControl (dataExport)="eventHandlerH($event)"
+                             [value]="dataValue" [data]="dataExample[idx1 + '|' + idx2]"
+                             [(ngModel)]="dataValue[dataExample[idx1 + '|' + idx2]?.data?.ngModel]"
+                             (ngModelChange)="saveData()"></hero-tr>
+                  </ng-template>
+                </td>
+              </ng-container>
+            </tr>
+          </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </form>
+  </ion-content>
+</page-home>

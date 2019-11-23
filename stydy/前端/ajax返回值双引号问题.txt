@@ -1,0 +1,20 @@
+$.ajax({
+            url: "http://localhost:8080/fabric/personalCentre/getPhotoFirst",
+            type: "post",
+            data: {albumId: albumId.val()},
+            dataType: 'text',
+            success: function (data) {
+                firstImageId = JSON.parse(data);
+                if (firstImageId != undefined || firstImageId != null) {
+                    firstImage.attr("src", "http://localhost:8080/fabric/download?id=" + firstImageId);
+                } else {
+                    if (decodeURI(getParam("imageId")) == "./assets/images/flags/firstImage.png") {
+                        firstImage.attr("src", decodeURI(getParam("imageId")));
+                    } else {
+                        firstImage.attr("src", "http://localhost:8080/fabric/download?id=" + decodeURI(getParam("imageId")));
+                    }
+                }
+            },
+        });
+
+form表单一定要写method=“post”

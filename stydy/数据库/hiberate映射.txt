@@ -1,0 +1,96 @@
+单向
+
+一对一：
+需要在拥有外键列的一方实体中使用@JoinColumn注解中指定列名，并使用@OneToOne注解标识映射关系。
+如：@JoinColumn(name="pspace_id")
+	@OneToOne
+	private ParkingSpace ps;
+一对多
+
+当一个实体到目标实体存在一对多映射，但是@OneToMany注解不包括mappedBy元素时，
+就认为它存在目标实体的单向关系，此时，两个实体都不存在连接列，是单向的映射关系，需要借助中间表，存储映射关系
+
+@JoinTable(name="employee_phone_inner",
+
+//中间表product_id字段
+			
+joinColumns={@JoinColumn(name="employee_id",referencedColumnName="id")},
+	
+inverseJoinColumns={@JoinColumn(name="phone_id",referencedColumnName="id")}
+
+)
+	
+@OneToMany
+	
+private List<Phone> phones = new ArrayList<Phone>();
+
+多对一
+@JoinColumn(name="department_id")
+	@ManyToOne
+	private DepartmentInfo department;
+
+
+多对多
+
+@JoinTable(name="employee_project_inner",
+			
+//中间表product_id字段
+			
+joinColumns={@JoinColumn(name="employee_id",referencedColumnName="id")},
+			
+inverseJoinColumns={@JoinColumn(name="project_id",referencedColumnName="id")}
+			
+)
+	
+@ManyToMany
+	
+private List<ProjectInfo> projects = new ArrayList<ProjectInfo>();
+
+
+
+双向
+
+一对一
+首先，必须清楚包含连接列的一方，决定了是关系的所有者，可是在双向一对一关系中，两个映射均是一对一映射，两方
+都可以是所有者，最后，关系的拥有者只能有一个，连接列只能在一方，另一方只能指向关系的拥有者。
+拥有者：@JoinColumn(name="pspace_id")
+	@OneToOne
+	private ParkingSpace ps;
+被拥有者：
+@OneToOne(mappedBy="ps")
+	private Employee el;
+
+一对多
+
+一方：@OneToMany(mappedBy="department")
+	private List<Employee> list = new ArrayList<Employee>();
+多方：@JoinColumn(name="department_id")
+	@ManyToOne
+	private DepartmentInfo department;
+多对多
+
+多对多是双向的关系映射，关系双方都是多对多关系，并且双方均没有连接列，需要借助中间表。因为每一个双向关系都必须具有所有方和反方，
+必须两个实体中挑选一个作为关系的持有者，反方使用mappedBy属性指向持有关系的一方。
+@JoinTable(name="employee_project_inner",
+			
+//中间表product_id字段
+			
+joinColumns={@JoinColumn(name="employee_id",referencedColumnName="id")},
+			
+inverseJoinColumns={@JoinColumn(name="project_id",referencedColumnName="id")}
+			
+)
+	
+@ManyToMany
+	
+private List<ProjectInfo> projects = new ArrayList<ProjectInfo>();
+
+
+@ManyToMany(mappedBy="projects")
+	private List<Employee> employees = new ArrayList<Employee>();
+
+
+从持有关系一方设置，很重要
+
+
+

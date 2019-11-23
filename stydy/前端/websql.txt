@@ -1,0 +1,184 @@
+ 大概意思就是
+
+这个文档曾经在W3C推荐规范上，但规范工作已经停止了。目前已经陷入了一个僵局：目前的所有实现都是基于同一个SQL后端（SQLite），但是我们需要更多的独立实现来完成标准化。
+
+也就是说这是一个废弃的标准了，虽然部分浏览器已经实现，但。。。。。。。
+
+三个核心方法
+但是我们学一下也没什么坏处，而且能和现在W3C力推的IndexedDB做比较，看看为什么要废弃这种方案。Web SQL Database 规范中定义的三个核心方法：
+
+openDatabase：这个方法使用现有数据库或新建数据库来创建数据库对象
+transaction：这个方法允许我们根据情况控制事务提交或回滚
+executeSql：这个方法用于执行SQL 查询
+ 
+
+openDatabase
+我们可以使用这样简单的一条语句，创建或打开一个本地的数据库对象
+
+var db = openDatabase('testDB', '1.0', 'Test DB', 2 * 1024 * 1024);
+openDatabase接收五个参数：
+
+数据库名字
+数据库版本号
+显示名字
+数据库保存数据的大小（以字节为单位 )
+回调函数（非必须)
+ 
+
+如果提供了回调函数，回调函数用以调用 changeVersion() 函数，不管给定什么样的版本号，回调函数将把数据库的版本号设置为空。如果没有提供回调函数，则以给定的版本号创建数据库。
+
+transaction
+transaction方法用以处理事务，当一条语句执行失败的时候，整个事务回滚。方法有三个参数
+
+包含事务内容的一个方法
+执行成功回调函数（可选）
+执行失败回调函数（可选）
+ 
+
+复制代码
+db.transaction(function (context) {
+           context.executeSql('CREATE TABLE IF NOT EXISTS testTable (id unique, name)');
+           context.executeSql('INSERT INTO testTable (id, name) VALUES (0, "Byron")');
+           context.executeSql('INSERT INTO testTable (id, name) VALUES (1, "Casper")');
+           context.executeSql('INSERT INTO testTable (id, name) VALUES (2, "Frank")');
+         });
+复制代码
+这个例子中我们创建了一个table，并在表中插入三条数据，四条执行语句任何一条出现错误，整个事务都会回滚
+
+executeSql
+executeSql方法用以执行SQL语句，返回结果，方法有四个参数
+
+查询字符串
+用以替换查询字符串中问号的参数
+执行成功回调函数（可选）
+执行失败回调函数（可选）
+在上面的例子中我们使用了插入语句，看个查询的例子
+
+复制代码
+db.transaction(function (context) {
+           context.executeSql('SELECT * FROM testTable', [], function (context, results) {
+            var len = results.rows.length, i;
+            console.log('Got '+len+' rows.');
+               for (i = 0; i < len; i++){
+              console.log('id: '+results.rows.item(i).id);
+              console.log('name: '+results.rows.item(i).name);
+            }
+         });
+复制代码
+完整示例
+复制代码
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Web SQL Database</title>
+</head>
+<body>
+    <script type="text/javascript">
+        var db = openDatabase('testDB', '1.0', 'Test DB', 2 * 1024 * 1024);
+        var msg;
+        db.transaction(function (context) {
+           context.executeSql('CREATE TABLE IF NOT EXISTS testTable (id unique, name)');
+           context.executeSql('INSERT INTO testTable (id, name) VALUES (0, "Byron")');
+           context.executeSql('INSERT INTO testTable (id, name) VALUES (1, "Casper")');
+           context.executeSql('INSERT INTO testTable (id, name) VALUES (2, "Frank")');
+         });
+
+        db.transaction(function (context) {
+           context.executeSql('SELECT * FROM testTable', [], function (context, results) {
+            var len = results.rows.length, i;
+            console.log('Got '+len+' rows.');
+               for (i = 0; i < len; i++){
+              console.log('id: '+results.rows.item(i).id);
+              console.log('name: '+results.rows.item(i).name);
+            }
+         });
+        });
+    </script>
+</body>
+</html>
+复制代码
+最后
+由于Web SQL Database规范已经被废弃，原因说的很清楚，当前的SQL规范采用SQLite的SQL方言，
+而作为一个标准，这是不可接受的，每个浏览器都有自己的实现这还搞毛的标准。这样浏览器兼容性就不重要了，
+估计慢慢会被遗忘。不过Chrome的控制台真心好用啊，
+神马cookie、Local Storage、Session Storage、Web SQL、IndexedDB、Application Cache等html5新增内容看的一清二楚，
+免去了很多调试代码工作。
+
+webSql的简单小例子
+初始化websql数据库的参数信息
+
+复制代码
+1 var config = { 
+2     name: 'my_plan',
+3     version: '',
+4     desc: 'manage my plans',
+5     size: 20 * 1024
+6 };
+7  var db = window.openDatabase(config.name, config.version, config.desc, config.size);
+复制代码
+此函数为创建一个表
+
+复制代码
+1 function crateTable() {
+2     var sql = 'create table if not exists t_plan(title, content, target_time, create_time)';
+3     db.transaction(function(tx) {
+4     　　tx.executeSql(sql, null, function(tx, rs) {
+5             console.log('执行sql成功');
+6         }, errorCallback);
+7     });
+8 }
+复制代码
+接下来往表里增加一条数据
+
+复制代码
+ 1 function addPlan(values) {
+ 2      var sql = 'INSERT INTO t_plan (title, content, target_time, create_time) VALUES (?,?,?,?)';
+ 3      db.transaction(function(tx) {
+ 4      　　tx.executeSql(sql, values, function(tx, rs) {
+ 5                var effectRow = rs.rowsAffected;
+ 6                console.log('影响记录条数:' + effectRow);
+ 7                effectRow && console.log('执行sql成功');
+ 8          }, errorCallback);
+ 9     });
+10 }
+复制代码
+查询所以记录代码
+
+复制代码
+1 function getPlanList() {
+2     var sql = 'SELECT * FROM t_plan';
+3     db.transaction(function(tx) {
+4     　　tx.executeSql(sql, null, function(tx, rs) {
+5            console.log('list:' + rs.rows);
+6            console.log('item:' + JSON.stringify(rs.rows.item(0)));
+7         }, errorCallback);
+8    });
+9 };
+复制代码
+删除一条记录
+
+复制代码
+ 1 function deletePlan(values) {
+ 2      var sql = 'DELETE FROM t_plan WHERE title = ?';
+ 3      db.transaction(function(tx) {
+ 4           tx.executeSql(sql, values, function(tx, rs) {
+ 5                 var effectRow = rs.rowsAffected;
+ 6                 console.log('影响记录条数:' + effectRow);
+ 7                 effectRow && console.log('执行sql成功');
+ 8           }, errorCallback);
+ 9      });
+10 }
+复制代码
+修改一条记录
+
+复制代码
+ 1 function updatePlan(values) {
+ 2      var sql = 'UPDATE t_plan SET content = ? WHERE title = ?';
+ 3      db.transaction(function(tx) {
+ 4           tx.executeSql(sql, values, function(tx, rs) {
+ 5                var effectRow = rs.rowsAffected;
+ 6                console.log('影响记录条数:' + effectRow);
+ 7                effectRow && console.log('执行sql成功');
+ 8            }, errorCallback);
+ 9      });
+10 }

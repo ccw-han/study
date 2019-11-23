@@ -1,0 +1,262 @@
+﻿src/app/app-routing.module.ts (v1)
+
+import { NgModule }             from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+
+@NgModule({
+  exports: [ RouterModule ]//私有的，给别人用
+  imports: [ RouterModule.forRoot(routes) ],
+})
+export class AppRoutingModule {}
+const routes: Routes = [
+  { path: 'heroes', component: HeroesComponent }
+];
+
+每个模块都有一个路由模块，用于本模块的路由。在本模块的组件中添加<router-outlet></router-outlet>
+<router-outlet> 会告诉路由器要在哪里显示路由到的视图。
+路由route参数中，path不能有“/”，因为系统已经配置。
+使用<a routerLink="/heroes">Heroes</a>
+ <a routerLink="/crisis-center" routerLinkActive="active">Crisis Center</a>
+ { path: '**', component: PageNotFoundComponent }通配符路由
+ 看看该模块的 imports 数组。注意，AppRoutingModule 是最后一个。最重要的是，它位于 HeroesModule 之后。
+ 
+参数化路由
+{ path: 'detail/:id', component: HeroDetailComponent },
+<a *ngFor="let hero of heroes" class="col-1-4"
+    routerLink="/detail/{{hero.id}}">
+在组件导入
+import { ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
+import { HeroService }  from '../hero.service';
+constructor(
+  private route: ActivatedRoute,
+  private heroService: HeroService,
+  private location: Location
+) {}
+提取路由参数1
+getHero(): void {
+  const id = +this.route.snapshot.paramMap.get('id');//快照提取路由参数
+  this.heroService.getHero(id)
+    .subscribe(hero => this.hero = hero);
+}
+提取参数2
+ngOnInit() {
+  this.hero$ = this.route.paramMap.pipe(
+    switchMap((params: ParamMap) =>
+      this.service.getHero(params.get('id')))
+  );
+}
+提取参数3
+1 获取在路由后面的参数
+
+ <a [routerLink]="['/list/nav','MALFUNCTION','WAITING']"></a>
+
+这种方式需要在路由配置像这样：
+{
+  path: 'list/nav/:repairType/:repairStatus',
+},
+可以通过这种方式获取传递的参数:
+this.activatedRoute.params['value']['repairType'];
+通过这种方式传递参数域名是这样的：http://localhost:4200/#/system_manage/user/position/list/repairType/6
+缺点： 不能通过
+http://localhost:4200/#/system_manage/user/position/list/直接访问地址，必须的加上参数否则出错
+2 通过域名跳转的方式获取参数（http://localhost:4200/#/system_manage/repair/list?repairType=REPAIR&repairStatus=WAITING）
+这种方式不需要再路由后面配置，解放路由，只需跟平常一样写路由如：
+
+{
+  path: "list",
+。。。。。。。。。。。。。
+},
+只需要在ts代码中写地址跳转：
+this.router.navigate(['/system_manage/repair/list'], { queryParams: { 'repairType': 'CLEAN','repairStatus':'WAITING' } });
+上面这种也可以传递多个参数
+在comoent中需要这么获取‘?’ 后面的参数
+this.activatedRoute.queryParams.subscribe((params:Params)=>{
+    this.repairType = params['repairType'];
+    this.repairStatus = params['repairStatus'];
+});
+提取方式5
+Matrix URL
+let param =  this.route.params.map(params => params['key'])
+1
+Default URL
+let param =  this.route.queryParams.map(params => params['key'])
+goBack(): void {
+  this.location.back();
+}
+提取参数6
+route.data[0]['key']；data数据传参
+路由重定向：
+{ path: ‘’, pathMatch: ‘full’, redirectTo: ‘/inbox’ }
+
+模型树。用树状结构进行解析路由配置
+1 path: ':folder',
+    children: [
+      {
+        path: '',
+        component: ConversationsCmp
+      },
+      {
+        path: ':id',
+        component: ConversationCmp,
+        children: [
+          { path: 'messages', component: MessagesCmp },
+          { path: 'messages/:id', component: MessageCmp }
+        ]
+      }
+    ]
+  }
+  　根据上图的状态树，我们可以看出MessageCmp与ConversationCmp对应的路由状态。与此同时一个被称为激活路由(ActivatedRoute)的对象将被创建，并可以在MessageCmp访问到，通过ActivatedRoute我们可以拿到它的routerState属性，通过路由状态我们可以拿到具体参数如id对应的44。从此也可以看出拿到父级参数id(33)就必须访问父级的路由状态。
+
+    ngOnInit() {
+        this.sub = this.router.routerState.parent(this.route).params.subscribe(params => {
+            this.parentRouteId = +params["id"];
+        });
+    }
+2[
+  { path: '', pathMatch: 'full', redirectTo: '/inbox' },
+  {
+    path: ':folder',
+    children: [
+      {
+        path: '',
+        component: ConversationsCmp
+      },
+      {
+        path: ':id',
+        component: ConversationCmp,
+        children: [
+          { path: 'messages', component: MessagesCmp },
+          { path: 'messages/:id', component: MessageCmp }
+        ]
+      }
+    ]
+  },
+  {
+    path: 'compose',
+    component: ComposeCmp,
+    outlet: 'popup'
+  },
+  {
+    path: 'message/:id',
+    component: PopupMessageCmp,
+    outlet: 'popup'
+  }
+]
+先url-redirectTo-识别路由状态-哨兵-激活组件
+如‘/inbox/33/message/44(popup:compose)’，首先实例化ConversationCmp放到主<router-outlet>中，然后实例化MessageCmp放到name为popup的<Router-outlet>中。
+
+ 
+
+　　现在路由器对URL的解析过程完毕。但是如果用户想从MessageCmp中跳转到别的路由状态该如何做呢？Angular2提供了两种方式。
+
+　　一种是通过router.navigate方法来导航：
+
+复制代码
+@Component({...})
+class MessageCmp {
+  private id: string;
+  constructor(private route: ActivatedRoute, private router: Router) {
+    route.params.subscribe(_ => this.id = _.id);
+  }
+
+  openPopup(e) {
+    this.router.navigate([{outlets: {popup: ['message', this.id]}}]).then(_ => {
+      // navigation is done
+    });
+  }
+}
+复制代码
+　　一种是利用router-link方式：
+
+复制代码
+@Component({
+  template: `
+    <a [routerLink]="['/', {outlets: {popup: ['message', this.id]}}]">Edit</a>
+  `
+})
+class MessageCmp {
+  private id: string;
+  constructor(private route: ActivatedRoute) {
+    route.params.subscribe(_ => this.id = _.id);
+  }
+}
+路由方法：
+private router: Router,
+1.this.router.navigate(['user', 1]); //中括号中的就是参数
+以根路由为起点跳转
+
+2.this.router.navigate(['user', 1],{relativeTo: route}); 
+默认值为根路由，设置后相对当前路由跳转，route是ActivatedRoute的实例，使用需要导入ActivatedRoute
+
+3.this.router.navigate(['user', 1],{ queryParams: { id: 1 } }); 
+路由中传参数 /user/1?id=1
+
+4.this.router.navigate(['view', 1], { preserveQueryParams: true }); 
+默认值为false，设为true，保留之前路由中的查询参数/user?id=1 to /view?id=1
+
+5.this.router.navigate(['user', 1],{ fragment: 'top' }); 
+路由中锚点跳转 /user/1#top
+
+6.this.router.navigate(['/view'], { preserveFragment: true }); 
+默认值为false，设为true，保留之前路由中的锚点/user/1#top to /view#top
+
+7.this.router.navigate(['/user',1], { skipLocationChange: true }); 
+默认值为false，设为true路由跳转时浏览器中的url是跳转前的路径，但是传入的参数依然有效
+
+8.this.router.navigate(['/user',1], { replaceUrl: true }); 
+未设置时默认为true，设置为false路由不会进行跳转
+路由调试
+如果你想要看到在导航的生命周期中发生过哪些事件，可以使用路由器默认配置中的 enableTracing 选项。它会把每个导航生命周期中的事件输出到浏览器的控制台。 这应该只用于调试。你只需要把 enableTracing: true 选项作为第二个参数传给 RouterModule.forRoot() 方法就可以了。
+路由出口
+有了这份配置，当本应用在浏览器中的 URL 变为 /heroes 时，路由器就会匹配到 path 为 heroes 的 Route，并在宿主视图中的RouterOutlet之后显示 HeroListComponent 组件。
+
+<router-outlet></router-outlet>
+<!-- Routed views go here -->
+路由守卫
+在路由模块导入import { AuthGuard }from '../auth-guard.service';
+ {
+    path: 'admin',
+    component: AdminComponent,
+    canActivate: [AuthGuard，。。。],。。。
+	import { Injectable }     from '@angular/core';
+import { CanActivate }    from '@angular/router';
+provider中得实例化authguard
+服务类
+@Injectable()
+export class AuthGuard implements CanActivate {
+  canActivate() {
+    console.log('AuthGuard#canActivate called');
+    return true;
+  }
+}
+离开路由时，当那个数组内只要有一个为false则返回false
+辅助路由
+<router-outlet></router-outlet>
+<router-outlet name="aux"></router-outlet>
+子路由可以套无数个路由。一路上的路由都显示，都在路由出口中显示
+路由出口属于模块。{path: 'consult', component: ConsultComponent, outlet: 'aux'},
+<a [routerLink]="[{outlets:{primary:'home'aux:'consult'}}]">开始咨询</a>
+或者<a [routerLink]="['poducts'//主路由显示地址,{outlets:{aux//辅助路由名称:['consult'//辅助路由地址,参数]}}]">开始咨询</a>
+自我了解
+[routerLink]="[''//路由,参数]"//参数在路由中，得用占位符获取
+[queryParams]="{id:1,str:'ng',bool:true}"这种跟在路径后
+用activiteRoute.queryParams[id]获取
+获取方式：第一种activiteRoute.snapshot.queryParams['id'],获取查询参数，单独的[queryParams]
+activiteRoute.snapshot.params['id'] 是在路径中传递的数据，用占位符
+参数订阅
+路劲传参 占位符
+路由配置传参
+{path:'',component:..,data;[{id:1},{name:'login'}]} 获取activiteRoute.data[0]['id']
+
+
+
+这说明以下几件事：
+第一，<router-outlet>可以嵌套。作为应用入口组件的AppComponent中提供了插槽，这个插槽上允许一整个路由的插入，而且插入的部分是根路由组件MainComponent，
+然后MainComponent中有可以提供一个插槽，插入根路由的子路由，以此类推。
+第二，<router-outlet>的作用是路由器通过url来替换插槽内的DOM元素。以其说是占位符，
+不如说是每个路由节点的组件容器。
+第三，层次关系一一对应。如果MainComponent中不提供<router-outlet>的话，
+打开http://localhost:4200/foo会报错。这时候就要夸一波Angular的路由了，
+能提供守护器来控制路由的合法性（比如你没登录就让你滚回，不对，回滚到登录页面等等），
+并且可以还能提供懒加载解决方案，真是赞啊！

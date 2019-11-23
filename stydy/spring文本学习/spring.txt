@@ -1,0 +1,483 @@
+﻿https://blog.csdn.net/csyy140225/article/details/82454611 @sessionAttribute
+
+@InitBinder
+由@InitBinder表示的方法，可以对WebDataBinder对象进行初始化。WebDataBinder
+是DataBinder的子类，用于完成由表单到JavaBean属性的绑定。
+@InitBinder方法不能有返回值，它必须盛名为void。
+@InitBinder方法的参数通常是WebDataBinder，@InitBinder可以对WebDataBinder进行初始化。
+@InitBinder
+private void initBinder(WebDataBinder binder){
+	//由表单到JavaBean赋值过程中哪一个值不进行赋值
+	binder.setDisallowedFields("lastName");
+}
+看一下执行结果
+
+lastName=null, email=aa@163.com, gender=0, department=Department
+如果去掉刚才的initBinder方法，在看一下执行结果
+lastName=aa, email=aa@163.com, gender=0, department=Department
+ 这里我们可以使用注解@InitBinder来解决这些问题，这样SpingMVC在绑定表单之前，
+ 都会先注册这些编辑器。一般会将这些方法些在BaseController中，
+ 需要进行这类转换的控制器只需继承BaseController即可。
+ 其实Spring提供了很多的实现类，如CustomDateEditor、
+ CustomBooleanEditor、CustomNumberEditor等，基本上是够用的。
+
+       demo如下：
+
+ 
+
+复制代码
+public class BaseController {
+
+    @InitBinder
+    protected void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Date.class, new MyDateEditor());
+        binder.registerCustomEditor(Double.class, new DoubleEditor()); 
+        binder.registerCustomEditor(Integer.class, new IntegerEditor());
+    }
+
+    private class MyDateEditor extends PropertyEditorSupport {
+        @Override
+        public void setAsText(String text) throws IllegalArgumentException {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date = null;
+            try {
+                date = format.parse(text);
+            } catch (ParseException e) {
+                format = new SimpleDateFormat("yyyy-MM-dd");
+                try {
+                    date = format.parse(text);
+                } catch (ParseException e1) {
+                }
+            }
+            setValue(date);
+        }
+    }
+    
+    public class DoubleEditor extends PropertiesEditor  {    
+        @Override    
+        public void setAsText(String text) throws IllegalArgumentException {    
+            if (text == null || text.equals("")) {    
+                text = "0";    
+            }    
+            setValue(Double.parseDouble(text));    
+        }    
+        
+        @Override    
+        public String getAsText() {    
+            return getValue().toString();    
+        }    
+    }  
+    
+    public class IntegerEditor extends PropertiesEditor {    
+        @Override    
+        public void setAsText(String text) throws IllegalArgumentException {    
+            if (text == null || text.equals("")) {    
+                text = "0";    
+            }    
+            setValue(Integer.parseInt(text));    
+        }    
+        
+        @Override    
+        public String getAsText() {    
+            return getValue().toString();    
+        }    
+    }  
+
+}
+这时候页面传的参数名必须是对象名，但是类型可以不是，然后spring可以根据这个自动转
+private static SysUserDao getUserDao() {
+        if (userDao == null) {
+            userDao = (SysUserDao)ApplicationContextHolder.getSpringContext().getBean(SysUserDao.class);
+        }
+传值
+1页面向controller
+接受全部是string,可以做类型转换
+可以直接用对象接，如果对象里面还有对象属性，那么只要是对象属性set方法有的，都可以接收，
+保存的时候分表保存。数组也可以直接接
+
+2controller向页面
+1model传，给el用的，如果是对象直接调名称，如果是list，用遍历
+2ajax可以直接传list和map如果是map直接data.属性
+如果是list那么data[].key下表访问
+3ajax传值
+可以直接用json形式，传值，属性和数组controller可直接接受，其它对象也要传得用工具转
+spring接收json格式的多个对象参数（变通法）
+两种方法
+方法1
+如果使用spring mvc同客户端通信，完全使用json数据格式，需要增加RequestBody注解，
+
+
+复制代码
+@Controller
+public class TestController{
+  @RequestMapping("\test")
+  @ResponseBody
+  public RetureResult test(@RequestBody User user){
+    return new ReturnResult();
+  }  
+}
+
+比如{name:"test"}，name为User类的属性域。通过ResponseBody注解，可以返回json格式的数据。
+
+复制代码
+此时可使用一种变通的方法达到此目的。
+
+在TestController.java文件中增加一个包装类
+
+复制代码
+@Controller
+public class TestController{
+  @RequestMapping("\test")
+  @ResponseBody
+  public RetureResult test(@RequestBody Param param){
+    return new ReturnResult();
+  }  
+}
+class Param{
+  public User user;
+  public Address address;  
+}
+复制代码
+注意：类中属性必须为public，或者有setter和getter；Param类中的属性只能比json中的属性多，
+不能少。
+
+此时传输的json数据格式变为{user:{name:"test"},address:{location:"新华路"}}。
+
+
+@RequestParam
+
+使用@RequestParam接收前段参数比较方便，前端传参的URL：
+
+url = “${ctx}/main/mm/am/edit?Id=${Id}&name=${name}”
+
+后端使用集合来接受参数，灵活性较好，如果url中没有对参数赋key值，
+后端在接收时，会根据参数值的类型附，赋一个初始key（String、long ……）
+
+@RequestMapping("/edit")
+    public String edit(Model model, @RequestParam Map<String, Object> paramMap ) {
+        long id = Long.parseLong(paramMap.get("id").toString());
+        String name = paramMap.get("name").toString;
+        return page("edit");
+    }
+@PathVariable
+
+使用@PathVariable接收参数，参数值需要在url进行占位，前端传参的URL：
+
+url = “${ctx}/main/mm/am/edit/${Id}/${name}”
+
+@RequestMapping("/edit/{id}/{name}")
+    public String edit(Model model, @PathVariable long id,@PathVariable String name) {
+        
+        return page("edit");
+【1】value， method
+
+value：指定请求的实际地址，指定的地址可以是URI Template 模式；
+
+method： 指定请求的method类型， GET、POST、PUT、DELETE等；
+
+【2】consumes，produces
+
+consumes： 指定处理请求的提交内容类型（Content-Type），例如application/json, text/html;
+
+produces: 指定返回的内容类型，仅当request请求头中的(Accept)类型中包含该指定类型才返回；
+
+【3】params，headers
+
+params： 指定request中必须包含某些参数值时，才让该方法处理。
+
+headers： 指定request中必须包含某些指定的header值，才能让该方法处理请求。
+@RequestMapping(value="/handle03",params="stu")
+    public String handle03(){
+        return "success.jsp";
+    }
+
+     *params：可以限制请求参数
+param1: 表示请求必须包含名为 param1 的请求参数
+!param1: 表示请求不能包含名为 param1 的请求参数
+param1 != value1: 表示请求包含名为 param1 的请求参数，但其值不能为 value1
+{“param1=value1”, “param2”}: 请求必须包含名为 param1 和param2 的两个请求参数，
+且 param1 参数的值必须为 value1
+*/
+@RequestMapping(value = "testParamsAndHeaders", params = { "username","age!=10" }, headers = { "Accept-Language=US,zh;q=0.8" })
+    public String testParamsAndHeaders() {
+        System.out.println("testParamsAndHeaders");
+        return SUCCESS;
+    }	
+ @RequestMapping(value = "/testMethod", method = RequestMethod.POST,produces="application/json")
+    public void testMethod2(HttpServletRequest request,HttpServletResponse response,Model model) 
+    throws IOException {
+        request.getHeader("Accept");
+        System.out.println(request.getHeader("Accept"));
+//      response.setContentType("application/json");
+        String username = request.getParameter("username");
+        System.out.println("testMethod..."+username);
+        model.addAttribute("user", username);
+        Object jsonString =  "{'name': 'helloworlda'}";
+        JSONObject jsonobj=JSONObject.fromObject(jsonString);
+        PrintWriter out = response.getWriter();
+        out.print(jsonobj);
+2、
+
+　　　　通过@requestBody可以将请求体中的JSON字符串绑定到相应的bean上，
+当然，也可以将其分别绑定到对应的字符串上。
+	//可以变通，比如json中有对象，那么在user中设置这个属性，再新建一个属性对象。　　　　
+例如说以下情况：
+　　　　$.ajax({
+　　　　　　　　url:"/login",
+　　　　　　　　type:"POST",
+　　　　　　　　data:'{"userName":"admin","pwd","admin123"}',
+　　　　　　　　content-type:"application/json charset=utf-8",
+　　　　　　　　success:function(data){
+　　　　　　　　　　alert("request success ! ");
+　　　　　　　　}
+　　　　});
+
+　　　　@requestMapping("/login")
+　　　　public void login(@requestBody String userName,@requestBody String pwd){
+　　　　　　System.out.println(userName+" ："+pwd);
+　　　　}
+　　　　这种情况是将JSON字符串中的两个变量的值分别赋予了两个字符串，但是呢假如我有一个User类，拥有如下字段：
+　　　　　　String userName;
+　　　　　　String pwd;
+　　　　那么上述参数可以改为以下形式：@requestBody User user 这种形式会将JSON字符串中的值赋予user中对应的属性上
+　　　　需要注意的是，JSON字符串中的key必须对应user中的属性名，否则是请求不过去的。
+
+@RequestMapping(value = "/callback", produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String callback(@RequestParam Map<String, String> params) {
+        return null;
+<input type="text" value="" name="titleName" id="add_titleName"/>
+<input type="text" value="" name="titleName" id="add_titleName"/>
+<input type="text" value="" name="titleName" id="add_titleName"/>
+ 后台获取
+public void getParmas(List<String> titleName)
+public void getParmas(String[] titleName)
+需要我们用到第二种情况。
+
+接收一个带有list成员变量的的对象，比如你有个类是User，一个User可以有多个联系电话，
+
+class User{
+   List<Contact> contactList;   
+}
+我们要获取一个带有多个联系人的user参数
+
+public void addUser(User user){
+.....
+}
+在页面上直接可以通过
+
+<input type="text" value="" name="user.contactList[0].phone" id="add_contact_phone_1"/>
+这样的方式进行获取参数。
+ <head>
+ 6       <script type="text/javascript">
+ 7           document.cookie="name=caoyc;path=/"  
+ 8           document.cookie="age=18;path=/"  
+ 9           // 时间可以不要，但路径(path)必须要填写，因为JS的默认路径是当前页，如果不填，此cookie只在当前页面生效！~
+10       </script>
+11 
+12   </head>
+13   
+14   <body>
+15     <a href="testCookie">查看Cookie</a>
+16     
+17   </body>
+18 </html>
+2、在控制器中
+
+1 @RequestMapping("/testCookie")
+2 public String testCookie(@CookieValue(value="name",required=false) String name,
+3         @CookieValue(value="age",required=false) Integer age){
+4     System.out.println(name+","+age);
+5     return "hello";
+6 }
+[plain] view plaincopy
+Host                    localhost:8080  
+Accept                  text/html,application/xhtml+xml,application/xml;q=0.9  
+Accept-Language         fr,en-gb;q=0.7,en;q=0.3  
+Accept-Encoding         gzip,deflate  
+Accept-Charset          ISO-8859-1,utf-8;q=0.7,*;q=0.7  
+Keep-Alive              300  
+ view plaincopy
+@RequestMapping(“/displayHeaderInfo.do”)  
+public void displayHeaderInfo(@RequestHeader(“Accept-Encoding”) String encoding,  
+                              @RequestHeader(“Keep-Alive”) long keepAlive)  {  
+用到方法上@ModelAttribute的示例代码：
+view plaincopy
+// Add one attribute  
+// The return value of the method is added to the model under the name “account”  
+// You can customize the name via @ModelAttribute(“myAccount”)  
+  
+@ModelAttribute  
+public Account addAccount(@RequestParam String number) {  
+    return accountManager.findAccount(number);  
+}  
+
+这种方式实际的效果就是在调用@RequestMapping的方法之前，
+为request对象的model里put（“account”， Account）；
+用在参数上的@ModelAttribute示例代码：
+@RequestMapping(value=“/owners/{ownerId}/pets/{petId}/edit”, method = RequestMethod.POST)  
+public String processSubmit(@ModelAttribute Pet pet) {  
+     
+}  
+首先查询 @SessionAttributes有无绑定的Pet对象，
+若没有则查询@ModelAttribute方法层面上是否绑定了Pet对象，
+若没有则将URI template中的值按对应的名称绑定到Pet对象的各属性上。 
+
+springmvc controller层接收List类型的参数
+
+ Spring MVC在接收集合请求参数时，需要在Controller方法的集合参数里前添加
+@RequestBody，而@RequestBody默认接收的enctype
+ (MIME编码)是application/json，因此发送POST请求时需要设置请求报文头信息，否则Spring
+ MVC在解析集合请求参数时不会自动的转换成JSON数据再解析成相应的集合。以下列举接收List<String>、List<User>、List<Map<String,Object>>、User[]、User(bean里面包含List)几种较为复杂的集合参数示例：
+
+接收List<String>集合参数
+第一种方法：直接接收list
+var allFilePaths = new Array(); 
+for (var i = 0; i < 10; i++) {    
+allFilePaths.push("xx"+i);}
+$.ajax({      url : url,  
+  type : 'POST',   
+  dataType: 'json',    
+  contentType: "application/json",   
+  data : JSON.stringify(allFilePaths),//转为json格式   
+  success : function(col) {     }    },   
+  error : function(col){           
+  }})
+controller层
+@RequestMapping("/delFileInfo")
+@ResponseBody
+public void delFileInfo(@RequestBody List<String> macroPath) throws IOException     {     
+    for(String sPath :macroPath)        {         
+	System.out.println(sPath);      
+	}
+第二种方式，直接封装成对象接收
+Order.delOrders({orderIds: $scope.ids}, function () {  
+    Flash.success('删除成功!');  
+    $state.reload();  
+});  
+
+public class ListObj {  
+    private List<String> orderIds ;  
+  
+    public List<String> getOrderIds() {  
+        return orderIds;  
+    }  
+  
+    public void setOrderIds(List<String> orderIds) {  
+        this.orderIds = orderIds;  
+    }  
+}  
+
+@RequestMapping(value = "/delOrders")  
+    @ResponseBody  
+    public ViewData deleteOrders(@RequestBody ListObj orderIds, HttpServletRequest request) {  
+  
+        ViewData viewData = new ViewData();  
+        for (String orderId:orderIds.getOrderIds()){  
+            System.out.println(orderId);  
+        }  
+  
+//        String[] arr = orderIds.split(",");  
+//        ViewData viewData = adminOrderService.deleteOrders(Arrays.asList(arr),getLoginInfo(request));  
+        return viewData;  
+    }  
+接收List<User>、User[]集合参数：
+public class User {  
+        private String name;   
+    private String pwd;  
+    //省略getter/setter  
+}  
+var userList = new Array();  
+userList.push({name: "李四",pwd: "123"});   
+userList.push({name: "张三",pwd: "332"});   
+$.ajax({  
+    type: "POST",  
+    url: "<%=path%>/catalog.do?fn=saveUsers",  
+    data: JSON.stringify(userList),//将对象序列化成JSON字符串  
+    dataType:"json",  
+    contentType : 'application/json;charset=utf-8', //设置请求头信息  
+    success: function(data){  
+        …  
+    },  
+    error: function(res){  
+        …  
+    }  
+});  
+@Controller  
+@RequestMapping("/catalog.do")  
+public class CatalogController {  
+  
+    @RequestMapping(params = "fn=saveUsers")  
+    @ResponseBody  
+    public AjaxJson saveUsers(@RequestBody List<User> userList) {  
+        …  
+    }  
+}  
+如果想要接收User[]数组，只需要把saveUsers的参数类型改为@RequestBody User[] userArray就行了。
+接收List<Map<String,Object>>集合参数：
+1、页面js代码（不需要User对象了）：
+var userList = new Array();  
+userList.push({name: "李四",pwd: "123"});   
+userList.push({name: "张三",pwd: "332"});   
+$.ajax({  
+    type: "POST",  
+    url: "<%=path%>/catalog.do?fn=saveUsers",  
+    data: JSON.stringify(userList),//将对象序列化成JSON字符串  
+    dataType:"json",  
+    contentType : 'application/json;charset=utf-8', //设置请求头信息  
+    success: function(data){  
+        …  
+    },  
+    error: function(res){  
+        …  
+    }  
+});  
+@Controller  
+@RequestMapping("/catalog.do")  
+public class CatalogController {  
+  
+    @RequestMapping(params = "fn=saveUsers")  
+    @ResponseBody  
+    public AjaxJson saveUsers(@RequestBody List<Map<String,Object>> listMap) {  
+        …  
+    }  
+}  
+
+<input type="text" value="" name="titleName" id="add_titleName"/>
+<input type="text" value="" name="titleName" id="add_titleName"/>
+<input type="text" value="" name="titleName" id="add_titleName"/>
+ 后台获取
+public void getParmas(List<String> titleName)
+ 或者
+public void getParmas(String[] titleName)
+
+Jsp页面正常的封装数据 :
+例如：
+<input type="text" id="11" name="name" vlaue=""/>
+<input type="text" id="22" name="user" value=""/>
+<input type="text" id="33" name="password" value=""/>
+
+Controller层可以接受的参数
+@RequestMapping("/Test")
+Test(@RequestParam Map<String,String> map){
+String name = map.get("name");
+String text = map.get("user");
+String password = map.get("password");
+}
+可以解决查询条件不是同一个实体对象，查询参数比较多，不适合统一传递到后台方法上进行接受。
+可以通过这样来接受参数。
+实体类不用注解。
+dao层不用注解 因为有有一个配置文件已经配置了扫描包spring-dao.xml
+服务接口不用注解
+服务用service注解 都要注解扫描包
+conroller用注解
+注意请求的Content-Type为text/plain;charset=UTF-8，而请求表单参数在RequestPayload中。
+HTTP POST表单请求提交时，使用的Content-Type是application/x-www-form-urlencoded，而使用原生AJAX的POST请求如果不指定请求头RequestHeader，默认使用的Content-Type是text/plain;charset=UTF-8。
+从上面代码可以看出，Content-Type不是application/x-www-form-urlencoded的POST请求是不会读取请求体数据和进行相应的参数处理的，即不会解析表单数据来放到request parameter map中。所以通过request.getParameter(name)是获取不到的。
+所以，在使用原生AJAX POST请求时，需要明确设置Request Header，即：
+
+ xhr.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+　注意请求的Content-Type为text/plain;charset=UTF-8，而请求表单参数在RequestPayload中。
+
+那么servlet中通过request.getParameter(name)却是空。为什么呢？而这样的参数又该怎么样获取呢？
+　从上面代码可以看出，Content-Type不是application/x-www-form-urlencoded的POST请求是不会读取请求体数据和进行相应的参数处理的，即不会解析表单数据来放到request parameter map中。所以通过request.getParameter(name)是获取不到的。 
